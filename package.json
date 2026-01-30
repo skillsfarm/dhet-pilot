@@ -1,0 +1,22 @@
+{
+  "name": "dhet_app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "tailwindcss --input theme/main.css --output theme/dist/css/main.css --watch",
+    "build": "npm run clean:dist && tailwindcss --input theme/main.css --output theme/dist/css/main.css --minify && npm run copy:flowbite",
+    "copy:flowbite": "node -e \"require('fs').cpSync('node_modules/flowbite/dist/flowbite.min.js', 'theme/dist/js/flowbite.min.js'); require('fs').cpSync('node_modules/flowbite/dist/flowbite.min.js.map', 'theme/dist/js/flowbite.min.js.map')\"",
+    "clean:dist": "node -e \"const fs=require('fs'),path='theme/dist';fs.existsSync(path)&&fs.rmSync(path,{recursive:true,force:true})\"",
+    "clean:static": "node -e \"const fs=require('fs'),path='staticfiles';fs.existsSync(path)&&fs.rmSync(path,{recursive:true,force:true})\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "packageManager": "pnpm@10.28.1",
+  "devDependencies": {
+    "@tailwindcss/cli": "^4.1.18",
+    "flowbite": "^4.0.1",
+    "tailwindcss": "^4.1.18"
+  }
+}
