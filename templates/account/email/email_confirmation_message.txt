@@ -1,0 +1,8 @@
+{% load i18n %}{% blocktranslate %}Hello from {{ site.name }}!
+
+You're receiving this email because user {{ user }} has given your email address to register an account on {{ site.name }}.
+
+To confirm this is correct, go to {{ activate_url }}
+
+Thank you for using {{ site.name }}!
+{{ site.domain }}{% endblocktranslate %}

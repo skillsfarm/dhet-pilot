@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load allauth i18n static %}
+{% block title %}Verify Your Email{% endblock %}
+{% block content %}
+    <section class="min-h-screen flex items-center justify-center px-4 py-12 bg-background text-foreground">
+        <div class="w-full max-w-md">
+            <div class="flex justify-center mb-8">
+                <a href="/">
+                    <img src="{% static 'images/branding/logo-light.png' %}"
+                         alt="dhet_app"
+                         class="h-16 w-auto block dark:hidden">
+                    <img src="{% static 'images/branding/logo-dark.png' %}"
+                         alt="dhet_app"
+                         class="h-16 w-auto hidden dark:block">
+                </a>
+            </div>
+            <div class="app-card space-y-6">
+                <div>
+                    <h1 class="text-3xl font-semibold text-card-foreground">{% trans "Confirm Email" %}</h1>
+                    {% if confirmation %}
+                        <p class="text-muted-foreground mt-2">
+                            {% blocktrans with confirmation.email_address.email as email %}
+              Please confirm that <strong class="text-card-foreground">{{ email }}</strong> belongs to you.
+            {% endblocktrans %}
+                        </p>
+                    {% endif %}
+                </div>
+                {% if confirmation %}
+                    <form method="post"
+                          action="{% url 'account_confirm_email' confirmation.key %}"
+                          x-data="{ isSubmitting: false }"
+                          @submit="isSubmitting = true">
+                        {% csrf_token %}
+                        <button type="submit"
+                                class="app-btn app-btn-primary w-full flex items-center justify-center gap-2"
+                                :disabled="isSubmitting">
+                            <span x-show="!isSubmitting">{% trans "Confirm Email" %}</span>
+                            <span x-show="isSubmitting" class="flex items-center gap-2">
+                                <i data-lucide="loader" class="w-4 h-4 animate-spin-smooth"></i>
+                            </span>
+                        </button>
+                    </form>
+                    <p class="text-center text-muted-foreground mt-6">
+                        <a href="{% url 'account_login' %}" class="app-link">{% trans "Back to Sign In" %}</a>
+                    </p>
+                {% else %}
+                    <div class="app-alert app-alert-error">
+                        <p class="text-sm">{% trans "This email confirmation link expired or is invalid." %}</p>
+                    </div>
+                    {% url 'account_email' as email_url %}
+                    <a href="{{ email_url }}" class="app-btn app-btn-primary w-full">{% trans "Request New Link" %}</a>
+                    <p class="text-center text-muted-foreground mt-6">
+                        <a href="{% url 'account_login' %}" class="app-link">{% trans "Back to Sign In" %}</a>
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+{% endblock %}

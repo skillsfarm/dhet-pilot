@@ -1,0 +1,33 @@
+{% load dhet_admin %}
+
+{% if field.field.widget.input_type == "checkbox" and field.field.widget|class_name != "DhetAdminCheckboxSelectMultiple"%}
+    <div class="{% if field.errors %}errors {% endif %}flex flex-col group mb-5">
+        <div class="flex flex-row gap-2 items-center">
+            {{ field }}
+
+            {% include "dhet_admin/helpers/form_label.html" with field=field %}
+        </div>
+
+        {% include "dhet_admin/helpers/form_errors.html" with errors=field.errors %}
+
+        {% include "dhet_admin/helpers/help_text.html" with help_text=field.help_text %}
+    </div>
+{% else %}
+    <div class="{% if field.errors %}errors {% endif %}flex flex-col group mb-5">
+        <div class="flex flex-col gap-2">
+            {% include "dhet_admin/helpers/form_label.html" with field=field %}
+
+            {{ field }}
+        </div>
+
+        {% include "dhet_admin/helpers/form_errors.html" with errors=field.errors %}
+
+        {% include "dhet_admin/helpers/help_text.html" with help_text=field.help_text %}
+    </div>
+{% endif %}
+
+
+
+
+
+

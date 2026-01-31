@@ -1,0 +1,1 @@
+{% load i18n %}{% blocktranslate %}{{ code }} is your sign in code for {{ site.name }}{% endblocktranslate %}

@@ -1,0 +1,265 @@
+{% extends "layouts/dashboard_page_view.html" %}
+{% block title %}Candidate Onboarding{% endblock %}
+{% block page_title %}Welcome to DHET{% endblock %}
+{% block page_description %}
+    Complete this onboarding to get matched with relevant occupations.
+{% endblock %}
+{% block page_sidebar %}
+    <!-- Vertical Navigation Tabs & Logic -->
+    <div x-data="{ activeTab: '{{ active_tab }}', score: {{ onboarding_score }}, drawerOpen: false }"
+         @update-score.window="score = $event.detail.score; activeTab = $event.detail.activeTab"
+         @close-drawer="drawerOpen = false">
+        <!-- Mobile Menu Button -->
+        <div class="md:hidden mb-4">
+            <button type="button"
+                    @click="drawerOpen = true"
+                    class="app-btn app-btn-ghost">
+                <i data-lucide="menu" class="w-5 h-5"></i>
+                Menu
+            </button>
+        </div>
+        <!-- Tab Navigation (Vertical) - Desktop Only -->
+        <div class="hidden md:block md:w-48 shrink-0">
+            <ul class="flex md:flex-col gap-2">
+                <!-- Profile Tab (Score 0-2) -->
+                <li class="flex-1 md:flex-initial md:w-full" role="presentation">
+                    <button type="button"
+                            @click="activeTab = 'profile'"
+                            hx-get="{% url 'candidates:onboarding-profile' %}"
+                            hx-target="#tab-content"
+                            hx-swap="innerHTML swap:0.5s"
+                            :disabled="score < 0"
+                            :aria-selected="activeTab === 'profile'"
+                            :class="{ 
+                                'px-4 py-2 w-full text-left font-medium text-primary bg-primary/5': activeTab === 'profile',
+                                'px-4 py-2 w-full text-left font-medium text-primary/70 hover:text-primary hover:bg-primary/5': activeTab !== 'profile' && score >= 0,
+                                'px-4 py-2 w-full text-left font-medium text-muted-foreground opacity-40 cursor-not-allowed': score < 0
+                            }"
+                            role="tab"
+                            aria-controls="tab-content">
+                        Profile
+                        <span x-show="score >= 2" class="ml-2">✓</span>
+                    </button>
+                </li>
+                <!-- Education Tab (Score 2-4) -->
+                <li class="flex-1 md:flex-initial md:w-full" role="presentation">
+                    <button type="button"
+                            @click="activeTab = 'education'"
+                            hx-get="{% url 'candidates:onboarding-education' %}"
+                            hx-target="#tab-content"
+                            hx-swap="innerHTML swap:0.5s"
+                            :disabled="score < 2"
+                            :aria-selected="activeTab === 'education'"
+                            :class="{ 
+                                'px-4 py-2 w-full text-left font-medium text-primary bg-primary/5': activeTab === 'education',
+                                'px-4 py-2 w-full text-left font-medium text-primary/70 hover:text-primary hover:bg-primary/5': activeTab !== 'education' && score >= 2,
+                                'px-4 py-2 w-full text-left font-medium text-muted-foreground opacity-40 cursor-not-allowed': score < 2
+                            }"
+                            role="tab"
+                            aria-controls="tab-content">
+                        Education
+                        <span x-show="score >= 4" class="ml-2">✓</span>
+                    </button>
+                </li>
+                <!-- Experience Tab (Score 4-6) -->
+                <li class="flex-1 md:flex-initial md:w-full" role="presentation">
+                    <button type="button"
+                            @click="activeTab = 'experience'"
+                            hx-get="{% url 'candidates:onboarding-experience' %}"
+                            hx-target="#tab-content"
+                            hx-swap="innerHTML swap:0.5s"
+                            :disabled="score < 4"
+                            :aria-selected="activeTab === 'experience'"
+                            :class="{ 
+                                'px-4 py-2 w-full text-left font-medium text-primary bg-primary/5': activeTab === 'experience',
+                                'px-4 py-2 w-full text-left font-medium text-primary/70 hover:text-primary hover:bg-primary/5': activeTab !== 'experience' && score >= 4,
+                                'px-4 py-2 w-full text-left font-medium text-muted-foreground opacity-40 cursor-not-allowed': score < 4
+                            }"
+                            role="tab"
+                            aria-controls="tab-content">
+                        Work Experience
+                        <span x-show="score >= 6" class="ml-2">✓</span>
+                    </button>
+                </li>
+                <!-- Targets Tab (Score 6-8) -->
+                <li class="flex-1 md:flex-initial md:w-full" role="presentation">
+                    <button type="button"
+                            @click="activeTab = 'targets'"
+                            hx-get="{% url 'candidates:onboarding-targets' %}"
+                            hx-target="#tab-content"
+                            hx-swap="innerHTML swap:0.5s"
+                            :disabled="score < 6"
+                            :aria-selected="activeTab === 'targets'"
+                            :class="{ 
+                                'px-4 py-2 w-full text-left font-medium text-primary bg-primary/5': activeTab === 'targets',
+                                'px-4 py-2 w-full text-left font-medium text-primary/70 hover:text-primary hover:bg-primary/5': activeTab !== 'targets' && score >= 6,
+                                'px-4 py-2 w-full text-left font-medium text-muted-foreground opacity-40 cursor-not-allowed': score < 6
+                            }"
+                            role="tab"
+                            aria-controls="tab-content">
+                        Targets
+                        <span x-show="score >= 8" class="ml-2">✓</span>
+                    </button>
+                </li>
+                <!-- Assessment Tab (Score 8-10) -->
+                <li class="flex-1 md:flex-initial md:w-full" role="presentation">
+                    <button type="button"
+                            @click="activeTab = 'assessment'"
+                            hx-get="{% url 'candidates:onboarding-assessment' %}"
+                            hx-target="#tab-content"
+                            hx-swap="innerHTML swap:0.5s"
+                            :disabled="score < 8"
+                            :aria-selected="activeTab === 'assessment'"
+                            :class="{ 
+                                'px-4 py-2 w-full text-left font-medium text-primary bg-primary/5': activeTab === 'assessment',
+                                'px-4 py-2 w-full text-left font-medium text-primary/70 hover:text-primary hover:bg-primary/5': activeTab !== 'assessment' && score >= 8,
+                                'px-4 py-2 w-full text-left font-medium text-muted-foreground opacity-40 cursor-not-allowed': score < 8
+                            }"
+                            role="tab"
+                            aria-controls="tab-content">
+                        Profiency Assessment
+                        <span x-show="score >= 10" class="ml-2">✓</span>
+                    </button>
+                </li>
+            </ul>
+        </div>
+        <!-- Mobile Drawer -->
+        <div x-show="drawerOpen"
+             x-transition:enter="transition ease-out duration-300"
+             x-transition:enter-start="-translate-x-full"
+             x-transition:enter-end="translate-x-0"
+             x-transition:leave="transition ease-in duration-300"
+             x-transition:leave-start="translate-x-0"
+             x-transition:leave-end="-translate-x-full"
+             class="fixed top-0 left-0 z-40 h-screen p-4 overflow-y-auto w-64 border-r border-border bg-card"
+             tabindex="-1"
+             aria-labelledby="drawer-label"
+             style="display: none">
+            <div class="border-b border-border pb-4 mb-5 flex items-center justify-between">
+                <h5 id="drawer-label"
+                    class="inline-flex items-center text-lg font-medium text-foreground">Onboarding Menu</h5>
+                <button type="button"
+                        @click="drawerOpen = false"
+                        class="p-2 rounded-lg hover:bg-accent text-foreground transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                    <span class="sr-only">Close menu</span>
+                </button>
+            </div>
+            <ul class="flex flex-col gap-2">
+                <li role="presentation">
+                    <button type="button"
+                            @click="activeTab = 'profile'; drawerOpen = false"
+                            hx-get="{% url 'candidates:onboarding-profile' %}"
+                            hx-target="#tab-content"
+                            hx-swap="innerHTML swap:0.5s"
+                            :disabled="score < 0"
+                            :aria-selected="activeTab === 'profile'"
+                            :class="{
+                                'px-4 py-2 w-full text-left font-medium text-primary bg-primary/5': activeTab === 'profile',
+                                'px-4 py-2 w-full text-left font-medium text-primary/70 hover:text-primary hover:bg-primary/5': activeTab !== 'profile' && score >= 0,
+                                'px-4 py-2 w-full text-left font-medium text-muted-foreground opacity-40 cursor-not-allowed': score < 0
+                            }"
+                            role="tab">
+                        Profile
+                        <span x-show="score >= 2" class="ml-2">✓</span>
+                    </button>
+                </li>
+                <li role="presentation">
+                    <button type="button"
+                            @click="activeTab = 'education'; drawerOpen = false"
+                            hx-get="{% url 'candidates:onboarding-education' %}"
+                            hx-target="#tab-content"
+                            hx-swap="innerHTML swap:0.5s"
+                            :disabled="score < 2"
+                            :aria-selected="activeTab === 'education'"
+                            :class="{
+                                'px-4 py-2 w-full text-left font-medium text-primary bg-primary/5': activeTab === 'education',
+                                'px-4 py-2 w-full text-left font-medium text-primary/70 hover:text-primary hover:bg-primary/5': activeTab !== 'education' && score >= 2,
+                                'px-4 py-2 w-full text-left font-medium text-muted-foreground opacity-40 cursor-not-allowed': score < 2
+                            }"
+                            role="tab">
+                        Education
+                        <span x-show="score >= 4" class="ml-2">✓</span>
+                    </button>
+                </li>
+                <li role="presentation">
+                    <button type="button"
+                            @click="activeTab = 'experience'; drawerOpen = false"
+                            hx-get="{% url 'candidates:onboarding-experience' %}"
+                            hx-target="#tab-content"
+                            hx-swap="innerHTML swap:0.5s"
+                            :disabled="score < 4"
+                            :aria-selected="activeTab === 'experience'"
+                            :class="{
+                                'px-4 py-2 w-full text-left font-medium text-primary bg-primary/5': activeTab === 'experience',
+                                'px-4 py-2 w-full text-left font-medium text-primary/70 hover:text-primary hover:bg-primary/5': activeTab !== 'experience' && score >= 4,
+                                'px-4 py-2 w-full text-left font-medium text-muted-foreground opacity-40 cursor-not-allowed': score < 4
+                            }"
+                            role="tab">
+                        Experience
+                        <span x-show="score >= 6" class="ml-2">✓</span>
+                    </button>
+                </li>
+                <li role="presentation">
+                    <button type="button"
+                            @click="activeTab = 'targets'; drawerOpen = false"
+                            hx-get="{% url 'candidates:onboarding-targets' %}"
+                            hx-target="#tab-content"
+                            hx-swap="innerHTML swap:0.5s"
+                            :disabled="score < 6"
+                            :aria-selected="activeTab === 'targets'"
+                            :class="{
+                                'px-4 py-2 w-full text-left font-medium text-primary bg-primary/5': activeTab === 'targets',
+                                'px-4 py-2 w-full text-left font-medium text-primary/70 hover:text-primary hover:bg-primary/5': activeTab !== 'targets' && score >= 6,
+                                'px-4 py-2 w-full text-left font-medium text-muted-foreground opacity-40 cursor-not-allowed': score < 6
+                            }"
+                            role="tab">
+                        Targets
+                        <span x-show="score >= 8" class="ml-2">✓</span>
+                    </button>
+                </li>
+                <li role="presentation">
+                    <button type="button"
+                            @click="activeTab = 'assessment'; drawerOpen = false"
+                            hx-get="{% url 'candidates:onboarding-assessment' %}"
+                            hx-target="#tab-content"
+                            hx-swap="innerHTML swap:0.5s"
+                            :disabled="score < 8"
+                            :aria-selected="activeTab === 'assessment'"
+                            :class="{
+                                'px-4 py-2 w-full text-left font-medium text-primary bg-primary/5': activeTab === 'assessment',
+                                'px-4 py-2 w-full text-left font-medium text-primary/70 hover:text-primary hover:bg-primary/5': activeTab !== 'assessment' && score >= 8,
+                                'px-4 py-2 w-full text-left font-medium text-muted-foreground opacity-40 cursor-not-allowed': score < 8
+                            }"
+                            role="tab">
+                        Assessment
+                        <span x-show="score >= 10" class="ml-2">✓</span>
+                    </button>
+                </li>
+            </ul>
+        </div>
+        <!-- Drawer Backdrop -->
+        <div x-show="drawerOpen"
+             @click="drawerOpen = false"
+             x-transition.opacity
+             class="fixed inset-0 z-30 bg-black/50 md:hidden"
+             style="display: none"></div>
+    </div>
+{% endblock %}
+{% block page_content %}
+    <!-- Tab Content Area -->
+    <div id="tab-content"
+         class="space-y-6"
+         hx-get="{% url 'candidates:onboarding-'|add:active_tab %}"
+         hx-trigger="load"
+         role="tabpanel"
+         aria-labelledby="{{ active_tab }}-tab">
+        <!-- Loading indicator -->
+        <div class="flex items-center justify-center p-8">
+            <div class="flex items-center gap-2">
+                <i data-lucide="loader" class="w-5 h-5 animate-spin"></i>
+                <span class="text-muted-foreground">Loading content...</span>
+            </div>
+        </div>
+    </div>
+{% endblock %}

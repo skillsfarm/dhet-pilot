@@ -1,0 +1,2 @@
+class DhetAdminException(Exception):
+    pass

@@ -1,0 +1,53 @@
+<!-- Onboarding Information Card -->
+<div class="app-card space-y-6">
+    {% include "components/card_header.html" with title="Onboarding Information" description="Track your onboarding progress and completion status" %}
+    <div class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+                <p class="text-sm font-medium text-muted-foreground">Status</p>
+                <p class="text-base text-foreground">
+                    {% if user.profile.is_onboarded %}
+                        <span class="inline-flex items-center gap-1 text-green-600">
+                            <i data-lucide="check-circle" class="w-4 h-4"></i>
+                            Completed
+                        </span>
+                    {% else %}
+                        <span class="inline-flex items-center gap-1 text-amber-600">
+                            <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                            In Progress
+                        </span>
+                    {% endif %}
+                </p>
+            </div>
+            <div>
+                <p class="text-sm font-medium text-muted-foreground">Completion Score</p>
+                <p class="text-base text-foreground">{{ user.profile.onboarding_score }}/10</p>
+            </div>
+        </div>
+        <!-- Progress Bar -->
+        <div>
+            <p class="text-sm font-medium text-muted-foreground mb-2">Progress</p>
+            <div class="w-full bg-muted rounded-full h-2.5 overflow-hidden">
+                <div class="bg-primary h-full transition-all duration-300"
+                     style="width: {{ user.profile.onboarding_score }}0%"></div>
+            </div>
+            <p class="text-xs text-muted-foreground mt-1">{% widthratio user.profile.onboarding_score 10 100 %}% complete</p>
+        </div>
+    </div>
+    <!-- Card Footer -->
+    <div class="-mx-8 -mb-8 mt-6 px-8 py-4 bg-muted border-t border-border">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div class="text-sm text-muted-foreground">
+                {% if user.profile.is_onboarded %}
+                    You have completed the onboarding process. You can revisit the onboarding guide anytime from your dashboard.
+                {% else %}
+                    Complete your onboarding to unlock all features and get the most out of dhet_app.
+                {% endif %}
+            </div>
+            {% if not user.profile.is_onboarded %}
+                <a href="/onboarding/"
+                   class="app-btn app-btn-primary w-full md:w-48 whitespace-nowrap">Continue Onboarding</a>
+            {% endif %}
+        </div>
+    </div>
+</div>

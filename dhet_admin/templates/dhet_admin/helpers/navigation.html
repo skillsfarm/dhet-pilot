@@ -1,0 +1,21 @@
+{% load i18n dhet_admin %}
+
+<nav id="nav-sidebar-inner" class="bg-base-50 flex flex-col min-h-screen dark:text-font-default-dark dark:bg-base-950/20 {% element_classes 'navigation_inner' %}">
+    {% include "dhet_admin/helpers/navigation_header.html" %}
+
+    {% include "dhet_admin/helpers/search.html" %}
+
+    {% if sidebar_navigation|length > 0 %}
+        {% include "dhet_admin/helpers/app_list.html" with app_list=available_apps %}
+    {% else %}
+        {% include "admin/app_list.html" with app_list=available_apps show_changelinks=False %}
+    {% endif %}
+
+    {% include "dhet_admin/helpers/navigation_user.html" %}
+</nav>
+
+
+
+
+
+

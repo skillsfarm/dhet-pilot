@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% load allauth i18n %}
+{% block title %}Sign Out{% endblock %}
+{% block content %}
+    <section class="min-h-screen flex items-center justify-center px-4 py-12 bg-background text-foreground">
+        <div class="w-full max-w-md">
+            <div class="flex justify-center mb-8">
+                {% load static %}
+                <a href="/">
+                    <img src="{% static 'images/branding/logo-light.png' %}"
+                         alt="dhet_app"
+                         class="h-16 w-auto block dark:hidden">
+                    <img src="{% static 'images/branding/logo-dark.png' %}"
+                         alt="dhet_app"
+                         class="h-16 w-auto hidden dark:block">
+                </a>
+            </div>
+            <div class="app-card space-y-6 text-center">
+                <div>
+                    <h1 class="text-3xl font-semibold text-card-foreground">{% trans "Sign Out" %}</h1>
+                    <p class="text-muted-foreground mt-2">{% trans "Are you sure you want to end your session?" %}</p>
+                </div>
+                <form method="post"
+                      action="{% url 'account_logout' %}"
+                      x-data="{ isSubmitting: false }"
+                      @submit="isSubmitting = true"
+                      class="space-y-4">
+                    {% csrf_token %}
+                    {% if redirect_field_value %}
+                        <input type="hidden"
+                               name="{{ redirect_field_name }}"
+                               value="{{ redirect_field_value }}">
+                    {% endif %}
+                    <button type="submit"
+                            class="app-btn app-btn-destructive w-full flex items-center justify-center gap-2"
+                            :disabled="isSubmitting">
+                        <span x-show="!isSubmitting">{% trans "Sign Out" %}</span>
+                        <span x-show="isSubmitting" class="flex items-center gap-2">
+                            <i data-lucide="loader" class="w-4 h-4 animate-spin-smooth"></i>
+                        </span>
+                    </button>
+                    <a href="{% url 'dashboard' %}" class="app-btn app-btn-ghost w-full">{% trans "Stay Logged In" %}</a>
+                </form>
+            </div>
+        </div>
+    </section>
+{% endblock %}

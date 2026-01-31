@@ -1,0 +1,157 @@
+<!-- Education Card -->
+<div x-data="{ editing: true }" class="app-card space-y-6">
+    {% include "components/card_header.html" with title="Educational Background" description="Add your education history" %}
+    <!-- Existing Education Records -->
+    {% if education_records %}
+        <div class="space-y-3">
+            <h4 class="text-sm font-medium text-foreground">Your Education</h4>
+            {% for record in education_records %}
+                <div class="p-4 rounded-lg bg-muted border border-border">
+                    <div class="flex items-start justify-between">
+                        <div class="space-y-1">
+                            <p class="font-medium text-foreground">{{ record.get_education_type_display }}</p>
+                            <p class="text-sm text-muted-foreground">{{ record.institution }}</p>
+                            {% if record.field_of_study %}<p class="text-sm text-muted-foreground">{{ record.field_of_study }}</p>{% endif %}
+                            <p class="text-xs text-muted-foreground">Completed: {{ record.year_completed }}</p>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    <!-- Add Education Form -->
+    <!-- Add Education Form -->
+    <form method="post"
+          action="{% url 'candidates:onboarding-education' %}"
+          hx-post="{% url 'candidates:onboarding-education' %}"
+          hx-target="#tab-content"
+          hx-swap="innerHTML swap:0.5s"
+          x-data="{ 
+            isSubmitting: false, 
+            educationType: '{{ form.education_type.value|default:'' }}'
+          }"
+          @submit="isSubmitting = true"
+          @htmx:afterRequest="isSubmitting = false"
+          @htmx:responseError="isSubmitting = false">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+            <div class="app-alert app-alert-error">
+                <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                <div>{{ form.non_field_errors }}</div>
+            </div>
+        {% endif %}
+        <div class="space-y-4">
+            <div>
+                <label for="{{ form.education_type.id_for_label }}"
+                       class="block mb-2 text-sm font-medium text-muted-foreground">Education Type</label>
+                <div class="relative">
+                    <select name="{{ form.education_type.name }}"
+                            id="{{ form.education_type.id_for_label }}"
+                            x-model="educationType"
+                            class="app-input appearance-none w-full pr-10 {% if form.education_type.errors %}border-destructive{% endif %}">
+                        {% for value, label in form.education_type.field.choices %}
+                            <option value="{{ value }}" class="bg-card text-foreground py-2" {% if form.education_type.value|stringformat:'s' == value|stringformat:'s' %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground">
+                        <i data-lucide="chevron-down" class="h-4 w-4"></i>
+                    </div>
+                </div>
+                {% if form.education_type.errors %}
+                    <ul class="mt-2 text-sm font-medium text-destructive list-none">
+                        {% for error in form.education_type.errors %}<li>{{ error }}</li>{% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+            <div>
+                <label for="{{ form.institution.id_for_label }}"
+                       class="block mb-2 text-sm font-medium text-muted-foreground">Institution</label>
+                <input type="text"
+                       name="{{ form.institution.name }}"
+                       id="{{ form.institution.id_for_label }}"
+                       value="{{ form.institution.value|default:'' }}"
+                       placeholder="Institution name"
+                       class="app-input {% if form.institution.errors %}border-destructive{% endif %}">
+                {% if form.institution.errors %}
+                    <ul class="mt-2 text-sm font-medium text-destructive list-none">
+                        {% for error in form.institution.errors %}<li>{{ error }}</li>{% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+            <div x-show="educationType !== 'MATRIC'" x-transition>
+                <label for="{{ form.field_of_study.id_for_label }}"
+                       class="block mb-2 text-sm font-medium text-muted-foreground">Qualification Name</label>
+                <input type="text"
+                       name="{{ form.field_of_study.name }}"
+                       id="{{ form.field_of_study.id_for_label }}"
+                       value="{{ form.field_of_study.value|default:'' }}"
+                       placeholder="Qualification name"
+                       :required="educationType !== 'MATRIC'"
+                       class="app-input {% if form.field_of_study.errors %}border-destructive{% endif %}">
+                {% if form.field_of_study.errors %}
+                    <ul class="mt-2 text-sm font-medium text-destructive list-none">
+                        {% for error in form.field_of_study.errors %}<li>{{ error }}</li>{% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+            <div>
+                <label for="{{ form.year_completed.id_for_label }}"
+                       class="block mb-2 text-sm font-medium text-muted-foreground">Year Completed</label>
+                <input type="number"
+                       name="{{ form.year_completed.name }}"
+                       id="{{ form.year_completed.id_for_label }}"
+                       value="{{ form.year_completed.value|default:'' }}"
+                       placeholder="Year completed"
+                       class="app-input [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none {% if form.year_completed.errors %}border-destructive{% endif %}">
+                {% if form.year_completed.errors %}
+                    <ul class="mt-2 text-sm font-medium text-destructive list-none">
+                        {% for error in form.year_completed.errors %}<li>{{ error }}</li>{% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+        </div>
+        <!-- Card Footer -->
+        <div class="-mx-8 -mb-8 mt-6 px-8 py-4 bg-muted border-t border-border">
+            <div class="flex items-center justify-between">
+                <div class="text-sm text-muted-foreground">
+                    {% if education_records %}Add another or continue to next step{% else %}Add at least one education record{% endif %}
+                </div>
+                <div class="flex items-center gap-3">
+                    {% if education_records %}
+                        <button type="button"
+                                hx-get="{% url 'candidates:onboarding-experience' %}"
+                                hx-target="#tab-content"
+                                hx-swap="innerHTML swap:0.5s"
+                                class="app-btn border-none bg-background hover:bg-accent hover:text-accent-foreground">
+                            Continue
+                        </button>
+                    {% endif %}
+                    <button type="submit"
+                            class="app-btn app-btn-primary"
+                            :disabled="isSubmitting">
+                        <span x-show="!isSubmitting">Save Qualification</span>
+                        <span x-show="isSubmitting" class="flex items-center gap-2">
+                            <i data-lucide="loader" class="w-4 h-4 animate-spin-smooth"></i>
+                            Saving...
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div id="score-data" data-score="{{ score|default:0 }}" data-active-tab="{{ active_tab|default:'education' }}" style="display:none;"></div>
+<script>
+    (function() {
+        const scoreData = document.getElementById('score-data');
+        if (scoreData) {
+            window.dispatchEvent(new CustomEvent('update-score', {
+                detail: { 
+                    score: parseInt(scoreData.dataset.score), 
+                    activeTab: scoreData.dataset.activeTab 
+                }
+            }));
+        }
+    })();
+</script>

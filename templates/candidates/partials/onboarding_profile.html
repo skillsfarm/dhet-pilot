@@ -1,0 +1,87 @@
+<!-- Profile Card -->
+<div x-data="{ editing: true }" class="app-card space-y-6">
+    {% include "components/card_header.html" with title="Personal Information" description="Let's start with your basic details" %}
+    <form method="post"
+          action="{% url 'candidates:onboarding-profile' %}"
+          hx-post="{% url 'candidates:onboarding-profile' %}"
+          hx-target="#tab-content"
+          hx-swap="innerHTML swap:0.5s"
+          x-data="{ isSubmitting: false }"
+          @submit="isSubmitting = true"
+          @htmx:afterRequest="isSubmitting = false"
+          @htmx:responseError="isSubmitting = false">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+            <div class="app-alert app-alert-error">
+                <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                <div>{{ form.non_field_errors }}</div>
+            </div>
+        {% endif %}
+        <div class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label for="{{ form.first_name.id_for_label }}"
+                           class="block mb-2 text-sm font-medium text-muted-foreground">First Name</label>
+                    <input type="text"
+                           name="{{ form.first_name.name }}"
+                           id="{{ form.first_name.id_for_label }}"
+                           value="{{ form.first_name.value|default:'' }}"
+                           placeholder="First Name"
+                           class="app-input {% if form.first_name.errors %}border-destructive{% endif %}"
+                           required>
+                    {% if form.first_name.errors %}
+                        <ul class="mt-2 text-sm font-medium text-destructive list-none">
+                            {% for error in form.first_name.errors %}<li>{{ error }}</li>{% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="{{ form.last_name.id_for_label }}"
+                           class="block mb-2 text-sm font-medium text-muted-foreground">Last Name</label>
+                    <input type="text"
+                           name="{{ form.last_name.name }}"
+                           id="{{ form.last_name.id_for_label }}"
+                           value="{{ form.last_name.value|default:'' }}"
+                           placeholder="Last Name"
+                           class="app-input {% if form.last_name.errors %}border-destructive{% endif %}"
+                           required>
+                    {% if form.last_name.errors %}
+                        <ul class="mt-2 text-sm font-medium text-destructive list-none">
+                            {% for error in form.last_name.errors %}<li>{{ error }}</li>{% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <!-- Card Footer -->
+        <div class="-mx-8 -mb-8 mt-6 px-8 py-4 bg-muted border-t border-border">
+            <div class="flex items-center justify-between">
+                <div class="text-sm text-muted-foreground">This information will be used for your profile</div>
+                <button type="submit"
+                        class="app-btn app-btn-primary"
+                        :disabled="isSubmitting">
+                    <span x-show="!isSubmitting">Continue</span>
+                    <span x-show="isSubmitting" class="flex items-center gap-2">
+                        <i data-lucide="loader" class="w-4 h-4 animate-spin-smooth"></i>
+                        Saving...
+                    </span>
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div id="score-data" data-score="{{ score|default:0 }}" data-active-tab="{{ active_tab|default:'profile' }}" style="display:none;"></div>
+<script>
+    (function() {
+        const scoreData = document.getElementById('score-data');
+        if (scoreData) {
+            window.dispatchEvent(new CustomEvent('update-score', {
+                detail: { 
+                    score: parseInt(scoreData.dataset.score), 
+                    activeTab: scoreData.dataset.activeTab 
+                }
+            }));
+        }
+    })();
+</script>

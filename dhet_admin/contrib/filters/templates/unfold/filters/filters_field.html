@@ -1,0 +1,13 @@
+{% load i18n %}
+
+{% with choices.0 as choice %}
+    {% for field in choice.form %}
+        {% include "dhet_admin/helpers/field.html" %}
+    {% endfor %}
+{% endwith %}
+
+
+
+
+
+

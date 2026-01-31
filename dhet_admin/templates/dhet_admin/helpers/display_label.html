@@ -1,0 +1,17 @@
+{% if label %}
+    {% if multiple %}
+        {% for item in label %}
+            {% include "dhet_admin/helpers/label.html" with type=label_type text=item %}
+        {% endfor %}
+    {% else %}
+        {% include "dhet_admin/helpers/label.html" with type=label_type text=label %}
+    {% endif %}
+{% else %}
+    -
+{% endif %}
+
+
+
+
+
+

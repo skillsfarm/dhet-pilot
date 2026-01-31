@@ -1,0 +1,36 @@
+{% load i18n %}
+
+{% if not theme %}
+    <div class="border-b border-base-200 mx-3 mb-2 pb-3 pt-2 dark:border-base-700">
+        <span class="block mb-2 text-xs font-medium text-base-400 uppercase tracking-wider">{% trans "Appearance" %}</span>
+        <div class="bg-base-100 dark:bg-base-900 flex gap-1 p-1 rounded-lg">
+            <button type="button"
+               class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium rounded-md transition-all duration-200"
+               x-on:click="adminTheme = 'light'"
+               x-bind:class="adminTheme == 'light' ? 'bg-white dark:bg-base-700 text-base-900 dark:text-white shadow-sm' : 'text-base-500 hover:text-base-700 dark:hover:text-base-300'">
+                <span class="material-symbols-outlined text-base">light_mode</span>
+                {% trans "Light" %}
+            </button>
+
+            <button type="button"
+               class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium rounded-md transition-all duration-200"
+               x-on:click="adminTheme = 'dark'"
+               x-bind:class="adminTheme == 'dark' ? 'bg-white dark:bg-base-700 text-base-900 dark:text-white shadow-sm' : 'text-base-500 hover:text-base-700 dark:hover:text-base-300'">
+                <span class="material-symbols-outlined text-base">dark_mode</span>
+                {% trans "Dark" %}
+            </button>
+
+            <button type="button"
+               class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium rounded-md transition-all duration-200"
+               x-on:click="adminTheme = 'auto'"
+               x-bind:class="adminTheme == 'auto' ? 'bg-white dark:bg-base-700 text-base-900 dark:text-white shadow-sm' : 'text-base-500 hover:text-base-700 dark:hover:text-base-300'">
+                <span class="material-symbols-outlined text-base">computer</span>
+                {% trans "Auto" %}
+            </button>
+        </div>
+    </div>
+{% endif %}
+
+
+
+

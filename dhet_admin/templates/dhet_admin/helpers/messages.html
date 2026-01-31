@@ -1,0 +1,25 @@
+{% if messages %}
+    <ul class="flex flex-col gap-4 mb-6">
+        {% for message in messages %}
+            <li class="*:mb-0!">
+                {% if message.level == DEFAULT_MESSAGE_LEVELS.INFO %}
+                    {% include "dhet_admin/helpers/messages/info.html" with message=message %}
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.SUCCESS %}
+                    {% include "dhet_admin/helpers/messages/success.html" with message=message %}
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.WARNING %}
+                    {% include "dhet_admin/helpers/messages/warning.html" with message=message %}
+                {% elif message.level == DEFAULT_MESSAGE_LEVELS.ERROR %}
+                    {% include "dhet_admin/helpers/messages/error.html" with message=message %}
+                {% else %}
+                    {% include "dhet_admin/helpers/messages/debug.html" with message=message %}
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+
+
+
+
+

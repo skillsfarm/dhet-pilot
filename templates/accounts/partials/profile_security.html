@@ -1,0 +1,106 @@
+<!-- Security Card -->
+<div class="app-card space-y-6">
+    {% include "components/card_header.html" with title="Security" description="Manage your password and account security" %}
+    <div class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+                <p class="text-sm font-medium text-muted-foreground">Last Login</p>
+                <p class="text-base text-foreground">
+                    {% if user.last_login %}
+                        {{ user.last_login|date:"M d, Y H:i" }}
+                    {% else %}
+                        Never
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+    <!-- Card Footer -->
+    <div class="-mx-8 -mb-8 mt-6 px-8 py-4 bg-muted border-t border-border">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div class="text-sm text-muted-foreground">
+                Keep your password secure and enable two-factor authentication when available.
+                You can also manage connected social accounts.
+            </div>
+            <div class="flex flex-col md:flex-row items-center gap-3 w-full sm:w-auto shrink-0">
+                <a href="{% url 'account_change_password' %}"
+                   class="app-btn app-btn-primary flex-1 w-full sm:flex-initial inline-flex items-center justify-center gap-2 whitespace-nowrap">
+                    Change Password
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Role and Permissions Card -->
+<div class="app-card space-y-6">
+    <div class="space-y-1">
+        <h3 class="text-xl font-semibold text-card-foreground">Role and Permissions</h3>
+        <p class="text-sm text-muted-foreground">Your access level and permissions in dhet_app</p>
+    </div>
+    <div class="space-y-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+                <p class="text-sm font-medium text-muted-foreground">Current Role</p>
+                <p class="text-base text-foreground">{{ role|title }}</p>
+            </div>
+            <div>
+                <p class="text-sm font-medium text-muted-foreground">Account Status</p>
+                <p class="text-base text-foreground">
+                    {% if user.is_active %}
+                        <span class="inline-flex items-center gap-1 text-green-600">
+                            <i data-lucide="check-circle" class="w-4 h-4"></i>
+                            Active
+                        </span>
+                    {% else %}
+                        <span class="inline-flex items-center gap-1 text-red-600">
+                            <i data-lucide="x-circle" class="w-4 h-4"></i>
+                            Inactive
+                        </span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        <div>
+            <p class="text-sm font-medium text-muted-foreground mb-2">Available Permissions</p>
+            <div class="space-y-1">
+                {% if role == "user" or role == "developer" or role == "content-manager" %}
+                    <div class="flex items-center gap-2 text-sm">
+                        <i data-lucide="check" class="w-4 h-4 text-green-600"></i>
+                        <span>Edit own profile</span>
+                    </div>
+                {% endif %}
+                {% if role == "developer" or role == "content-manager" %}
+                    <div class="flex items-center gap-2 text-sm">
+                        <i data-lucide="check" class="w-4 h-4 text-green-600"></i>
+                        <span>Manage content</span>
+                    </div>
+                {% endif %}
+                {% if role == "admin" or role == "super" %}
+                    <div class="flex items-center gap-2 text-sm">
+                        <i data-lucide="check" class="w-4 h-4 text-green-600"></i>
+                        <span>Edit own profile</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-sm">
+                        <i data-lucide="check" class="w-4 h-4 text-green-600"></i>
+                        <span>Manage users</span>
+                    </div>
+                {% endif %}
+                {% if role == "super" %}
+                    <div class="flex items-center gap-2 text-sm">
+                        <i data-lucide="check" class="w-4 h-4 text-green-600"></i>
+                        <span>Edit system settings</span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <!-- Card Footer -->
+    <div class="-mx-8 -mb-8 mt-6 px-8 py-4 bg-muted border-t border-border">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <p class="text-sm text-muted-foreground">
+                Your role determines which features and permissions you have access to in dhet_app.
+                Contact an administrator if you need additional permissions.
+            </p>
+        </div>
+    </div>
+</div>

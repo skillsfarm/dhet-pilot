@@ -1,0 +1,206 @@
+{% load i18n static cookie_consent_tags cookie_tags %}
+
+{% if cookie_groups %}
+    {% all_cookie_groups_extended request "cookie-groups-data" %}
+    <div class="cookie-bar-container" x-data="cookieBar">
+        
+        <!-- Main Banner -->
+        <div class="fixed bottom-0 left-0 right-0 z-50 p-6 bg-card border-t border-border shadow-2xl"
+             x-show="show"
+             x-transition:enter="transform ease-out duration-300 transition"
+             x-transition:enter-start="translate-y-full opacity-0"
+             x-transition:enter-end="translate-y-0 opacity-100"
+             x-transition:leave="transition ease-in duration-200"
+             x-transition:leave-start="opacity-100"
+             x-transition:leave-end="opacity-0">
+            
+            <div class="max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-6">
+                <div class="flex-1 text-center lg:text-left">
+                    <h3 class="text-xl font-bold text-foreground mb-2 flex items-center justify-center lg:justify-start gap-2">
+                        <i data-lucide="cookie" class="w-6 h-6 text-primary"></i>
+                        {% trans "We value your privacy" %}
+                    </h3>
+                    <p class="text-sm text-muted-foreground leading-relaxed">
+                        {% trans "We use cookies to enhance your browsing experience, serve personalized content, and analyze our traffic. By clicking 'Accept All', you consent to our use of cookies." %}
+                        <button type="button" 
+                                @click="showModal = true"
+                                class="font-semibold text-primary hover:underline inline-flex items-center gap-1 cursor-pointer">
+                            {% trans "Manage preferences" %}
+                            <i data-lucide="settings-2" class="w-3 h-3"></i>
+                        </button>
+                    </p>
+                </div>
+                <div class="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+                    <button type="button"
+                            @click="declineAll()"
+                            class="app-btn bg-accent text-accent-foreground border-border hover:bg-muted w-full sm:w-auto">
+                        {% trans "Decline" %}
+                    </button>
+                    <button type="button"
+                            @click="acceptAll()"
+                            class="app-btn app-btn-primary w-full sm:w-auto">
+                        {% trans "Accept All" %}
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Preferences Modal -->
+        <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+             x-show="showModal"
+             x-cloak
+             x-transition:enter="ease-out duration-300"
+             x-transition:enter-start="opacity-0 scale-95"
+             x-transition:enter-end="opacity-100 scale-100"
+             x-transition:leave="ease-in duration-200"
+             x-transition:leave-start="opacity-100 scale-100"
+             x-transition:leave-end="opacity-0 scale-95"
+             @keydown.escape.window="showModal = false">
+            
+            <div class="bg-card w-full max-w-2xl rounded-(--radius) border border-border shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+                 @click.away="showModal = false">
+                
+                <!-- Modal Header -->
+                <div class="p-6 border-b border-border flex items-center justify-between">
+                    <div>
+                        <h2 class="text-2xl font-bold text-foreground">{% trans "Cookie Settings" %}</h2>
+                        <p class="text-sm text-muted-foreground mt-1">{% trans "Manage your individual cookie preferences below." %}</p>
+                    </div>
+                    <button @click="showModal = false" class="text-muted-foreground hover:text-foreground">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
+
+                <!-- Modal Content -->
+                <div class="p-6 overflow-y-auto space-y-4">
+                    <template x-for="group in groups" :key="group.varname">
+                        <div class="p-5 rounded-xl border border-border bg-muted/10 hover:bg-muted/30 transition-all duration-200">
+                            <div class="flex items-start gap-4">
+                                <!-- Group Icon -->
+                                <div class="mt-1 p-2 rounded-lg bg-primary/10 text-primary">
+                                    <template x-if="group.varname === 'essential'">
+                                        <i data-lucide="shield-check" class="w-5 h-5"></i>
+                                    </template>
+                                    <template x-if="group.varname === 'analytics'">
+                                        <i data-lucide="line-chart" class="w-5 h-5"></i>
+                                    </template>
+                                    <template x-if="group.varname === 'marketing'">
+                                        <i data-lucide="megaphone" class="w-5 h-5"></i>
+                                    </template>
+                                    <template x-if="group.varname === 'preferences'">
+                                        <i data-lucide="settings" class="w-5 h-5"></i>
+                                    </template>
+                                </div>
+
+                                <div class="flex-1 pr-4">
+                                    <div class="flex items-center gap-2">
+                                        <h4 class="font-bold text-foreground text-lg" x-text="group.name"></h4>
+                                        <template x-if="group.is_required">
+                                            <span class="text-[10px] font-bold uppercase tracking-wider text-primary-foreground bg-primary px-2 py-0.5 rounded-full">
+                                                {% trans "Required" %}
+                                            </span>
+                                        </template>
+                                    </div>
+                                    <p class="text-sm text-muted-foreground mt-1 leading-relaxed" x-text="group.description"></p>
+                                </div>
+
+                                <div class="flex items-center self-center">
+                                    <template x-if="!group.is_required">
+                                        <label class="relative inline-flex items-center cursor-pointer">
+                                            <input type="checkbox" 
+                                                   x-model="group.accepted"
+                                                   class="sr-only peer">
+                                            <div class="w-11 h-6 bg-muted peer-focus:outline-none ring-primary/20 peer-focus:ring-4 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary transition-colors"></div>
+                                        </label>
+                                    </template>
+                                    <template x-if="group.is_required">
+                                        <div class="w-11 h-6 bg-primary/20 rounded-full flex items-center justify-center">
+                                            <i data-lucide="lock" class="w-3.5 h-3.5 text-primary"></i>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="p-6 border-t border-border bg-muted/10 flex justify-end gap-3">
+                    <button type="button" 
+                            @click="showModal = false"
+                            class="app-btn bg-transparent border-transparent hover:bg-muted text-foreground">
+                        {% trans "Cancel" %}
+                    </button>
+                    <button type="button" 
+                            @click="save()"
+                            class="app-btn app-btn-primary">
+                        {% trans "Save Preferences" %}
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('cookieBar', () => ({
+                show: true,
+                showModal: false,
+                groups: [],
+                init() {
+                    try {
+                        const dataEl = document.getElementById('cookie-groups-data');
+                        if (dataEl) {
+                            this.groups = JSON.parse(dataEl.textContent);
+                        }
+                    } catch (e) { console.error('Cookie data error:', e); }
+                },
+                close() {
+                    this.show = false;
+                    this.showModal = false;
+                },
+                reload() {
+                    setTimeout(() => window.location.reload(), 300);
+                },
+                save(accepted = null, declined = null) {
+                    if (accepted === null) {
+                        accepted = this.groups.filter(g => g.accepted || g.is_required).map(g => g.varname);
+                        declined = this.groups.filter(g => !g.accepted && !g.is_required).map(g => g.varname);
+                    }
+
+                    fetch('{% url "save_cookie_preferences" %}', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}',
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({ accepted, declined }),
+                        credentials: 'include'
+                    }).then(() => {
+                        this.close();
+                        this.reload();
+                    }).catch(err => {
+                        console.error('Save failed:', err);
+                    });
+                },
+                acceptAll() {
+                    const all = this.groups.map(g => g.varname);
+                    this.save(all, []);
+                },
+                declineAll() {
+                    const essential = this.groups.filter(g => g.is_required).map(g => g.varname);
+                    const nonEssential = this.groups.filter(g => !g.is_required).map(g => g.varname);
+                    this.save(essential, nonEssential);
+                }
+            }));
+        });
+
+        // Initialize Lucide icons
+        if (window.lucide) {
+            lucide.createIcons();
+        }
+    </script>
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
+{% endif %}

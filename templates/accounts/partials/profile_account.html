@@ -1,0 +1,108 @@
+<!-- Account Information Card -->
+<div x-data="{ editing: false }" class="app-card space-y-6">
+    {% include "components/card_header.html" with title="Account Information" description="Manage your personal details and contact information" editable=True %}
+    <form method="post"
+          action="{% url 'profile-account' %}"
+          hx-post="{% url 'profile-account' %}"
+          hx-target="#tab-content"
+          hx-swap="innerHTML swap:0.5s"
+          x-data="{ isSubmitting: false }"
+          @submit="isSubmitting = true"
+          @htmx:afterRequest="isSubmitting = false"
+          @htmx:responseError="isSubmitting = false">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+            <div class="app-alert app-alert-error">
+                <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                <div>{{ form.non_field_errors }}</div>
+            </div>
+        {% endif %}
+        <div class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label for="{{ form.username.id_for_label }}"
+                           class="block mb-2 text-sm font-medium text-muted-foreground">Username</label>
+                    <input type="text"
+                           name="{{ form.username.name }}"
+                           id="{{ form.username.id_for_label }}"
+                           value="{{ form.username.value|default:user.username }}"
+                           placeholder="Username"
+                           class="app-input {% if form.username.errors %}border-destructive{% endif %}"
+                           :disabled="!editing"
+                           required>
+                    {% if form.username.errors %}
+                        <ul class="mt-2 text-sm font-medium text-destructive list-none">
+                            {% for error in form.username.errors %}<li>{{ error }}</li>{% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="{{ form.email.id_for_label }}"
+                           class="block mb-2 text-sm font-medium text-muted-foreground">Email</label>
+                    <input type="email"
+                           name="{{ form.email.name }}"
+                           id="{{ form.email.id_for_label }}"
+                           value="{{ form.email.value|default:user.email }}"
+                           placeholder="Email"
+                           class="app-input {% if form.email.errors %}border-destructive{% endif %}"
+                           :disabled="!editing"
+                           required>
+                    {% if form.email.errors %}
+                        <ul class="mt-2 text-sm font-medium text-destructive list-none">
+                            {% for error in form.email.errors %}<li>{{ error }}</li>{% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label for="{{ form.first_name.id_for_label }}"
+                           class="block mb-2 text-sm font-medium text-muted-foreground">First Name</label>
+                    <input type="text"
+                           name="{{ form.first_name.name }}"
+                           id="{{ form.first_name.id_for_label }}"
+                           value="{{ form.first_name.value|default:user.first_name }}"
+                           placeholder="First Name"
+                           class="app-input {% if form.first_name.errors %}border-destructive{% endif %}"
+                           :disabled="!editing">
+                    {% if form.first_name.errors %}
+                        <ul class="mt-2 text-sm font-medium text-destructive list-none">
+                            {% for error in form.first_name.errors %}<li>{{ error }}</li>{% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="{{ form.last_name.id_for_label }}"
+                           class="block mb-2 text-sm font-medium text-muted-foreground">Last Name</label>
+                    <input type="text"
+                           name="{{ form.last_name.name }}"
+                           id="{{ form.last_name.id_for_label }}"
+                           value="{{ form.last_name.value|default:user.last_name }}"
+                           placeholder="Last Name"
+                           class="app-input {% if form.last_name.errors %}border-destructive{% endif %}"
+                           :disabled="!editing">
+                    {% if form.last_name.errors %}
+                        <ul class="mt-2 text-sm font-medium text-destructive list-none">
+                            {% for error in form.last_name.errors %}<li>{{ error }}</li>{% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <!-- Card Footer -->
+        <div class="-mx-8 -mb-8 mt-6 px-8 py-4 bg-muted border-t border-border">
+            <div class="flex items-center justify-between">
+                <div class="text-sm text-muted-foreground">Changes will be saved to your profile</div>
+                <button type="submit"
+                        class="app-btn app-btn-primary"
+                        :disabled="!editing || isSubmitting">
+                    <span x-show="!isSubmitting">Save Changes</span>
+                    <span x-show="isSubmitting" class="flex items-center gap-2">
+                        <i data-lucide="loader" class="w-4 h-4 animate-spin-smooth"></i>
+                        Saving...
+                    </span>
+                </button>
+            </div>
+        </div>
+    </form>
+</div>

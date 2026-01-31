@@ -1,0 +1,98 @@
+{% load static cookie_consent_tags %}
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+    <head>
+        <meta charset="utf-8">
+        <title>
+            {% block title %}dhet_app{% endblock %}
+        </title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="icon" href="{% static 'images/favicon.png' %}" type="image/png">
+        <link rel="stylesheet" href="{% static 'css/main.css' %}">
+        <script src="https://unpkg.com/htmx.org@1.9.12"></script>
+        <script src="https://unpkg.com/lucide@latest"></script>
+        <script defer src="https://unpkg.com/alpinejs@3.14.1/dist/cdn.min.js"></script>
+        <script>
+            // Theme management - Light mode is default
+            if (localStorage.getItem('color-theme') === 'dark') {
+            document.documentElement.classList.add('dark');
+            } else {
+            document.documentElement.classList.remove('dark');
+            }
+        </script>
+        {% block extrahead %}{% endblock %}
+    </head>
+    <body class="flex flex-col min-h-full bg-background text-foreground"
+          hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
+          x-data="{ theme: localStorage.getItem('color-theme') || 'light', navigationProgress: 0 }"
+          x-init="$watch('theme', val => { localStorage.setItem('color-theme', val); document.documentElement.classList.toggle('dark', val === 'dark'); lucide.createIcons(); }); document.addEventListener('htmx:xhr:loadstart', () => { navigationProgress = Math.random() * 70; }); document.addEventListener('htmx:xhr:loadend', () => { navigationProgress = 100; setTimeout(() => { navigationProgress = 0; }, 300); }); document.addEventListener('htmx:prompt', () => { navigationProgress = Math.random() * 70; }); window.addEventListener('beforeunload', () => { navigationProgress = 90; });">
+        <!-- Navigation Progress Bar -->
+        <div class="fixed top-0 left-0 h-1 bg-linear-to-r from-green-500 to-yellow-500 transition-all duration-300 z-50"
+             :style="{ width: navigationProgress + '%', opacity: navigationProgress > 0 ? 1 : 0 }"></div>
+        <main class="grow">
+            {% block content %}{% endblock %}
+        </main>
+        <footer class="w-full py-6 px-4 border-t border-border bg-card">
+            <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-muted-foreground">
+                <div class="flex items-center gap-2">
+                    <span>&copy; {% now "Y" %} Department of Higher Education and Training.</span>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span>Version {{ APP_VERSION }}</span>
+                    <button @click="theme = theme === 'light' ? 'dark' : 'light'"
+                            type="button"
+                            class="theme-toggle w-8 h-8 flex items-center justify-center rounded-lg border border-border hover:bg-muted transition-colors"
+                            title="Toggle dark mode">
+                        <i data-lucide="sun" x-show="theme === 'dark'" class="w-4 h-4"></i>
+                        <i data-lucide="moon" x-show="theme === 'light'" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+        </footer>
+        <!-- Fixed Alerts Container -->
+        {% if messages %}
+            <div class="fixed top-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-4 z-50 max-w-md"
+                 x-data="{ alerts: {} }"
+                 x-init=" document.querySelectorAll('[data-alert-id]').forEach(alert => { const id = alert.getAttribute('data-alert-id'); alerts[id] = true; setTimeout(() => { alert.classList.add('opacity-0', 'scale-95', 'transition-all', 'duration-300'); setTimeout(() => alert.remove(), 300); }, 5000); }); ">
+                {% for m in messages %}
+                    {% if m.tags == 'error' %}
+                        <div class="app-alert app-alert-error"
+                             role="alert"
+                             data-alert-id="alert-{{ forloop.counter }}">
+                        {% elif m.tags == 'success' %}
+                            <div class="app-alert app-alert-success"
+                                 role="alert"
+                                 data-alert-id="alert-{{ forloop.counter }}">
+                            {% elif m.tags == 'warning' %}
+                                <div class="app-alert app-alert-warning"
+                                     role="alert"
+                                     data-alert-id="alert-{{ forloop.counter }}">
+                                {% else %}
+                                    <div class="app-alert app-alert-info"
+                                         role="alert"
+                                         data-alert-id="alert-{{ forloop.counter }}">
+                                    {% endif %}
+                                    <span class="sr-only">{{ m.tags }}</span>
+                                    <div class="ml-3 text-sm font-medium">{{ m }}</div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    {% if request|cookie_consent_enabled %}
+                        {% not_accepted_or_declined_cookie_groups request as cookie_groups %}
+                        {% if cookie_groups %}
+                            {% include "cookie_consent/cookiebar.html" with cookie_groups=cookie_groups %}
+                        {% endif %}
+                    {% endif %}
+                    <script src="{% static 'js/flowbite.min.js' %}"></script>
+                    <script>
+     // Render Lucide icons when DOM is updated
+     lucide.createIcons();
+     
+     // Re-render icons after any HTMX content swap
+     document.addEventListener('htmx:afterSettle', function() {
+         lucide.createIcons();
+     });
+                    </script>
+                </body>
+            </html>

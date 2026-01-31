@@ -1,0 +1,64 @@
+{# 
+Reusable Card Component System
+
+This provides a flexible card component that supports:
+- Static content cards
+- Editable cards with view/edit toggle  
+- Optional footers with actions
+- Custom headers
+
+USAGE:
+
+1. Simple Static Card:
+```
+<div class="app-card space-y-6">
+    {% include "components/card_header.html" with title="My Card" description="Card description" %}
+    
+    <div class="space-y-4">
+        <!-- Your content here -->
+    </div>
+</div>
+```
+
+2. Card with Footer:
+```
+<div class="app-card space-y-6">
+    {% include "components/card_header.html" with title="Security" description="Manage your security" %}
+    
+    <div class="space-y-4">
+        <!-- Your content -->
+    </div>
+    
+    {% include "components/card_footer.html" with summary="Keep your password secure" actions=button_html %}
+</div>
+```
+
+3. Editable Card (with Alpine.js):
+```
+<div x-data="{ editing: false }" class="app-card space-y-6" :class="{ 'shadow-xl': editing }">
+    {% include "components/card_header.html" with title="Profile" editable=True %}
+    
+    <div x-show="!editing" class="space-y-4">
+        <!-- View mode content -->
+    </div>
+    
+    <div x-show="editing" class="space-y-4">
+        <!-- Edit mode content -->
+    </div>
+    
+    <!-- Footer for edit mode -->
+    <div x-show="editing" class="-mx-8 -mb-8 px-8 py-4 bg-muted border-t border-border">
+        <!-- Footer content -->
+    </div>
+</div>
+```
+
+COMPONENTS:
+- card_header.html: Renders card header with title, description, and optional edit button
+- card_footer.html: Renders card footer with summary text and action buttons
+
+CLASSES:
+- app-card: Base card styling (defined in CSS)
+- Standard Tailwind classes for layout and spacing
+#}
+{# This file documents the card system - actual components are in card_header.html and card_footer.html #}

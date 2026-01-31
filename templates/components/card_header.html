@@ -1,0 +1,19 @@
+{# Card Header Component #}
+<div class="flex items-start justify-between">
+    <div class="space-y-1">
+        <h3 class="text-xl font-semibold text-card-foreground">{{ title }}</h3>
+        {% if description %}<p class="text-sm text-muted-foreground">{{ description }}</p>{% endif %}
+    </div>
+    {% if editable %}
+        <button @click="editing = !editing"
+                class="app-btn app-btn-ghost px-3 py-1.5 text-sm"
+                :aria-pressed="editing">
+            <i data-lucide="edit-2" class="w-4 h-4" x-show="!editing"></i>
+            <i data-lucide="x" class="w-4 h-4" x-show="editing"></i>
+            <span class="hidden sm:inline ml-2">
+                <span x-show="!editing">Edit</span>
+                <span x-show="editing">Cancel</span>
+            </span>
+        </button>
+    {% endif %}
+</div>

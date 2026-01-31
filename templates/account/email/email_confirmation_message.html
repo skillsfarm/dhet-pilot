@@ -1,0 +1,105 @@
+{% extends "account/email/base_email.html" %}
+{% load i18n %}
+{% block subject %}
+    {% blocktranslate %}Confirm Your Email Address{% endblocktranslate %}
+{% endblock %}
+{% block content %}
+    <p style="font-family: sans-serif;
+              font-size: 16px;
+              font-weight: normal;
+              margin: 0;
+              margin-bottom: 24px">{% blocktranslate %}Hello,{% endblocktranslate %}</p>
+    <p style="font-family: sans-serif;
+              font-size: 16px;
+              font-weight: normal;
+              margin: 0;
+              margin-bottom: 24px">
+        {% blocktranslate %}You're receiving this email because user <strong>{{ user }}</strong> has given your email address to register an account on <strong>{{ site.name }}</strong>.{% endblocktranslate %}
+    </p>
+    <p style="font-family: sans-serif;
+              font-size: 16px;
+              font-weight: normal;
+              margin: 0;
+              margin-bottom: 24px">
+        {% blocktranslate %}To confirm this is correct, please click the button below:{% endblocktranslate %}
+    </p>
+    <table role="presentation"
+           border="0"
+           cellpadding="0"
+           cellspacing="0"
+           class="btn btn-primary"
+           style="border-collapse: separate;
+                  mso-table-lspace: 0pt;
+                  mso-table-rspace: 0pt;
+                  box-sizing: border-box;
+                  width: 100%"
+           width="100%">
+        <tbody>
+            <tr>
+                <td align="center"
+                    style="font-family: sans-serif;
+                           font-size: 14px;
+                           vertical-align: top;
+                           padding-bottom: 32px"
+                    valign="top">
+                    <table role="presentation"
+                           border="0"
+                           cellpadding="0"
+                           cellspacing="0"
+                           style="border-collapse: separate;
+                                  mso-table-lspace: 0pt;
+                                  mso-table-rspace: 0pt;
+                                  width: auto">
+                        <tbody>
+                            <tr>
+                                <td style="font-family: sans-serif;
+                                           font-size: 14px;
+                                           vertical-align: top;
+                                           border-radius: 8px;
+                                           text-align: center;
+                                           background-color: #dcad3a"
+                                    valign="top"
+                                    align="center"
+                                    bgcolor="#dcad3a">
+                                    <a href="{{ activate_url }}"
+                                       target="_blank"
+                                       style="border: solid 1px #dcad3a;
+                                              border-radius: 8px;
+                                              box-sizing: border-box;
+                                              cursor: pointer;
+                                              display: inline-block;
+                                              font-size: 14px;
+                                              font-weight: 700;
+                                              margin: 0;
+                                              padding: 12px 24px;
+                                              text-decoration: none;
+                                              text-transform: capitalize;
+                                              background-color: #dcad3a;
+                                              border-color: #dcad3a;
+                                              color: #ffffff">{% trans "Confirm Email" %}</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    <p style="font-family: sans-serif;
+              font-size: 14px;
+              font-weight: normal;
+              margin: 0;
+              margin-bottom: 24px;
+              color: #6b7280">
+        {% blocktranslate %}If the button doesn't work, you can also copy and paste the following link into your browser:{% endblocktranslate %}
+        <br>
+        <a href="{{ activate_url }}"
+           style="color: #dcad3a;
+                  text-decoration: underline">{{ activate_url }}</a>
+    </p>
+    <p style="font-family: sans-serif;
+              font-size: 16px;
+              font-weight: normal;
+              margin: 0;
+              margin-bottom: 0">{% blocktranslate %}Thank you for using {{ site.name }}!{% endblocktranslate %}</p>
+{% endblock %}

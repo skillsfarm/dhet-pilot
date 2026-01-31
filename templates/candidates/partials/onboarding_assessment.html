@@ -1,0 +1,186 @@
+<!-- Assessment Card -->
+<!-- Assessment Card -->
+<div x-data="{ 
+    step: 1, 
+    total: {{ tasks|length|default:0 }},
+    isSubmitting: false,
+    validateStep() {
+        const checked = this.$root.querySelectorAll(`input[name^='task_']:checked`);
+        // We check if the number of answered questions is at least the current step number.
+        // This ensures the user answers the current question before moving on.
+        if (checked.length >= this.step) {
+            this.step++;
+            return true;
+        }
+        // Visual feedback
+        const currentContainer = this.$root.querySelector(`[data-step='${this.step}']`);
+        if (currentContainer) {
+            currentContainer.classList.add('animate-shake');
+            setTimeout(() => currentContainer.classList.remove('animate-shake'), 500);
+        }
+        return false;
+    }
+}" class="app-card relative overflow-hidden">
+    
+    {% include "components/card_header.html" with title="Self Proficiency Assessment" description="Please indicate your experience level for the following tasks related to your target occupations." %}
+
+    <form method="post"
+          action="{% url 'candidates:onboarding-assessment' %}"
+          hx-post="{% url 'candidates:onboarding-assessment' %}"
+          class="py-6 pt-2"
+          @submit="isSubmitting = true"
+          @htmx:afterRequest="isSubmitting = false; window.location.href = '/dashboard'"
+          @htmx:responseError="isSubmitting = false">
+        {% csrf_token %}
+
+        <div class="space-y-8">
+            {% if tasks %}
+                <!-- Progress Header -->
+                <div class="pt-4 space-y-3">
+                    <div class="flex items-center justify-between text-sm">
+                        <span class="font-medium text-foreground">Question <span x-text="step"></span> of <span x-text="total"></span></span>
+                        <span class="text-muted-foreground" x-text="Math.round((step / total) * 100) + '% completed'"></span>
+                    </div>
+                    <div class="h-2 w-full bg-muted rounded-full overflow-hidden">
+                        <div class="h-full bg-primary transition-all duration-300 ease-out"
+                             :style="`width: ${(step / total) * 100}%`"></div>
+                    </div>
+                </div>
+
+                <!-- Questions Container -->
+                <div class="min-h-[320px]">
+                    {% for task in tasks %}
+                        <div x-show="step === {{ forloop.counter }}" 
+                             data-step="{{ forloop.counter }}"
+                             x-transition:enter="transition ease-out duration-300 delay-100"
+                             x-transition:enter-start="opacity-0 translate-x-8"
+                             x-transition:enter-end="opacity-100 translate-x-0"
+                             x-transition:leave="transition ease-in duration-200 absolute top-0 w-full"
+                             x-transition:leave-start="opacity-100 translate-x-0"
+                             x-transition:leave-end="opacity-0 -translate-x-8"
+                             class="space-y-6 relative">
+                             
+                            <div class="space-y-2">
+                                <h4 class="text-xl font-semibold text-foreground leading-tight">{{ task.title }}</h4>
+                                {% if task.description %}
+                                    <p class="text-muted-foreground text-base">{{ task.description }}</p>
+                                {% endif %}
+                                <div class="pt-2">
+                                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-medium border border-primary/20">
+                                        <i data-lucide="briefcase" class="w-3 h-3"></i>
+                                        Related to: {{ task.occupation.ofo_title }}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 gap-3 pt-2">
+                                <!-- Yes -->
+                                <label class="cursor-pointer relative group">
+                                    <input type="radio" name="task_{{ task.id }}" value="yes" class="peer sr-only" required>
+                                    <div class="p-4 rounded-xl border-2 border-border bg-card hover:border-primary/50 hover:bg-muted/50 peer-checked:bg-primary/5 peer-checked:border-primary peer-checked:text-primary transition-all group-hover:shadow-sm">
+                                        <p class="font-medium">Yes, I have done this</p>
+                                        <p class="text-xs text-muted-foreground mt-0.5">I am confident in this task</p>
+                                    </div>
+                                </label>
+
+                                <!-- Partially -->
+                                <label class="cursor-pointer relative group">
+                                    <input type="radio" name="task_{{ task.id }}" value="partially" class="peer sr-only">
+                                    <div class="p-4 rounded-xl border-2 border-border bg-card hover:border-primary/50 hover:bg-muted/50 peer-checked:bg-primary/5 peer-checked:border-primary peer-checked:text-primary transition-all group-hover:shadow-sm">
+                                        <p class="font-medium">Partially / Sometimes</p>
+                                        <p class="text-xs text-muted-foreground mt-0.5">I have some experience</p>
+                                    </div>
+                                </label>
+
+                                <!-- No -->
+                                <label class="cursor-pointer relative group">
+                                    <input type="radio" name="task_{{ task.id }}" value="no" class="peer sr-only">
+                                    <div class="p-4 rounded-xl border-2 border-border bg-card hover:border-primary/50 hover:bg-muted/50 peer-checked:bg-primary/5 peer-checked:border-primary peer-checked:text-primary transition-all group-hover:shadow-sm">
+                                        <p class="font-medium">No, never</p>
+                                        <p class="text-xs text-muted-foreground mt-0.5">I have no experience</p>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+               <div class="py-12 flex flex-col items-center justify-center text-center space-y-4">
+                    <div class="p-4 rounded-full bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-500">
+                        <i data-lucide="check-circle-2" class="w-12 h-12"></i>
+                    </div>
+                    <div class="space-y-2 max-w-sm">
+                        <h4 class="text-xl font-medium text-foreground">You're All Set!</h4>
+                        <p class="text-muted-foreground">
+                            We don't have any specific assessment tasks for your selected occupations yet. You are ready to proceed to your dashboard.
+                        </p>
+                    </div>
+               </div>
+            {% endif %}
+
+            <!-- Footer Buttons -->
+            <div class="flex items-center justify-between pt-6 border-t border-border mt-auto">
+                <!-- Back Button -->
+                <button type="button" 
+                        @click="step--" 
+                        x-show="step > 1" 
+                        class="app-btn app-btn-ghost pl-0 hover:pl-2 transition-all"
+                        style="display: none;">
+                    <i data-lucide="chevron-left" class="w-4 h-4 mr-1"></i>
+                    Previous
+                </button>
+                <div x-show="step <= 1"></div> <!-- Spacer -->
+
+                <!-- Next Button -->
+                <button type="button"
+                        @click="validateStep()"
+                        x-show="total > 0 && step < total"
+                        class="app-btn border-none pr-4 hover:pr-6 transition-all"
+                        style="display: none;">
+                    Next Question
+                    <i data-lucide="chevron-right" class="w-4 h-4 ml-2"></i>
+                </button>
+
+                <!-- Complete Button -->
+                <button type="submit"
+                        x-show="total === 0 || step === total"
+                        class="app-btn app-btn-primary"
+                        :disabled="isSubmitting"
+                        style="display: none;">
+                    <span x-show="!isSubmitting">Complete Assessment</span>
+                    <span x-show="isSubmitting" class="flex items-center gap-2">
+                        <i data-lucide="loader" class="w-4 h-4 animate-spin-smooth"></i>
+                        Completing...
+                    </span>
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<style>
+    .animate-shake {
+        animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+    }
+    @keyframes shake {
+        10%, 90% { transform: translate3d(-1px, 0, 0); }
+        20%, 80% { transform: translate3d(2px, 0, 0); }
+        30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+        40%, 60% { transform: translate3d(4px, 0, 0); }
+    }
+</style>
+
+<div id="score-data" data-score="{{ score|default:0 }}" data-active-tab="{{ active_tab|default:'assessment' }}" style="display:none;"></div>
+<script>
+    (function() {
+        const scoreData = document.getElementById('score-data');
+        if (scoreData) {
+            window.dispatchEvent(new CustomEvent('update-score', {
+                detail: { 
+                    score: parseInt(scoreData.dataset.score), 
+                    activeTab: scoreData.dataset.activeTab 
+                }
+            }));
+        }
+    })();
+</script>

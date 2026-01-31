@@ -1,0 +1,101 @@
+{% load i18n %}
+
+<div id="changelist-actions" class="actions mx-1 {% if not cl.model_admin.list_fullwidth %}mx-auto{% endif %}" x-bind:style="'width: ' + changeListWidth + 'px'">
+    <div class="flex flex-col gap-4 mx-3 p-4 rounded-default sm:flex-row sm:items-center lg:items-center bg-card border border-border dark:bg-base-800 dark:border-base-700 shadow-sm">
+        {% block actions %}
+            <!-- Action selector -->
+            <div class="flex flex-col gap-2 sm:flex-row sm:items-center" x-data="{action: '', selectAcross: 0}">
+                {% block actions-form %}
+                    <div class="flex items-center gap-3">
+                        {% for field in action_form %}
+                            {% if field.label %}
+                                <label class="text-sm font-medium text-muted-foreground dark:text-base-400 whitespace-nowrap">
+                                    {{ field.label }}
+                                </label>
+                            {% endif %}
+
+                            <select name="{{ field.name }}" 
+                                    x-model="action"
+                                    class="min-w-[200px] px-3 py-2 pr-10 text-sm font-medium rounded-default
+                                           bg-card border border-border text-foreground
+                                           dark:bg-base-900 dark:border-base-700 dark:text-base-200
+                                           focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2
+                                           dark:focus:ring-offset-base-900
+                                           cursor-pointer shadow-xs appearance-none
+                                           bg-[url('data:image/svg+xml,%3csvg%20xmlns%3d%22http%3a%2f%2fwww.w3.org%2f2000%2fsvg%22%20viewBox%3d%220%200%2048%2048%22%3e%3cpath%20fill%3d%22%236B7280%22%20d%3d%22M24%2031.4%2011.3%2018.7l2.85-2.8L24%2025.8l9.85-9.85%202.85%202.8Z%22%2f%3e%3c%2fsvg%3e')]
+                                           bg-[length:1.125rem_1.125rem] bg-[right_0.7rem_center] bg-no-repeat"
+                                    {% if field.field.required %}required{% endif %}>
+                                {% for option in field.field.choices %}
+                                    <option value="{{ option.0 }}" {% if option.0 == field.value %}selected{% endif %}>
+                                        {{ option.1 }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        {% endfor %}
+                    </div>
+                {% endblock %}
+
+                {% block actions-submit %}
+                    <button type="submit" x-show="action" 
+                        class="inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-semibold rounded-default transition-all duration-200
+                               bg-primary text-primary-foreground border border-primary
+                               hover:opacity-90 hover:shadow-md
+                               focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2
+                               dark:focus:ring-offset-base-900" 
+                        title="{% translate "Run the selected action" %}" 
+                        name="index" 
+                        value="{{ action_index|default:0 }}">
+                        <span class="material-symbols-outlined text-base">play_arrow</span>
+                        {% trans "Run" %}
+                    </button>
+                {% endblock %}
+            </div>
+
+            {% block actions-counter %}
+                {% if actions_selection_counter %}
+                    <div class="flex grow flex-col gap-2 sm:flex-row sm:items-center sm:ml-auto">
+                        <!-- Selection counter badge -->
+                        <span class="action-counter inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-full bg-primary/10 text-primary dark:bg-primary/20 dark:text-primary" data-actions-icnt="{{ cl.result_list|length }}">
+                            <span class="material-symbols-outlined text-base">check_circle</span>
+                            {{ selection_note }}
+                        </span>
+
+                        {% if cl.result_count != cl.result_list|length %}
+                            <span class="all hidden inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-full bg-primary/10 text-primary dark:bg-primary/20">
+                                <span class="material-symbols-outlined text-base">select_all</span>
+                                {{ selection_note_all }}
+                            </span>
+
+                            {% if not cl.model_admin.list_disable_select_all %}
+                                <div class="flex gap-2 mt-2 sm:mt-0">
+                                    <span class="question hidden">
+                                        <a href="#" 
+                                           class="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-default transition-all duration-200
+                                                  bg-secondary text-secondary-foreground border border-border
+                                                  hover:bg-accent hover:text-accent-foreground
+                                                  dark:bg-base-700 dark:border-base-600 dark:text-base-200 dark:hover:bg-base-600" 
+                                           title="{% translate "Click here to select the objects across all pages" %}">
+                                            <span class="material-symbols-outlined text-base">select_all</span>
+                                            {% blocktranslate with cl.result_count as total_count %}Select all {{ total_count }}{% endblocktranslate %}
+                                        </a>
+                                    </span>
+
+                                    <span class="clear hidden">
+                                        <a href="#" 
+                                           class="inline-flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-default transition-all duration-200
+                                                  text-destructive border border-destructive/30 bg-destructive/10
+                                                  hover:bg-destructive hover:text-destructive-foreground
+                                                  dark:border-red-500/30 dark:bg-red-500/10 dark:text-red-400 dark:hover:bg-red-500 dark:hover:text-white">
+                                            <span class="material-symbols-outlined text-base">close</span>
+                                            {% translate "Clear selection" %}
+                                        </a>
+                                    </span>
+                                </div>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                {% endif %}
+            {% endblock %}
+        {% endblock %}
+    </div>
+</div>

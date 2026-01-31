@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load allauth i18n static %}
+{% block title %}Email Verification Sent{% endblock %}
+{% block content %}
+    <section class="min-h-screen flex items-center justify-center px-4 py-12 bg-background text-foreground">
+        <div class="w-full max-w-md">
+            <div class="flex justify-center mb-8">
+                <a href="/">
+                    <img src="{% static 'images/branding/logo-light.png' %}"
+                         alt="dhet_app"
+                         class="h-16 w-auto block dark:hidden">
+                    <img src="{% static 'images/branding/logo-dark.png' %}"
+                         alt="dhet_app"
+                         class="h-16 w-auto hidden dark:block">
+                </a>
+            </div>
+            <div class="app-card space-y-6 text-center">
+                <div>
+                    <h1 class="text-3xl font-semibold text-card-foreground">{% trans "Check Your Email" %}</h1>
+                    <p class="text-muted-foreground mt-2">
+                        {% trans "We've sent you a verification link. Follow the instructions in that email to complete your registration." %}
+                    </p>
+                </div>
+                <div class="app-alert app-alert-info">
+                    <p class="text-sm text-center">{% trans "Don't see it? Check your spam folder." %}</p>
+                </div>
+                <a href="{% url 'account_login' %}"
+                   class="app-btn app-btn-primary w-full">{% trans "Back to Sign In" %}</a>
+            </div>
+        </div>
+    </section>
+{% endblock %}
