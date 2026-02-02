@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 
-from apps.content.models import Occupation, OccupationTask, Skill
+from apps.content.models import Industry, Occupation, OccupationTask, Skill
 
 
 class Command(BaseCommand):
@@ -41,6 +41,10 @@ class Command(BaseCommand):
             {"name": "Negotiation", "description": "Contract negotiation and stakeholder alignment"},
             {"name": "Problem Solving", "description": "Analytical and critical thinking to resolve issues"},
             {"name": "Attention to Detail", "description": "Accuracy in documentation and delivery"},
+            # New Skills for additional occupations
+            {"name": "Software Development", "description": "Design and develop software applications"},
+            {"name": "Database Management", "description": "Manage and maintain database systems"},
+            {"name": "System Administration", "description": "Administer and maintain ICT systems and servers"},
         ]
 
         skills = {}
@@ -51,6 +55,17 @@ class Command(BaseCommand):
             skills[skill_data["name"]] = skill
             if created:
                 self.stdout.write(self.style.SUCCESS(f"  Created skill: {skill.name}"))
+
+        # Create ICT Industry
+        industry, created = Industry.objects.get_or_create(
+            code="ICT",
+            defaults={
+                "name": "Information and Communication Technology",
+                "description": "ICT sector occupations",
+            },
+        )
+        if created:
+            self.stdout.write(self.style.SUCCESS(f"  Created industry: {industry.name}"))
 
         # Generic OFO Occupations - ICT Project Manager category
         occupations_data = [
@@ -238,6 +253,69 @@ class Command(BaseCommand):
                     },
                 ],
             },
+            {
+                "ofo_code": "251201",
+                "ofo_title": "Software Developer",
+                "description": "Designs, develops, tests, maintains and documents program code in accordance with user requirements, and system and technical specifications.",
+                "years_of_experience": 3,
+                "industry": industry,
+                "tasks": [
+                    {
+                        "title": "Design software solutions",
+                        "description": "Design software architectures and solutions based on requirements",
+                        "skills": ["Software Development", "Problem Solving"],
+                    },
+                    {
+                        "title": "Develop and test code",
+                        "description": "Write, test, and maintain robust code",
+                        "skills": ["Software Development", "Attention to Detail"],
+                    },
+                    {
+                        "title": "Maintain technical documentation",
+                        "description": "Create and maintain code and system documentation",
+                        "skills": ["Project Documentation"],
+                    },
+                    {
+                        "title": "Collaborate with teams",
+                        "description": "Work within agile teams to deliver software",
+                        "skills": ["Agile/Scrum", "Communication"],
+                    },
+                ],
+            },
+            {
+                "ofo_code": "252201",
+                "ofo_title": "Systems Administrator",
+                "description": "Plans, develops, installs, troubleshoots, maintains and supports an operating system and associated server hardware, software and databases.",
+                "years_of_experience": 4,
+                "industry": industry,
+                "tasks": [
+                    {
+                        "title": "Maintain system infrastructure",
+                        "description": "Install, configure, and maintain servers and systems",
+                        "skills": ["System Administration", "Network Infrastructure"],
+                    },
+                    {
+                        "title": "Manage user accounts",
+                        "description": "Administer user accounts and access rights",
+                        "skills": ["System Administration", "Communication"],
+                    },
+                    {
+                        "title": "Monitor system performance",
+                        "description": "Monitor system performance and troubleshoot issues",
+                        "skills": ["System Administration", "Problem Solving"],
+                    },
+                    {
+                        "title": "Manage backups and recovery",
+                        "description": "Ensure regular backups and data recovery capabilities",
+                        "skills": ["Database Management", "Attention to Detail"],
+                    },
+                    {
+                        "title": "Implement security measures",
+                        "description": "Implement and maintain system security and updates",
+                        "skills": ["Cybersecurity", "Risk Management"],
+                    },
+                ],
+            },
         ]
 
         for occ_data in occupations_data:
@@ -247,6 +325,7 @@ class Command(BaseCommand):
                     "ofo_title": occ_data["ofo_title"],
                     "description": occ_data["description"],
                     "years_of_experience": occ_data["years_of_experience"],
+                    "industry": occ_data.get("industry", industry),
                 },
             )
 
@@ -271,6 +350,11 @@ class Command(BaseCommand):
                     self.stdout.write(f"    - Created task: {task.title}")
             else:
                 self.stdout.write(f"  Occupation already exists: {occupation.ofo_code}")
+                # Ensure industry is linked for existing occupations
+                if not occupation.industry:
+                    occupation.industry = industry
+                    occupation.save()
+                    self.stdout.write(self.style.SUCCESS(f"    -> Linked to industry: {industry.name}"))
 
         self.stdout.write(self.style.SUCCESS("\nOFO data seeding completed!"))
         self.stdout.write(f"  Total Occupations: {Occupation.objects.count()}")

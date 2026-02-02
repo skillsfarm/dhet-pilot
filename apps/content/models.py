@@ -4,6 +4,26 @@ from simple_history.models import HistoricalRecords
 from apps.core.models import CuidModel
 
 
+class Industry(CuidModel):
+    """
+    Industry lookup model.
+    """
+
+    code = models.CharField(max_length=50, unique=True)
+    name = models.CharField(max_length=255, unique=True)
+    description = models.TextField(blank=True)
+
+    history = HistoricalRecords()
+
+    class Meta:
+        verbose_name = "Industry"
+        verbose_name_plural = "Industries"
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+
 class Occupation(CuidModel):
     """
     OFO (Organising Framework for Occupations) occupation data.
@@ -13,6 +33,13 @@ class Occupation(CuidModel):
     ofo_code = models.CharField(max_length=20, unique=True)
     ofo_title = models.CharField(max_length=255)
     description = models.TextField(blank=True)
+    industry = models.ForeignKey(
+        Industry,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="occupations",
+    )
     years_of_experience = models.PositiveIntegerField(
         default=0, help_text="Typical years of experience required"
     )

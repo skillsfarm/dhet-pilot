@@ -34,15 +34,23 @@ def compute_candidate_stats(candidate: CandidateProfile):
     candidate.highest_nqf_level = max_nqf_label
 
     # 2. Occupation Matches (Targets)
-    targets = candidate.occupation_targets.select_related('occupation').all()
+    targets = candidate.occupation_targets.select_related('occupation', 'occupation__industry').all()
     candidate.occupation_matches_count = targets.count()
     
     # 3. Assessment Progress
     # We want to know for each target occupation, how many tasks they've assessed vs total tasks.
     progress_data = {}
     
+    # Keep track of industries for recommendations
+    target_industries = set()
+    target_occupation_ids = set()
+
     for target in targets:
         occ = target.occupation
+        target_occupation_ids.add(occ.id)
+        if occ.industry:
+            target_industries.add(occ.industry)
+
         total_tasks = occ.tasks.count()
         
         responded_tasks = AssessmentResponse.objects.filter(
@@ -96,8 +104,26 @@ def compute_candidate_stats(candidate: CandidateProfile):
         proficiency_stats.append({
             "ofo_code": occ.ofo_code,
             "title": occ.ofo_title,
-            "score": score
+            "score": score,
+            "industry": occ.industry.name if occ.industry else None,
+            "is_target": True
         })
+
+    # 5. Recommendations based on Industry
+    # Find other occupations in the same industries
+    if target_industries:
+        suggestions = Occupation.objects.filter(
+            industry__in=target_industries
+        ).exclude(id__in=target_occupation_ids)
+
+        for occ in suggestions:
+             proficiency_stats.append({
+                "ofo_code": occ.ofo_code,
+                "title": occ.ofo_title,
+                "score": 0, # No score for non-targets yet
+                "industry": occ.industry.name if occ.industry else None,
+                "is_target": False
+            })
             
     candidate.recommended_occupations = proficiency_stats
     
