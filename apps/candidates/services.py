@@ -112,18 +112,23 @@ def compute_candidate_stats(candidate: CandidateProfile):
     # 5. Recommendations based on Industry
     # Find other occupations in the same industries
     if target_industries:
-        suggestions = Occupation.objects.filter(
-            industry__in=target_industries
-        ).exclude(id__in=target_occupation_ids)
+        # Calculate how many slots we have left to reach 4 items
+        current_count = len(proficiency_stats)
+        slots_available = 4 - current_count
+        
+        if slots_available > 0:
+            suggestions = Occupation.objects.filter(
+                industry__in=target_industries
+            ).exclude(id__in=target_occupation_ids)[:slots_available]
 
-        for occ in suggestions:
-             proficiency_stats.append({
-                "ofo_code": occ.ofo_code,
-                "title": occ.ofo_title,
-                "score": 0, # No score for non-targets yet
-                "industry": occ.industry.name if occ.industry else None,
-                "is_target": False
-            })
+            for occ in suggestions:
+                 proficiency_stats.append({
+                    "ofo_code": occ.ofo_code,
+                    "title": occ.ofo_title,
+                    "score": 0, # No score for non-targets yet
+                    "industry": occ.industry.name if occ.industry else None,
+                    "is_target": False
+                })
             
     candidate.recommended_occupations = proficiency_stats
     
