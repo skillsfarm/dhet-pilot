@@ -38,6 +38,15 @@ class Command(BaseCommand):
             "is_staff": True,
             "is_superuser": True,
         },
+        {
+            "email": "admin@app.local",
+            "username": "admin",
+            "first_name": "Admin",
+            "last_name": "User",
+            "role": "admin",
+            "is_staff": True,
+            "is_superuser": False,
+        },
     ]
 
     # Additional users for development only

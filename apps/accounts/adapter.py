@@ -10,9 +10,9 @@ class AccountAdapter(DefaultAccountAdapter):
         from django.urls import reverse
 
         if request.user.is_superuser:
-            return reverse("super-profile")
+            return reverse("occupations")
 
         if request.user.is_staff:
-            return reverse("admin-profile")
+            return reverse("occupations")
 
         return super().get_login_redirect_url(request)
