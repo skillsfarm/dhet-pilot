@@ -12,6 +12,7 @@ from .models import UserCookieConsent
 from cookie_consent.conf import settings
 
 from .context_processors import navbar_context
+from apps.content.models import Occupation, Industry
 
 
 @login_required
@@ -119,3 +120,121 @@ def save_cookie_preferences(request):
         except Exception as e:
             return JsonResponse({"status": "error", "message": str(e)}, status=400)
     return HttpResponse(status=405)
+
+
+@login_required
+def occupation_list(request):
+    """
+    List occupations with search and filtering.
+    """
+    # Base queryset
+    occupations = Occupation.objects.select_related("industry").all()
+    
+    # Identify interested industries for candidates based on their targets
+    interested_industry_ids = []
+    if hasattr(request.user, "candidate"):
+        from apps.candidates.models import OccupationTarget
+        interested_industry_ids = OccupationTarget.objects.filter(
+            candidate=request.user.candidate
+        ).values_list("occupation__industry_id", flat=True).distinct()
+        # Convert CUIDs to strings for template comparison if necessary, 
+        # but here we use them for filtering.
+    
+    # Search
+    query = request.GET.get("q")
+    if query:
+        occupations = occupations.filter(
+            Q(ofo_title__icontains=query) | 
+            Q(ofo_code__icontains=query) |
+            Q(description__icontains=query)
+        )
+        
+    # Filter by Industry
+    industry_id = request.GET.get("industry")
+    
+    # If no industry selected and user is a candidate (not elevated), default to 'interested'
+    from rolepermissions.checkers import has_role
+    is_elevated = has_role(request.user, ["content_manager", "admin", "super_admin"])
+    
+    if not industry_id and not is_elevated and hasattr(request.user, "candidate") and len(interested_industry_ids) > 0:
+        industry_id = "interested"
+    
+    if industry_id == "interested":
+        if interested_industry_ids:
+            occupations = occupations.filter(industry_id__in=interested_industry_ids)
+    elif industry_id:
+        occupations = occupations.filter(industry_id=industry_id)
+
+    # Pagination
+    from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+    paginator = Paginator(occupations, 10)  # Show 10 occupations per page
+    page_number = request.GET.get('page')
+    try:
+        occupations = paginator.page(page_number)
+    except PageNotAnInteger:
+        occupations = paginator.page(1)
+    except EmptyPage:
+        occupations = paginator.page(paginator.num_pages)
+
+    # If candidate, attach cached scores from recommended_occupations
+    if hasattr(request.user, "candidate"):
+        candidate = request.user.candidate
+        # Build a lookup dict from cached proficiency data
+        cached_scores = {}
+        for item in candidate.recommended_occupations:
+            cached_scores[item.get("ofo_code")] = item.get("score", 0)
+        
+        for occ in occupations:
+            occ.proficiency_score = cached_scores.get(occ.ofo_code, 0)
+
+    industries = Industry.objects.all()
+
+    context = navbar_context(request)
+    context.update({
+        "occupations": occupations,
+        "industries": industries,
+        "search_query": query,
+        "selected_industry": industry_id,
+        "has_interests": len(interested_industry_ids) > 0,
+    })
+    
+    return render(request, "core/occupation_list.html", context)
+
+
+@login_required
+def occupation_detail(request, occupation_id):
+    """
+    Detailed view of an occupation. 
+    Shows description, tasks, and for candidates, action items.
+    """
+    from django.shortcuts import get_object_or_404
+    
+    # We use select_related to get industry data efficiently
+    occupation = get_object_or_404(Occupation.objects.select_related("industry"), pk=occupation_id)
+    
+    context = navbar_context(request)
+    context.update({
+        "occupation": occupation,
+    })
+    
+    # Candidate specific logic: Check if it's a target, get score, etc.
+    if hasattr(request.user, "candidate"):
+        candidate = request.user.candidate
+        from apps.candidates.models import OccupationTarget
+        context["is_target"] = OccupationTarget.objects.filter(candidate=candidate, occupation=occupation).exists()
+        
+        # Get score if available
+        if candidate.recommended_occupations:
+            for item in candidate.recommended_occupations:
+                 if item.get("ofo_code") == occupation.ofo_code:
+                     context["proficiency_score"] = item.get("score")
+                     break
+        
+        # Check active assessment status
+        if candidate.assessment_progress:
+            progress_data = candidate.assessment_progress.get(occupation.ofo_code)
+            if progress_data:
+                context["assessment_progress_data"] = progress_data
+
+    return render(request, "core/occupation_detail.html", context)
+
