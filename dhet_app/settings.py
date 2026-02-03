@@ -5,10 +5,22 @@ from django.templatetags.static import static
 import dj_database_url
 
 
+# ------------- Mode Configuration -------------
+# MODE: development, testing, production
+MODE = str(config("MODE", default="development")).lower()
+if MODE not in ["development", "testing", "production"]:
+    raise ValueError(
+        f"Invalid MODE: {MODE}. Must be development, testing, or production"
+    )
+
 TIME_ZONE = "Africa/Johannesburg"
 USE_TZ = True
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Create logs directory if it doesn't exist
+LOGS_DIR = BASE_DIR / "logs"
+LOGS_DIR.mkdir(exist_ok=True)
 
 SECRET_KEY = config("SECRET_KEY")
 DEBUG = config("DEBUG", cast=bool)
@@ -49,6 +61,7 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "simple_history.middleware.HistoryRequestMiddleware",
+    "apps.core.middleware.RequestTracingMiddleware",  # Request tracing with logging
     "apps.core.middleware.RestrictedAdminMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -195,3 +208,44 @@ COOKIE_CONSENT_HTTPONLY = False  # Allow JS to check if cookie is set
 
 # Allow JS to read CSRF token
 CSRF_COOKIE_HTTPONLY = False
+
+# ------------- Logging Configuration -------------
+from apps.core.logging_config import get_logging_config
+
+LOGGING = get_logging_config(mode=MODE, debug=DEBUG)
+
+# ------------- Mode-Specific Settings -------------
+if MODE == "development":
+    # Development-specific settings
+    # Show detailed error pages
+    DEBUG_PROPAGATE_EXCEPTIONS = False
+
+elif MODE == "testing":
+    # Testing-specific settings
+    # Use faster password hasher for tests
+    PASSWORD_HASHERS = [
+        "django.contrib.auth.hashers.MD5PasswordHasher",
+    ]
+    # Disable migrations for faster tests
+    # Note: Uncomment if you want to disable migrations in tests
+    # class DisableMigrations:
+    #     def __contains__(self, item):
+    #         return True
+    #     def __getitem__(self, item):
+    #         return None
+    # MIGRATION_MODULES = DisableMigrations()
+
+elif MODE == "production":
+    # Production-specific settings
+    # Security settings
+    SECURE_SSL_REDIRECT = config("SECURE_SSL_REDIRECT", default=False, cast=bool)
+    SESSION_COOKIE_SECURE = config("SESSION_COOKIE_SECURE", default=True, cast=bool)
+    CSRF_COOKIE_SECURE = config("CSRF_COOKIE_SECURE", default=True, cast=bool)
+    SECURE_BROWSER_XSS_FILTER = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = "DENY"
+
+    # HSTS Settings (uncomment when ready)
+    # SECURE_HSTS_SECONDS = 31536000  # 1 year
+    # SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    # SECURE_HSTS_PRELOAD = True
