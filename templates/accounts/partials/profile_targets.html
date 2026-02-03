@@ -1,0 +1,129 @@
+<!-- Target Occupations Card -->
+<div x-data="{ adding: false }" class="app-card space-y-6">
+    {% include "components/card_header.html" with title="Target Occupations" description="Manage your career goals (Max 3)" %}
+    
+    {% if messages %}
+    <div class="space-y-2">
+        {% for message in messages %}
+        <div class="app-alert {% if message.tags == 'error' %}app-alert-error{% else %}app-alert-success{% endif %}">
+            <i data-lucide="{% if message.tags == 'error' %}alert-circle{% else %}check-circle{% endif %}" class="w-4 h-4"></i>
+            <div>{{ message }}</div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- List of existing targets -->
+    <div class="space-y-4">
+        {% for target in target_occupations %}
+             {% include "accounts/partials/item_target.html" %}
+        {% empty %}
+            <div class="text-center py-8 border border-dashed border-border rounded-lg">
+                <p class="text-muted-foreground">No target occupations selected.</p>
+                <button type="button" @click="adding = true" class="mt-2 text-sm text-primary hover:underline" {% if target_occupations|length >= 3 %}disabled class="opacity-50 cursor-not-allowed"{% endif %}>
+                    Select your first target
+                </button>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Card Footer -->
+    <div x-show="!adding" class="-mx-8 -mb-8 mt-6 px-8 py-4 bg-muted border-t border-border">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="text-sm text-muted-foreground">
+                {% if target_occupations|length >= 3 %}
+                    You have reached the maximum limit of 3 target occupations.
+                {% else %}
+                    You can add {{ 3|add:target_occupations.count|stringformat:"d"|slice:"1:" }} more target occupations.
+                {% endif %}
+            </div>
+             {% if target_occupations|length < 3 %}
+            <button type="button" @click="adding = true" class="app-btn app-btn-primary w-full sm:w-auto flex items-center justify-center gap-2">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                Add Target
+            </button>
+             {% else %}
+             <button type="button" disabled class="app-btn app-btn-disabled w-full sm:w-auto flex items-center justify-center gap-2 opacity-50 cursor-not-allowed bg-muted-foreground/20 text-muted-foreground">
+                <i data-lucide="ban" class="w-4 h-4"></i>
+                Limit Reached
+            </button>
+             {% endif %}
+        </div>
+    </div>
+
+    <!-- Form to add new -->
+    <div x-show="adding" class="pt-6 border-t border-border" x-transition>
+        <div class="flex items-center justify-between mb-4">
+            <h4 class="font-medium">Add Target Occupation</h4>
+            <button type="button" @click="adding = false" class="text-muted-foreground hover:text-foreground">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+        
+        <form method="post"
+              action="{% url 'profile-targets' %}"
+              hx-post="{% url 'profile-targets' %}"
+              hx-target="#tab-content"
+              hx-swap="innerHTML swap:0.5s"
+              x-data="{ isSubmitting: false }"
+              @submit="isSubmitting = true"
+              @htmx:afterRequest="isSubmitting = false"
+              @htmx:responseError="isSubmitting = false">
+            {% csrf_token %}
+            
+            {% if form.non_field_errors %}
+                <div class="app-alert app-alert-error mb-4">
+                    <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                    <div>{{ form.non_field_errors }}</div>
+                </div>
+            {% endif %}
+
+            <div class="space-y-4">
+                <div>
+                    {% include "components/select.html" with name=form.occupation.name label="Select Occupation" options=form.occupation.field.choices value=form.occupation.value use_tuple=True placeholder="Search occupation..." %}
+                     {% if form.occupation.errors %}
+                        <ul class="mt-2 text-sm font-medium text-destructive list-none">
+                            {% for error in form.occupation.errors %}<li>{{ error }}</li>{% endfor %}
+                        </ul>
+                    {% endif %}
+                    <p class="text-xs text-muted-foreground mt-1">Search for an occupation by name or code.</p>
+                </div>
+                
+                <div>
+                    {% include "components/select.html" with name=form.priority.name label="Priority Level" options=form.priority.field.choices value=form.priority.value use_tuple=True placeholder="Select priority" %}
+                     {% if form.priority.errors %}
+                        <ul class="mt-2 text-sm font-medium text-destructive list-none">
+                            {% for error in form.priority.errors %}<li>{{ error }}</li>{% endfor %}
+                        </ul>
+                    {% endif %}
+                     <p class="text-xs text-muted-foreground mt-1">Must be unique (cannot share priority with another target).</p>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 mt-6">
+                <button type="button" @click="adding = false" class="app-btn app-btn-ghost">
+                    Cancel
+                </button>
+                <button type="submit"
+                        class="app-btn app-btn-primary"
+                        :disabled="isSubmitting">
+                    <span x-show="!isSubmitting">Add Target</span>
+                    <span x-show="isSubmitting" class="flex items-center gap-2">
+                        <i data-lucide="loader" class="w-4 h-4 animate-spin-smooth"></i>
+                        Saving...
+                    </span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // Initialize Select2 if available
+    if (typeof jQuery !== 'undefined' && jQuery().select2) {
+        $('.app-select2').select2({
+            width: '100%',
+            dropdownParent: $('form')
+        });
+    }
+</script>

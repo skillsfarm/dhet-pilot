@@ -1,0 +1,77 @@
+<div x-data="{ editing: {{ start_editing|yesno:'true,false'|default:'false' }} }" class="item-container p-4 rounded-lg border border-border bg-card transition" :class="{ 'hover:bg-accent/50': !editing }">
+    <!-- View Mode -->
+    <div x-show="!editing">
+        <div class="flex items-start justify-between gap-4">
+            <div class="flex-1">
+                <div class="flex items-center gap-2 mb-1">
+                     <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset w-fit
+                        {% if target.priority == 1 %}
+                            bg-red-50 text-red-700 ring-red-600/20
+                        {% elif target.priority == 2 %}
+                            bg-yellow-50 text-yellow-700 ring-yellow-600/20
+                        {% else %}
+                             bg-green-50 text-green-700 ring-green-600/20
+                        {% endif %}">
+                        {{ target.get_priority_display }}
+                    </span>
+                 </div>
+                <h4 class="font-semibold text-foreground text-lg">{{ target.occupation.ofo_title }}</h4>
+                 <div class="text-sm text-foreground/80 mt-1 font-mono text-xs text-muted-foreground">
+                    Code: {{ target.occupation.ofo_code }}
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-2">
+                 <button type="button" 
+                         hx-get="{% url 'profile-targets-detail' pk=target.pk %}?mode=edit"
+                         hx-target="closest .item-container"
+                         hx-swap="outerHTML"
+                         class="p-2 rounded-full hover:bg-muted text-muted-foreground hover:text-primary transition">
+                    <i data-lucide="pencil" class="w-4 h-4"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Mode -->
+    <div x-show="editing" style="display: none;">
+        <form method="post"
+              action="{% url 'profile-targets-detail' pk=target.pk %}"
+              hx-post="{% url 'profile-targets-detail' pk=target.pk %}"
+              hx-target="closest .item-container"
+              hx-swap="outerHTML"
+               x-data="{ isSubmitting: false }"
+              @submit="isSubmitting = true">
+              
+            <div class="space-y-4 mb-4">
+                <div class="app-input-group opacity-50 pointer-events-none bg-muted/20">
+                     <label class="block mb-2 text-sm font-medium text-muted-foreground">Occupation (Cannot be changed, delete and add new)</label>
+                     <input type="text" value="{{ target.occupation.ofo_title }} ({{ target.occupation.ofo_code }})" class="app-input cursor-not-allowed" disabled>
+                </div>
+
+                 <div>
+                    {% include "components/select.html" with name="priority" label="Priority Level" options=available_priorities value=target.priority use_tuple=True placeholder="Select Priority" %}
+                     <p class="text-xs text-muted-foreground mt-1">Only available priorities are shown.</p>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-between">
+                <button type="button" 
+                        hx-delete="{% url 'profile-targets-detail' pk=target.pk %}" 
+                        hx-target="#tab-content"
+                        hx-swap="innerHTML"
+                        hx-confirm="Are you sure you want to delete this target occupations?"
+                        class="app-btn app-btn-ghost text-destructive hover:bg-destructive/10">
+                    Delete
+                </button>
+                <div class="flex items-center gap-2">
+                    <button type="button" @click="editing = false" class="app-btn app-btn-ghost">Cancel</button>
+                    <button type="submit" class="app-btn app-btn-primary" :disabled="isSubmitting">
+                         <span x-show="!isSubmitting">Save</span>
+                        <span x-show="isSubmitting">Saving...</span>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

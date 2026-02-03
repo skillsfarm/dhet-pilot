@@ -1,0 +1,107 @@
+{% extends "layouts/dashboard_page_view.html" %}
+{% load role_tags %}
+{% block title %}Edit User: {{ target_user.username }}{% endblock %}
+{% block page_title %}
+    <div class="flex flex-col gap-4">
+        <a href="{% url 'user_list' %}"
+           class="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors">
+            <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i>
+            Back to Users
+        </a>
+        <div>Edit User</div>
+    </div>
+{% endblock %}
+{% block page_description %}
+    Manage authentication details and roles for <strong>{{ target_user.username }}</strong>.
+{% endblock %}
+{% block page_content %}
+    <div class="w-full mx-auto">
+        <div class="bg-card rounded-xl shadow-sm border border-border p-6">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                {% if form.non_field_errors %}
+                    <div class="rounded-lg bg-destructive/10 p-4 text-sm text-destructive">
+                        {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+                    </div>
+                {% endif %}
+                <div class="space-y-4">
+                    <!-- Username -->
+                    <div>
+                        <label for="{{ form.username.id_for_label }}"
+                               class="block mb-2 text-sm font-medium text-foreground">Username</label>
+                        {{ form.username }}
+                        {% if form.username.errors %}<p class="mt-2 text-sm text-destructive">{{ form.username.errors.0 }}</p>{% endif %}
+                    </div>
+                    <!-- Email -->
+                    <div>
+                        <label for="{{ form.email.id_for_label }}"
+                               class="block mb-2 text-sm font-medium text-foreground">Email</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}<p class="mt-2 text-sm text-destructive">{{ form.email.errors.0 }}</p>{% endif %}
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- First Name -->
+                        <div>
+                            <label for="{{ form.first_name.id_for_label }}"
+                                   class="block mb-2 text-sm font-medium text-foreground">First Name</label>
+                            {{ form.first_name }}
+                        </div>
+                        <!-- Last Name -->
+                        <div>
+                            <label for="{{ form.last_name.id_for_label }}"
+                                   class="block mb-2 text-sm font-medium text-foreground">Last Name</label>
+                            {{ form.last_name }}
+                        </div>
+                    </div>
+                    <!-- Is Active -->
+                    <div class="flex items-start">
+                        <div class="flex items-center h-5">{{ form.is_active }}</div>
+                        <div class="ml-3 text-sm">
+                            <label for="{{ form.is_active.id_for_label }}"
+                                   class="font-medium text-foreground">Active</label>
+                            <p class="text-muted-foreground">Inactive users cannot login to the system.</p>
+                        </div>
+                    </div>
+                    <!-- Roles / Groups -->
+                    <div>
+                        <label class="block mb-2 text-sm font-medium text-foreground">Roles / Groups</label>
+                        <div class="bg-muted/30 p-4 rounded-lg border border-border grid gap-2">
+                            {% for group in form.groups %}
+                                <div class="flex items-center">
+                                    {{ group.tag }}
+                                    <label for="{{ group.id_for_label }}"
+                                           class="ml-2 text-sm text-foreground cursor-pointer">
+                                        {{ group.choice_label }}
+                                    </label>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center justify-end gap-3 pt-4 border-t border-border">
+                    <a href="{% url 'user_list' %}"
+                       class="px-4 py-2 text-sm font-medium text-muted-foreground bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:z-10 focus:ring-4 focus:ring-gray-200 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
+                        Cancel
+                    </a>
+                    <button type="submit"
+                            class="px-4 py-2 text-sm font-medium text-white bg-primary rounded-lg hover:bg-primary/90 focus:ring-4 focus:ring-primary/30 focus:outline-none">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+        <div class="mt-6 border-t border-border pt-6">
+            <h4 class="text-sm font-medium text-foreground mb-4">Danger Zone</h4>
+            <div class="bg-destructive/5 border border-destructive/20 rounded-xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div>
+                    <h5 class="text-sm font-medium text-foreground">Delete User</h5>
+                    <p class="text-sm text-muted-foreground">Permanent delete this user and all associated data.</p>
+                </div>
+                <button type="button"
+                        disabled
+                        class="px-4 py-2 text-sm font-medium text-destructive bg-white border border-destructive/30 rounded-lg opacity-50 cursor-not-allowed"
+                        title="Deletion implemented in future update">Delete User</button>
+            </div>
+        </div>
+    </div>
+{% endblock %}
