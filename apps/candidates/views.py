@@ -99,6 +99,27 @@ def onboarding_education(request):
     candidate = get_or_create_candidate_profile(request.user)
     user_profile, _ = UserProfile.objects.get_or_create(user=request.user)
 
+    education_records = EducationHistory.objects.filter(candidate=candidate)
+
+    # Handle deletion
+    if request.method == "DELETE":
+        delete_id = request.GET.get("delete_id")
+        if delete_id:
+            EducationHistory.objects.filter(id=delete_id, candidate=candidate).delete()
+            # Refresh records
+            education_records = EducationHistory.objects.filter(candidate=candidate)
+            
+            return render(
+                request,
+                "candidates/partials/onboarding_education.html",
+                {
+                    "form": EducationHistoryForm(),
+                    "education_records": education_records,
+                    "score": user_profile.onboarding_score,
+                    "active_tab": "education"
+                },
+            )
+
     if request.method == "POST":
         form = EducationHistoryForm(request.POST)
         if form.is_valid():
@@ -109,6 +130,10 @@ def onboarding_education(request):
             # Update score if at least one education record exists
             if EducationHistory.objects.filter(candidate=candidate).count() >= 1:
                 user_profile = update_onboarding_score(request.user, 4)
+            
+            # Refresh records
+            education_records = EducationHistory.objects.filter(candidate=candidate)
+            form = EducationHistoryForm() # Reset form
 
             # Reload current partial to allow adding more or continuing
             if request.headers.get("HX-Request"):
@@ -116,8 +141,8 @@ def onboarding_education(request):
                     request,
                     "candidates/partials/onboarding_education.html",
                     {
-                        "form": EducationHistoryForm(), 
-                        "education_records": EducationHistory.objects.filter(candidate=candidate),
+                        "form": form, 
+                        "education_records": education_records,
                         "score": user_profile.onboarding_score, 
                         "active_tab": "education"
                     },
@@ -126,7 +151,6 @@ def onboarding_education(request):
     else:
         form = EducationHistoryForm()
 
-    education_records = EducationHistory.objects.filter(candidate=candidate)
     context = {"form": form, "education_records": education_records, "score": user_profile.onboarding_score, "active_tab": "education"}
 
     return render(request, "candidates/partials/onboarding_education.html", context)
@@ -177,16 +201,64 @@ def onboarding_targets(request):
     candidate = get_or_create_candidate_profile(request.user)
     user_profile, _ = UserProfile.objects.get_or_create(user=request.user)
 
-    if request.method == "POST":
-        form = OccupationTargetForm(request.POST)
-        if form.is_valid():
-            target = form.save(commit=False)
-            target.candidate = candidate
-            target.save()
+    target_records = OccupationTarget.objects.filter(candidate=candidate).select_related("occupation")
+    
+    # Handle deletion
+    if request.method == "DELETE":
+        delete_id = request.GET.get("delete_id")
+        if delete_id:
+            OccupationTarget.objects.filter(id=delete_id, candidate=candidate).delete()
+            # Refresh records
+            target_records = OccupationTarget.objects.filter(candidate=candidate).select_related("occupation")
+            
+            return render(
+                request,
+                "candidates/partials/onboarding_targets.html",
+                {
+                    "form": OccupationTargetForm(),
+                    "target_records": target_records,
+                    "score": user_profile.onboarding_score,
+                    "active_tab": "targets",
+                    # Recalculate available priorities
+                    "available_priorities": [
+                        p for p in OccupationTarget.Priority.choices 
+                        if p[0] not in target_records.values_list('priority', flat=True)
+                    ]
+                },
+            )
 
-            # Update score if at least one target exists
-            if OccupationTarget.objects.filter(candidate=candidate).count() >= 1:
-                user_profile = update_onboarding_score(request.user, 8)
+    # Calculate available priorities (exclude ones already used)
+    used_priorities = set(target_records.values_list('priority', flat=True))
+    all_priorities = OccupationTarget.Priority.choices
+    available_priorities = [p for p in all_priorities if p[0] not in used_priorities]
+
+    # If POST (add new)
+    if request.method == "POST":
+        # Check limit
+        if target_records.count() >= 3:
+             # Just return current list with error or similar - for now just reload
+             pass
+        else:
+            form = OccupationTargetForm(request.POST)
+            if form.is_valid():
+                target = form.save(commit=False)
+                target.candidate = candidate
+                
+                # Manual check if priority is used
+                if target.priority in used_priorities:
+                    form.add_error('priority', 'This priority level is already used.')
+                else:
+                    target.save()
+
+                    # Update score if at least one target exists
+                    if OccupationTarget.objects.filter(candidate=candidate).count() >= 1:
+                        user_profile = update_onboarding_score(request.user, 8)
+                    
+                    # Refresh records
+                    target_records = OccupationTarget.objects.filter(candidate=candidate).select_related("occupation")
+                    used_priorities = set(target_records.values_list('priority', flat=True))
+                    available_priorities = [p for p in all_priorities if p[0] not in used_priorities]
+                    form = OccupationTargetForm() # Reset form
 
             # Reload current partial to allow adding more or continuing
             if request.headers.get("HX-Request"):
@@ -194,18 +266,24 @@ def onboarding_targets(request):
                     request,
                     "candidates/partials/onboarding_targets.html",
                     {
-                        "form": OccupationTargetForm(),
-                        "target_records": OccupationTarget.objects.filter(candidate=candidate).select_related("occupation"),
+                        "form": form,
+                        "target_records": target_records,
                         "score": user_profile.onboarding_score,
-                        "active_tab": "targets"
+                        "active_tab": "targets",
+                        "available_priorities": available_priorities
                     },
                 )
             return redirect("candidates:onboarding")
     else:
         form = OccupationTargetForm()
 
-    target_records = OccupationTarget.objects.filter(candidate=candidate).select_related("occupation")
-    context = {"form": form, "target_records": target_records, "score": user_profile.onboarding_score, "active_tab": "targets"}
+    context = {
+        "form": form, 
+        "target_records": target_records, 
+        "score": user_profile.onboarding_score, 
+        "active_tab": "targets",
+        "available_priorities": available_priorities
+    }
 
     return render(request, "candidates/partials/onboarding_targets.html", context)
 
@@ -311,3 +389,136 @@ def onboarding_assessment(request):
         "active_tab": "assessment"
     }
     return render(request, "candidates/partials/onboarding_assessment.html", context)
+
+
+@login_required
+def occupation_assessment(request, occupation_id):
+    """
+    Comprehensive assessment for a specific target occupation.
+    Displays 80% of tasks for thorough proficiency evaluation.
+    """
+    import random
+    from django.http import HttpResponse, Http404
+    from django.urls import reverse
+    from apps.content.models import Occupation, OccupationTask
+    from .models import AssessmentResponse
+    from .services import TASK_COVERAGE_PERCENTAGE
+    
+    candidate = get_or_create_candidate_profile(request.user)
+    
+    # Fetch the occupation and verify it's a user target
+    try:
+        occupation = Occupation.objects.get(id=occupation_id)
+    except Occupation.DoesNotExist:
+        raise Http404("Occupation not found")
+    
+    # Verify this is one of the candidate's targets
+    is_target = OccupationTarget.objects.filter(
+        candidate=candidate,
+        occupation=occupation
+    ).exists()
+    
+    if not is_target:
+        # Optionally allow non-target occupations, or redirect
+        # For now, we'll allow it but show a warning message
+        pass
+    
+    # Get all tasks for this occupation
+    all_tasks = list(OccupationTask.objects.filter(
+        occupation=occupation
+    ).select_related('occupation'))
+    
+    # Calculate how many tasks to show (80%)
+    total_count = len(all_tasks)
+    required_count = max(1, int(total_count * TASK_COVERAGE_PERCENTAGE))
+    
+    # Deterministic random selection based on candidate+occupation
+    # This ensures the same candidate always gets the same tasks for this occupation
+    random_seed = hash((str(candidate.id), str(occupation.id)))
+    random.seed(random_seed)
+    
+    # Select random tasks
+    if total_count > required_count:
+        tasks = random.sample(all_tasks, required_count)
+        # Shuffle for variety in presentation
+        random.shuffle(tasks)
+    else:
+        tasks = all_tasks
+    
+    # Reset random seed to avoid affecting other code
+    random.seed()
+    
+    # Get existing responses for progress tracking
+    existing_responses = AssessmentResponse.objects.filter(
+        candidate=candidate,
+        task__occupation=occupation
+    ).values_list('task_id', 'response')
+    
+    response_dict = dict(existing_responses)
+    
+    # Attach existing response to each task for pre-filling the form
+    for task in tasks:
+        task.existing_response = response_dict.get(task.id, None)
+    
+    if request.method == "POST":
+        # Save assessment responses
+        responses_saved = 0
+        for key, value in request.POST.items():
+            if key.startswith("task_"):
+                try:
+                    task_id = key.split("_")[1]
+                    task = OccupationTask.objects.get(id=task_id)
+                    
+                    AssessmentResponse.objects.update_or_create(
+                        candidate=candidate,
+                        task=task,
+                        defaults={"response": value}
+                    )
+                    responses_saved += 1
+                except (IndexError, OccupationTask.DoesNotExist):
+                    continue
+        
+        # Mark candidate stats for update
+        candidate.stats_update_needed = True
+        candidate.save()
+        
+        # Redirect back to assessments list with success message
+        if request.headers.get("HX-Request"):
+            response = HttpResponse(status=200)
+            response["HX-Redirect"] = reverse("candidates:assessment-list")
+            return response
+        
+        return redirect("candidates:assessment-list")
+    
+    # Calculate completion percentage
+    answered_count = len([t for t in tasks if t.existing_response])
+    completion_pct = int((answered_count / len(tasks)) * 100) if tasks else 0
+    
+    context = navbar_context(request)
+    context.update({
+        "occupation": occupation,
+        "tasks": tasks,
+        "is_target": is_target,
+        "total_tasks": len(tasks),
+        "answered_count": answered_count,
+        "completion_pct": completion_pct,
+    })
+    
+    return render(request, "candidates/occupation_assessment.html", context)
+
+
+@login_required
+def assessment_list(request):
+    """List of all available assessments for the candidate."""
+    candidate = get_or_create_candidate_profile(request.user)
+    
+    # Ensure stats are up to date
+    if candidate.stats_update_needed:
+        from .services import compute_candidate_stats
+        compute_candidate_stats(candidate)
+        
+    context = navbar_context(request)
+    context.update({
+        "assessment_progress": candidate.assessment_progress,
+    })
+    return render(request, "candidates/assessment_list.html", context)

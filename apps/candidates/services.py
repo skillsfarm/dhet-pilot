@@ -3,6 +3,99 @@ from django.utils import timezone
 from .models import CandidateProfile, AssessmentResponse
 from apps.content.models import Occupation
 
+# Proficiency Scoring Weights
+PROFICIENCY_SCORING_WEIGHTS = {
+    "ASSESSMENT": 0.50,      # Weight for task-based assessment responses
+    "EXPERIENCE": 0.30,      # Weight for years of work experience vs requirements
+    "QUALIFICATION": 0.20,   # Weight for education relevancy to the occupation
+}
+
+# Task Coverage for Assessments
+# Candidates are assessed on 80% of tasks per occupation, not all tasks.
+# This makes assessments more manageable while still being comprehensive.
+TASK_COVERAGE_PERCENTAGE = 0.80
+
+
+def get_candidate_occupation_score(candidate: CandidateProfile, occupation: Occupation):
+    """
+    Calculates a comprehensive proficiency score considering:
+    1. Assessment responses (Tasks) - Based on 80% of tasks
+    2. Years of experience (Work History)
+    3. Qualification relevancy (Education)
+    """
+    # 1. Assessment Score (50%)
+    all_tasks_count = occupation.tasks.count()
+    # We only assess 80% of tasks, so proficiency is calculated against this subset
+    required_tasks_count = max(1, int(all_tasks_count * TASK_COVERAGE_PERCENTAGE))
+    
+    assessment_score = 0
+    if all_tasks_count > 0:
+        responses = AssessmentResponse.objects.filter(
+            candidate=candidate,
+            task__occupation=occupation
+        )
+        weighted_sum = 0
+        for r in responses:
+            if r.response == AssessmentResponse.ResponseType.YES:
+                weighted_sum += 1
+            elif r.response == AssessmentResponse.ResponseType.PARTIALLY:
+                weighted_sum += 0.5
+        # Score based on required tasks (80%), not all tasks
+        # This means answering 80% perfectly gives 100% assessment score
+        assessment_score = (weighted_sum / required_tasks_count) * 100
+        # Cap at 100% in case they answered more than the required amount
+        assessment_score = min(100, assessment_score)
+
+    # 2. Experience Score (30%)
+    total_years_exp = sum(exp.years_experience for exp in candidate.work_experience.all())
+    required_years = occupation.years_of_experience
+    if required_years <= 0:
+        experience_score = 100 if total_years_exp > 0 else 50 # Base score for entry level
+    else:
+        experience_score = min(1.0, total_years_exp / required_years) * 100
+
+    # 3. Qualification Score (20%)
+    # Compare candidate's highest NQF level against occupation's preferred NQF level
+    NQF_MAP = {
+        "MATRIC": 4,
+        "CERTIFICATE": 5,
+        "DIPLOMA": 6,
+        "DEGREE": 7,
+        "HONORS": 8,
+        "MASTERS": 9,
+        "DOCTORATE": 10
+    }
+    
+    candidate_nqf = 0
+    for edu in candidate.education_history.all():
+        level = NQF_MAP.get(edu.education_type, 0)
+        if level > candidate_nqf:
+            candidate_nqf = level
+    
+    required_nqf = occupation.preferred_nqf_level
+    if required_nqf <= 0:
+        # Entry level, any education is a bonus
+        qualification_score = 100 if candidate_nqf > 0 else 50
+    else:
+        # Compare against required
+        if candidate_nqf >= required_nqf:
+            qualification_score = 100
+        elif candidate_nqf > 0:
+            # Partial credit based on gap
+            qualification_score = max(0, 100 - ((required_nqf - candidate_nqf) * 20))
+        else:
+            qualification_score = 10
+
+    # Weighted Total
+    total_score = (
+        (assessment_score * PROFICIENCY_SCORING_WEIGHTS["ASSESSMENT"]) +
+        (experience_score * PROFICIENCY_SCORING_WEIGHTS["EXPERIENCE"]) +
+        (qualification_score * PROFICIENCY_SCORING_WEIGHTS["QUALIFICATION"])
+    )
+
+    return int(total_score)
+
+
 def compute_candidate_stats(candidate: CandidateProfile):
     """
     Computes and updates cached stats for a candidate.
@@ -27,9 +120,8 @@ def compute_candidate_stats(candidate: CandidateProfile):
         if level > max_nqf:
             max_nqf = level
             # Use the display label from choices if possible, otherwise simple map
-            # We can construct a nice label: "NQF 7 - Bachelor's Degree"
             label = edu.get_education_type_display()
-            max_nqf_label = f"NQF {level} - {label}"
+            max_nqf_label = f"{level} - {label}"
             
     candidate.highest_nqf_level = max_nqf_label
 
@@ -51,7 +143,9 @@ def compute_candidate_stats(candidate: CandidateProfile):
         if occ.industry:
             target_industries.add(occ.industry)
 
-        total_tasks = occ.tasks.count()
+        all_tasks_count = occ.tasks.count()
+        # Show progress against 80% of tasks (the required amount for proficiency)
+        required_tasks_count = max(1, int(all_tasks_count * TASK_COVERAGE_PERCENTAGE))
         
         responded_tasks = AssessmentResponse.objects.filter(
             candidate=candidate,
@@ -59,14 +153,18 @@ def compute_candidate_stats(candidate: CandidateProfile):
         ).count()
         
         pct = 0
-        if total_tasks > 0:
-            pct = int((responded_tasks / total_tasks) * 100)
+        if required_tasks_count > 0:
+            # Calculate percentage against required tasks (80%), not all tasks
+            pct = int((responded_tasks / required_tasks_count) * 100)
+            # Cap at 100% for display purposes
+            pct = min(100, pct)
             
         progress_data[str(occ.ofo_code)] = {
             "title": occ.ofo_title,
             "answered": responded_tasks,
-            "total": total_tasks,
-            "percentage": pct
+            "total": required_tasks_count,  # Show required count, not all tasks
+            "percentage": pct,
+            "occupation_id": str(occ.id)  # For direct linking to assessment
         }
         
     candidate.assessment_progress = progress_data
@@ -83,38 +181,21 @@ def compute_candidate_stats(candidate: CandidateProfile):
     
     for target in targets:
         occ = target.occupation
-        total_tasks = occ.tasks.count()
-        
-        score = 0
-        if total_tasks > 0:
-            responses = AssessmentResponse.objects.filter(
-                candidate=candidate,
-                task__occupation=occ
-            )
-            
-            weighted_sum = 0
-            for r in responses:
-                if r.response == AssessmentResponse.ResponseType.YES:
-                    weighted_sum += 1
-                elif r.response == AssessmentResponse.ResponseType.PARTIALLY:
-                    weighted_sum += 0.5
-            
-            score = int((weighted_sum / total_tasks) * 100)
-        
         proficiency_stats.append({
             "ofo_code": occ.ofo_code,
             "title": occ.ofo_title,
-            "score": score,
+            "score": get_candidate_occupation_score(candidate, occ),
             "industry": occ.industry.name if occ.industry else None,
-            "is_target": True
+            "is_target": True,
+            "id": str(occ.id)
         })
 
     # 5. Recommendations based on Industry
-    # Find other occupations in the same industries
+    # Find other occupations in the same industries (limit to 5 total recommendations)
     if target_industries:
-        # Calculate how many slots we have left to reach 4 items
+        # Calculate how many slots we have left to reach 5 items
         current_count = len(proficiency_stats)
-        slots_available = 4 - current_count
+        slots_available = 5 - current_count
         
         if slots_available > 0:
             suggestions = Occupation.objects.filter(
@@ -125,9 +206,10 @@ def compute_candidate_stats(candidate: CandidateProfile):
                  proficiency_stats.append({
                     "ofo_code": occ.ofo_code,
                     "title": occ.ofo_title,
-                    "score": 0, # No score for non-targets yet
+                    "score": get_candidate_occupation_score(candidate, occ),
                     "industry": occ.industry.name if occ.industry else None,
-                    "is_target": False
+                    "is_target": False,
+                    "id": str(occ.id)
                 })
             
     candidate.recommended_occupations = proficiency_stats
