@@ -7,8 +7,8 @@ A Django 5 starter with Tailwind CSS v4, Flowbite, HTMX, Alpine.js, and role-bas
 - **Backend**: Django 5.2, Django REST Framework, drf-spectacular
 - **Frontend**: Tailwind CSS v4, Flowbite, HTMX, Alpine.js
 - **Auth**: django-allauth with email-based authentication
-- **Permissions**: django-role-permissions (3 roles: normal, admin, super-admin)
-- **Database**: SQLite (configurable via DATABASE_URL)
+- **Permissions**: django-role-permissions (5 roles: user, developer, content_manager, admin, super_admin)
+- **Database**: PostgreSQL (configurable via DATABASE_URL)
 
 ## Features
 
@@ -124,20 +124,29 @@ dhet_app/
 
 ## Roles and Permissions
 
-### Normal User
-
+### User (Normal)
 - Can edit own profile
-- Must complete onboarding after signup
+- Complete onboarding after signup
 - Redirected to `/onboarding/` on first login
 
-### Admin
+### Developer
+- All user permissions
+- Can manage technical content
+- Access to developer tools
 
-- All normal user permissions
+### Content Manager
+- All user permissions
+- Can create and edit content
+- Can manage OFO occupations and skills
+
+### Admin
+- All content manager permissions
 - Can manage users
+- Can manage system configuration
 
 ### Super Admin
-
 - All admin permissions
+- Full system access
 - Can edit system settings
 
 ## URL Routes
@@ -157,22 +166,65 @@ dhet_app/
 ## Environment Variables
 
 ```env
+# Django
 SECRET_KEY=your-secret-key
 DEBUG=True
 ALLOWED_HOSTS=localhost,127.0.0.1
-DATABASE_URL=sqlite:///db.sqlite3
-SITE_NAME="My Site"
+
+# Database (PostgreSQL recommended for production)
+DATABASE_URL=postgresql://user:password@localhost:5432/dhet_db
+
+# Site Configuration
+SITE_NAME="DHET"
 SITE_DOMAIN=localhost:8000
 
-# Email
-EMAIL_HOST=smtp.gmail.com
+# Email Configuration (Zoho recommended)
+EMAIL_BACKEND="django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST=smtp.zoho.com
 EMAIL_PORT=587
 EMAIL_USE_TLS=True
-EMAIL_HOST_USER=your-email@gmail.com
-EMAIL_HOST_PASSWORD=your-app-password
+EMAIL_USE_SSL=False
+EMAIL_HOST_USER=your-email@example.com
+EMAIL_HOST_PASSWORD=your-password
 DEFAULT_FROM_EMAIL=noreply@example.com
-ACCOUNT_EMAIL_VERIFICATION=mandatory # none, optional, mandatory
+ACCOUNT_EMAIL_VERIFICATION=mandatory  # none, optional, mandatory
 
+# S3 / Object Storage (Optional)
+ACCESS_KEY_ID=""
+SECRET_ACCESS_KEY=""
+STORAGE_BUCKET_NAME=""
+S3_ENDPOINT_URL="https://nyc3.digitaloceanspaces.com"
+S3_REGION_NAME="nyc3"
+S3_CUSTOM_DOMAIN=""  # Optional: Set if you have a custom domain or CDN
+
+# Cookie Consent
+COOKIE_CONSENT_ENABLED=False
+
+# Notifications
+NOTIFICATION_TEST_EMAIL=""
+```
+
+## Database Setup
+
+### PostgreSQL (Recommended)
+
+1. Create a PostgreSQL database:
+```bash
+createdb dhet_db
+```
+
+2. Set DATABASE_URL in .env:
+```env
+DATABASE_URL=postgresql://user:password@localhost:5432/dhet_db
+```
+
+3. Install psycopg (included in dependencies)
+
+### SQLite (Development Only)
+
+For quick local development:
+```env
+DATABASE_URL=sqlite:///db.sqlite3
 ```
 
 ## Development
