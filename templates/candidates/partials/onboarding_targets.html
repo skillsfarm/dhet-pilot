@@ -13,101 +13,108 @@
                             <p class="text-sm text-muted-foreground">{{ record.occupation.ofo_code }}</p>
                             <p class="text-xs text-muted-foreground">Priority: {{ record.get_priority_display }}</p>
                         </div>
+                        <button type="button" 
+                                hx-delete="{% url 'candidates:onboarding-targets' %}?delete_id={{ record.id }}"
+                                hx-target="#tab-content"
+                                hx-swap="innerHTML"
+                                hx-confirm="Are you sure you want to remove this target occupation?"
+                                class="text-muted-foreground hover:text-destructive transition-colors">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
                     </div>
                 </div>
             {% endfor %}
         </div>
     {% endif %}
+
     <!-- Add Target Form -->
-    <form method="post"
-          action="{% url 'candidates:onboarding-targets' %}"
-          hx-post="{% url 'candidates:onboarding-targets' %}"
-          hx-target="#tab-content"
-          hx-swap="innerHTML swap:0.5s"
-          x-data="{ isSubmitting: false }"
-          @submit="isSubmitting = true"
-          @htmx:afterRequest="isSubmitting = false"
-          @htmx:responseError="isSubmitting = false">
-        {% csrf_token %}
-        {% if form.non_field_errors %}
-            <div class="app-alert app-alert-error">
-                <i data-lucide="alert-circle" class="w-4 h-4"></i>
-                <div>{{ form.non_field_errors }}</div>
+    {% if target_records|length >= 3 %}
+        <div class="p-4 rounded-lg bg-muted border border-border flex flex-col items-center justify-center text-center py-8">
+            <div class="rounded-full bg-primary/10 p-3 mb-3">
+                <i data-lucide="check-circle" class="w-6 h-6 text-primary"></i>
             </div>
-        {% endif %}
-        <div class="space-y-4">
-            <div>
-                <label for="{{ form.occupation.id_for_label }}"
-                       class="block mb-2 text-sm font-medium text-muted-foreground">Occupation</label>
-                <div class="relative">
-                    <select name="{{ form.occupation.name }}"
-                            id="{{ form.occupation.id_for_label }}"
-                            class="app-input appearance-none w-full pr-10 {% if form.occupation.errors %}border-destructive{% endif %}">
-                        {% for value, label in form.occupation.field.choices %}
-                            <option value="{{ value }}" class="bg-card text-foreground py-2" {% if form.occupation.value|stringformat:'s' == value|stringformat:'s' %}selected{% endif %}>{{ label }}</option>
-                        {% endfor %}
-                    </select>
-                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground">
-                        <i data-lucide="chevron-down" class="h-4 w-4"></i>
-                    </div>
-                </div>
-                {% if form.occupation.errors %}
-                    <ul class="mt-2 text-sm font-medium text-destructive list-none">
-                        {% for error in form.occupation.errors %}<li>{{ error }}</li>{% endfor %}
-                    </ul>
-                {% endif %}
-            </div>
-            <div>
-                <label for="{{ form.priority.id_for_label }}"
-                       class="block mb-2 text-sm font-medium text-muted-foreground">Priority</label>
-                <div class="relative">
-                    <select name="{{ form.priority.name }}"
-                            id="{{ form.priority.id_for_label }}"
-                            class="app-input appearance-none w-full pr-10 {% if form.priority.errors %}border-destructive{% endif %}">
-                        {% for value, label in form.priority.field.choices %}
-                            <option value="{{ value }}" class="bg-card text-foreground py-2" {% if form.priority.value|stringformat:'s' == value|stringformat:'s' %}selected{% endif %}>{{ label }}</option>
-                        {% endfor %}
-                    </select>
-                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground">
-                        <i data-lucide="chevron-down" class="h-4 w-4"></i>
-                    </div>
-                </div>
-                {% if form.priority.errors %}
-                    <ul class="mt-2 text-sm font-medium text-destructive list-none">
-                        {% for error in form.priority.errors %}<li>{{ error }}</li>{% endfor %}
-                    </ul>
-                {% endif %}
-            </div>
+            <h4 class="font-medium text-foreground">Target Limit Reached</h4>
+            <p class="text-sm text-muted-foreground mt-1 max-w-sm">You have selected the maximum of 3 target occupations. You can proceed to the assessment.</p>
         </div>
-        <!-- Card Footer -->
+        
+        <!-- Action Buttons (No Form) -->
         <div class="-mx-8 -mb-8 mt-6 px-8 py-4 bg-muted border-t border-border">
-            <div class="flex items-center justify-between">
-                <div class="text-sm text-muted-foreground">
-                    {% if target_records %}Add another or continue to next step{% else %}Add at least one target occupation{% endif %}
-                </div>
-                <div class="flex items-center gap-3">
-                    {% if target_records %}
-                        <button type="button"
-                                hx-get="{% url 'candidates:onboarding-assessment' %}"
-                                hx-target="#tab-content"
-                                hx-swap="innerHTML swap:0.5s"
-                                class="app-btn border-none bg-background hover:bg-accent hover:text-accent-foreground">
-                            Continue
-                        </button>
-                    {% endif %}
-                    <button type="submit"
-                            class="app-btn app-btn-primary"
-                            :disabled="isSubmitting">
-                        <span x-show="!isSubmitting">Save Target</span>
-                        <span x-show="isSubmitting" class="flex items-center gap-2">
-                            <i data-lucide="loader" class="w-4 h-4 animate-spin-smooth"></i>
-                            Saving...
-                        </span>
-                    </button>
-                </div>
+            <div class="flex items-center justify-end">
+                <button type="button"
+                        hx-get="{% url 'candidates:onboarding-assessment' %}"
+                        hx-target="#tab-content"
+                        hx-swap="innerHTML swap:0.5s"
+                        class="app-btn app-btn-primary">
+                    Start Assessment
+                    <i data-lucide="arrow-right" class="w-4 h-4 ml-2"></i>
+                </button>
             </div>
         </div>
-    </form>
+    {% else %}
+        <form method="post"
+              action="{% url 'candidates:onboarding-targets' %}"
+              hx-post="{% url 'candidates:onboarding-targets' %}"
+              hx-target="#tab-content"
+              hx-swap="innerHTML swap:0.5s"
+              x-data="{ isSubmitting: false }"
+              @submit="isSubmitting = true"
+              @htmx:afterRequest="isSubmitting = false"
+              @htmx:responseError="isSubmitting = false">
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+                <div class="app-alert app-alert-error">
+                    <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                    <div>{{ form.non_field_errors }}</div>
+                </div>
+            {% endif %}
+            <div class="space-y-4">
+                <div>
+                     {% include "components/select.html" with name=form.occupation.name label="Occupation" options=form.occupation.field.choices value=form.occupation.value use_tuple=True placeholder="Select occupation" %}
+                    {% if form.occupation.errors %}
+                        <ul class="mt-2 text-sm font-medium text-destructive list-none">
+                            {% for error in form.occupation.errors %}<li>{{ error }}</li>{% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+                <div>
+                    {% include "components/select.html" with name=form.priority.name label="Priority" options=available_priorities value=form.priority.value use_tuple=True placeholder="Select priority" %}
+                    {% if form.priority.errors %}
+                        <ul class="mt-2 text-sm font-medium text-destructive list-none">
+                            {% for error in form.priority.errors %}<li>{{ error }}</li>{% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+            <!-- Card Footer -->
+            <div class="-mx-8 -mb-8 mt-6 px-8 py-4 bg-muted border-t border-border">
+                <div class="flex items-center justify-between">
+                    <div class="text-sm text-muted-foreground">
+                        {% if target_records %}Add another or continue to next step{% else %}Add at least one target occupation{% endif %}
+                    </div>
+                    <div class="flex items-center gap-3">
+                        {% if target_records %}
+                            <button type="button"
+                                    hx-get="{% url 'candidates:onboarding-assessment' %}"
+                                    hx-target="#tab-content"
+                                    hx-swap="innerHTML swap:0.5s"
+                                    class="app-btn border-none bg-background hover:bg-accent hover:text-accent-foreground">
+                                Continue
+                            </button>
+                        {% endif %}
+                        <button type="submit"
+                                class="app-btn app-btn-primary"
+                                :disabled="isSubmitting">
+                            <span x-show="!isSubmitting">Save Target</span>
+                            <span x-show="isSubmitting" class="flex items-center gap-2">
+                                <i data-lucide="loader" class="w-4 h-4 animate-spin-smooth"></i>
+                                Saving...
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    {% endif %}
 </div>
 
 <div id="score-data" data-score="{{ score|default:0 }}" data-active-tab="{{ active_tab|default:'targets' }}" style="display:none;"></div>

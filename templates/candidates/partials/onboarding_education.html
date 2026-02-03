@@ -14,6 +14,14 @@
                             {% if record.field_of_study %}<p class="text-sm text-muted-foreground">{{ record.field_of_study }}</p>{% endif %}
                             <p class="text-xs text-muted-foreground">Completed: {{ record.year_completed }}</p>
                         </div>
+                        <button type="button"
+                                hx-delete="{% url 'candidates:onboarding-education' %}?delete_id={{ record.id }}"
+                                hx-target="#tab-content"
+                                hx-swap="innerHTML"
+                                hx-confirm="Are you sure you want to remove this education record?"
+                                class="text-muted-foreground hover:text-destructive transition-colors">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
                     </div>
                 </div>
             {% endfor %}
@@ -26,10 +34,7 @@
           hx-post="{% url 'candidates:onboarding-education' %}"
           hx-target="#tab-content"
           hx-swap="innerHTML swap:0.5s"
-          x-data="{ 
-            isSubmitting: false, 
-            educationType: '{{ form.education_type.value|default:'' }}'
-          }"
+          x-data="{ isSubmitting: false, educationType: '{{ form.education_type.value|default:'' }}' }"
           @submit="isSubmitting = true"
           @htmx:afterRequest="isSubmitting = false"
           @htmx:responseError="isSubmitting = false">
@@ -42,21 +47,7 @@
         {% endif %}
         <div class="space-y-4">
             <div>
-                <label for="{{ form.education_type.id_for_label }}"
-                       class="block mb-2 text-sm font-medium text-muted-foreground">Education Type</label>
-                <div class="relative">
-                    <select name="{{ form.education_type.name }}"
-                            id="{{ form.education_type.id_for_label }}"
-                            x-model="educationType"
-                            class="app-input appearance-none w-full pr-10 {% if form.education_type.errors %}border-destructive{% endif %}">
-                        {% for value, label in form.education_type.field.choices %}
-                            <option value="{{ value }}" class="bg-card text-foreground py-2" {% if form.education_type.value|stringformat:'s' == value|stringformat:'s' %}selected{% endif %}>{{ label }}</option>
-                        {% endfor %}
-                    </select>
-                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground">
-                        <i data-lucide="chevron-down" class="h-4 w-4"></i>
-                    </div>
-                </div>
+                {% include "components/select.html" with name=form.education_type.name label="Education Type" options=form.education_type.field.choices value=form.education_type.value use_tuple=True x_model="educationType" placeholder="Select education type" %}
                 {% if form.education_type.errors %}
                     <ul class="mt-2 text-sm font-medium text-destructive list-none">
                         {% for error in form.education_type.errors %}<li>{{ error }}</li>{% endfor %}
@@ -114,7 +105,11 @@
         <div class="-mx-8 -mb-8 mt-6 px-8 py-4 bg-muted border-t border-border">
             <div class="flex items-center justify-between">
                 <div class="text-sm text-muted-foreground">
-                    {% if education_records %}Add another or continue to next step{% else %}Add at least one education record{% endif %}
+                    {% if education_records %}
+                        Add another or continue to next step
+                    {% else %}
+                        Add at least one education record
+                    {% endif %}
                 </div>
                 <div class="flex items-center gap-3">
                     {% if education_records %}
@@ -140,8 +135,10 @@
         </div>
     </form>
 </div>
-
-<div id="score-data" data-score="{{ score|default:0 }}" data-active-tab="{{ active_tab|default:'education' }}" style="display:none;"></div>
+<div id="score-data"
+     data-score="{{ score|default:0 }}"
+     data-active-tab="{{ active_tab|default:'education' }}"
+     style="display:none"></div>
 <script>
     (function() {
         const scoreData = document.getElementById('score-data');
