@@ -1,0 +1,70 @@
+<div class="app-card space-y-6">
+    {% include "components/card_header.html" with title="Tasks and Responsibilities" description="Manage the tasks associated with this occupation" %}
+    <!-- List of Existing Tasks -->
+    <div id="tasks-list" class="space-y-4">
+        {% for task in tasks %}
+            {% include "content/partials/item_task.html" with task=task occupation=occupation %}
+        {% empty %}
+            <div class="text-center py-8 text-muted-foreground italic">No tasks defined for this occupation yet.</div>
+        {% endfor %}
+    </div>
+    <!-- Add New Task Form -->
+    <div class="pt-6 border-t border-border">
+        <h4 class="text-sm font-semibold text-foreground mb-4">Add New Task</h4>
+        <form method="post"
+              action="{% url 'occupation-tasks-partial' occupation.id %}"
+              hx-post="{% url 'occupation-tasks-partial' occupation.id %}"
+              hx-target="#tab-content"
+              hx-swap="innerHTML"
+              x-data="{ isSubmitting: false }"
+              @submit="isSubmitting = true"
+              @htmx:afterRequest="isSubmitting = false"
+              class="space-y-4">
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+                <div class="app-alert app-alert-error">
+                    <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                    <div>{{ form.non_field_errors }}</div>
+                </div>
+            {% endif %}
+            <div>
+                <label for="id_new_task_title"
+                       class="block mb-2 text-sm font-medium text-muted-foreground">Task Title</label>
+                <input type="text"
+                       name="title"
+                       id="id_new_task_title"
+                       placeholder="e.g., Develop software applications"
+                       class="app-input {% if form.title.errors %}border-destructive{% endif %}"
+                       required>
+                {% if form.title.errors %}
+                    <ul class="mt-2 text-sm font-medium text-destructive list-none">
+                        {% for error in form.title.errors %}<li>{{ error }}</li>{% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+            <div>
+                <label for="id_new_task_description"
+                       class="block mb-2 text-sm font-medium text-muted-foreground">Description (Optional)</label>
+                <textarea name="description"
+                          id="id_new_task_description"
+                          rows="2"
+                          placeholder="Detailed description of the task..."
+                          class="app-input {% if form.description.errors %}border-destructive{% endif %}"></textarea>
+                {% if form.description.errors %}
+                    <ul class="mt-2 text-sm font-medium text-destructive list-none">
+                        {% for error in form.description.errors %}<li>{{ error }}</li>{% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+            <button type="submit"
+                    class="app-btn app-btn-primary"
+                    :disabled="isSubmitting">
+                <span x-show="!isSubmitting">Add Task</span>
+                <span x-show="isSubmitting" class="flex items-center gap-2">
+                    <i data-lucide="loader" class="w-4 h-4 animate-spin-smooth"></i>
+                    Adding...
+                </span>
+            </button>
+        </form>
+    </div>
+</div>

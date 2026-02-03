@@ -1,0 +1,135 @@
+<!-- Occupation Details Partial -->
+<div x-data="{ editing: false }" class="app-card space-y-6">
+    {% include "components/card_header.html" with title="Occupation Details" description="Update core occupation information" editable=True %}
+    
+    <form method="post"
+          action="{% url 'occupation-details-partial' occupation.id %}"
+          hx-post="{% url 'occupation-details-partial' occupation.id %}"
+          hx-target="#tab-content"
+          hx-swap="innerHTML swap:0.5s"
+          x-data="{ isSubmitting: false }"
+          @submit="isSubmitting = true"
+          @htmx:afterRequest="isSubmitting = false"
+          @htmx:responseError="isSubmitting = false">
+        {% csrf_token %}
+        
+        {% if form.non_field_errors %}
+            <div class="app-alert app-alert-error">
+                <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                <div>{{ form.non_field_errors }}</div>
+            </div>
+        {% endif %}
+        
+        <div class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label for="{{ form.ofo_code.id_for_label }}" class="block mb-2 text-sm font-medium text-muted-foreground">OFO Code</label>
+                    <input type="text"
+                           name="{{ form.ofo_code.name }}"
+                           id="{{ form.ofo_code.id_for_label }}"
+                           value="{{ form.ofo_code.value|default:'' }}"
+                           class="app-input {% if form.ofo_code.errors %}border-destructive{% endif %}"
+                           :disabled="!editing"
+                           required>
+                    {% if form.ofo_code.errors %}
+                        <ul class="mt-2 text-sm font-medium text-destructive list-none">
+                            {% for error in form.ofo_code.errors %}<li>{{ error }}</li>{% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="{{ form.ofo_title.id_for_label }}" class="block mb-2 text-sm font-medium text-muted-foreground">Title</label>
+                    <input type="text"
+                           name="{{ form.ofo_title.name }}"
+                           id="{{ form.ofo_title.id_for_label }}"
+                           value="{{ form.ofo_title.value|default:'' }}"
+                           class="app-input {% if form.ofo_title.errors %}border-destructive{% endif %}"
+                           :disabled="!editing"
+                           required>
+                    {% if form.ofo_title.errors %}
+                        <ul class="mt-2 text-sm font-medium text-destructive list-none">
+                            {% for error in form.ofo_title.errors %}<li>{{ error }}</li>{% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div>
+                <label for="{{ form.description.id_for_label }}" class="block mb-2 text-sm font-medium text-muted-foreground">Description</label>
+                <textarea name="{{ form.description.name }}"
+                          id="{{ form.description.id_for_label }}"
+                          rows="4"
+                          class="app-input {% if form.description.errors %}border-destructive{% endif %}"
+                          :disabled="!editing">{{ form.description.value|default:'' }}</textarea>
+                {% if form.description.errors %}
+                    <ul class="mt-2 text-sm font-medium text-destructive list-none">
+                        {% for error in form.description.errors %}<li>{{ error }}</li>{% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                    {% include "components/select.html" with name=form.industry.name label="Industry" options=form.industry.field.choices value=form.industry.value use_tuple=True x_disabled="!editing" placeholder="Select industry" %}
+                     {% if form.industry.errors %}
+                        <ul class="mt-2 text-sm font-medium text-destructive list-none">
+                            {% for error in form.industry.errors %}<li>{{ error }}</li>{% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="{{ form.years_of_experience.id_for_label }}" class="block mb-2 text-sm font-medium text-muted-foreground">Years of Experience</label>
+                    <input type="number"
+                           name="{{ form.years_of_experience.name }}"
+                           id="{{ form.years_of_experience.id_for_label }}"
+                           value="{{ form.years_of_experience.value|default:0 }}"
+                           class="app-input {% if form.years_of_experience.errors %}border-destructive{% endif %}"
+                           :disabled="!editing">
+                     {% if form.years_of_experience.errors %}
+                        <ul class="mt-2 text-sm font-medium text-destructive list-none">
+                            {% for error in form.years_of_experience.errors %}<li>{{ error }}</li>{% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+                <div>
+                     <label for="{{ form.preferred_nqf_level.id_for_label }}" class="block mb-2 text-sm font-medium text-muted-foreground">Preferred NQF Level</label>
+                    <input type="number"
+                           name="{{ form.preferred_nqf_level.name }}"
+                           id="{{ form.preferred_nqf_level.id_for_label }}"
+                           value="{{ form.preferred_nqf_level.value|default:0 }}"
+                           class="app-input {% if form.preferred_nqf_level.errors %}border-destructive{% endif %}"
+                           :disabled="!editing">
+                     {% if form.preferred_nqf_level.errors %}
+                        <ul class="mt-2 text-sm font-medium text-destructive list-none">
+                            {% for error in form.preferred_nqf_level.errors %}<li>{{ error }}</li>{% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Card Footer -->
+        <div class="-mx-8 -mb-8 mt-6 px-8 py-4 bg-muted border-t border-border" x-show="editing" style="display: none;">
+            <div class="flex items-center justify-between">
+                <div class="text-sm text-muted-foreground">Changes will update the occupation details</div>
+                <div class="flex items-center gap-2">
+                     <button type="button" 
+                            @click="editing = false; $el.closest('form').reset()"
+                            class="app-btn app-btn-ghost"
+                            :disabled="isSubmitting">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                            class="app-btn app-btn-primary"
+                            :disabled="!editing || isSubmitting">
+                        <span x-show="!isSubmitting">Save Changes</span>
+                        <span x-show="isSubmitting" class="flex items-center gap-2">
+                            <i data-lucide="loader" class="w-4 h-4 animate-spin-smooth"></i>
+                            Saving...
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
