@@ -1,0 +1,255 @@
+{% extends "layouts/dashboard_page_view.html" %}
+{% load role_tags %}
+{% block title %}Occupations{% endblock %}
+{% block page_title %}Occupations{% endblock %}
+{% block page_description %}
+    Browse and search for occupations across various industries.
+{% endblock %}
+
+{% block page_content %}
+<div class="bg-card rounded-xl shadow-sm border border-border">
+
+    <!-- Header: Search and Filter -->
+    <div class="p-6 border-b border-border">
+        <form method="get" class="flex flex-col md:flex-row gap-4">
+            <div class="flex-1">
+                <label for="search" class="sr-only">Search</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted-foreground">
+                        <i data-lucide="search" class="h-5 w-5"></i>
+                    </div>
+                    <input type="text" name="q" id="search" 
+                           class="block w-full pl-10 pr-3 py-2 bg-input border border-border rounded-lg text-foreground placeholder-muted-foreground focus:ring-primary focus:border-primary"
+                           placeholder="Search by title, code or description..."
+                           value="{{ search_query|default:'' }}">
+                </div>
+            </div>
+            <div class="w-full md:w-64">
+                <div class="relative w-full" x-data="{ open: false }">
+                    <label for="industry_select" class="sr-only">Industry</label>
+                    
+                    <!-- Trigger Button -->
+                    <button type="button" 
+                            @click="open = !open" 
+                            @click.away="open = false"
+                            class="relative w-full cursor-pointer rounded-lg bg-input py-2 pl-3 pr-10 text-left focus:outline-none focus:ring-1 focus:ring-primary sm:text-sm shadow-sm hover:border-primary/50 transition-colors">
+                        <span class="block truncate text-foreground">
+                            {% if selected_industry == 'interested' %}
+                                My Interested Industries
+                            {% elif selected_industry %}
+                                {% for industry in industries %}
+                                    {% if industry.id|stringformat:"s" == selected_industry %}
+                                        {{ industry.name }}
+                                    {% endif %}
+                                {% endfor %}
+                            {% else %}
+                                All Industries
+                            {% endif %}
+                        </span>
+                        <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                            <i data-lucide="chevron-down" class="h-4 w-4 text-muted-foreground"></i>
+                        </span>
+                    </button>
+            
+                    <!-- Dropdown Panel -->
+                    <div x-show="open" 
+                         x-transition:enter="transition ease-out duration-100"
+                         x-transition:enter-start="transform opacity-0 scale-95"
+                         x-transition:enter-end="transform opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-75"
+                         x-transition:leave-start="transform opacity-100 scale-100"
+                         x-transition:leave-end="transform opacity-0 scale-95"
+                         class="absolute z-50 mt-1 max-h-80 w-full overflow-auto rounded-xl bg-popover py-1 text-base shadow-lg focus:outline-none sm:text-sm"
+                         style="display: none;">
+                        
+                        <ul class="p-1">
+                            <!-- Quick Filters Group -->
+                             {% if user|has_any_role:"content_manager,admin,super_admin" or has_interests %}
+                                <li class="px-2 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                    Quick Filters
+                                </li>
+                                {% if user|has_any_role:"content_manager,admin,super_admin" %}
+                                    <li class="relative cursor-pointer select-none py-2.5 pl-3 pr-9 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors {% if not selected_industry %}bg-accent/50 text-accent-foreground font-medium{% else %}text-foreground{% endif %}"
+                                        @click="$refs.industryInput.value = ''; $refs.industryInput.form.submit()">
+                                        <span class="block truncate">All Industries</span>
+                                        {% if not selected_industry %}
+                                        <span class="absolute inset-y-0 right-0 flex items-center pr-3 text-primary">
+                                            <i data-lucide="check" class="h-4 w-4"></i>
+                                        </span>
+                                        {% endif %}
+                                    </li>
+                                {% endif %}
+                                {% if has_interests %}
+                                     <li class="relative cursor-pointer select-none py-2.5 pl-3 pr-9 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors {% if selected_industry == 'interested' %}bg-accent/50 text-accent-foreground font-medium{% else %}text-foreground{% endif %}"
+                                        @click="$refs.industryInput.value = 'interested'; $refs.industryInput.form.submit()">
+                                        <span class="block truncate">My Interested Industries</span>
+                                         {% if selected_industry == 'interested' %}
+                                        <span class="absolute inset-y-0 right-0 flex items-center pr-3 text-primary">
+                                            <i data-lucide="check" class="h-4 w-4"></i>
+                                        </span>
+                                        {% endif %}
+                                    </li>
+                                {% endif %}
+                                <div class="h-px bg-border my-1 mx-1"></div>
+                            {% endif %}
+                            
+                            <!-- Browse Industries Group -->
+                            <li class="px-2 py-2 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                Browse Industries
+                            </li>
+                            {% for industry in industries %}
+                                <li class="relative cursor-pointer select-none py-2.5 pl-3 pr-9 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors {% if selected_industry == industry.id|stringformat:"s" %}bg-accent/50 text-accent-foreground font-medium{% else %}text-foreground{% endif %}"
+                                    @click="$refs.industryInput.value = '{{ industry.id }}'; $refs.industryInput.form.submit()">
+                                    <span class="block truncate">{{ industry.name }}</span>
+                                     {% if selected_industry == industry.id|stringformat:"s" %}
+                                    <span class="absolute inset-y-0 right-0 flex items-center pr-3 text-primary">
+                                        <i data-lucide="check" class="h-4 w-4"></i>
+                                    </span>
+                                    {% endif %}
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    
+                    <!-- Hidden input for form submission -->
+                    <input type="hidden" name="industry" x-ref="industryInput" value="{{ selected_industry|default:'' }}">
+                </div>
+            </div>
+            <div>
+                 <a href="{% url 'occupations' %}" class="inline-flex items-center px-4 py-2 border border-border text-sm font-medium rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                    Clear
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Body: Occupations List -->
+    <div class="divide-y divide-border">
+        {% if occupations %}
+            {% for occupation in occupations %}
+            <div class="group p-6 hover:bg-muted/50 transition-colors flex items-center gap-6">
+                {% if occupation.proficiency_score is not None %}
+                <div class="flex-shrink-0 flex flex-col items-center justify-center w-12 h-12 rounded-full border 
+                    {% if occupation.proficiency_score >= 75 %}border-green-500/30 bg-green-500/10 text-green-600{% elif occupation.proficiency_score >= 50 %}border-yellow-500/30 bg-yellow-500/10 text-yellow-600{% else %}border-border bg-muted text-muted-foreground{% endif %}">
+                    <span class="text-sm font-bold">{{ occupation.proficiency_score }}%</span>
+                </div>
+                {% endif %}
+                <div class="flex-grow">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <div class="flex items-center gap-2 mb-1">
+                                <h3 class="text-base font-semibold text-foreground">
+                                    <a href="{% url 'occupation-detail' occupation.id %}" class="hover:underline hover:text-primary transition-colors">
+                                        {{ occupation.ofo_title }}
+                                    </a>
+                                </h3>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-muted text-muted-foreground border border-border">
+                                    {{ occupation.ofo_code }}
+                                </span>
+                            </div>
+                            <p class="text-sm text-muted-foreground line-clamp-1 mb-1">{{ occupation.industry.name|default:"No Industry" }}</p>
+                            {% if occupation.description %}
+                                <p class="text-sm text-muted-foreground/80 line-clamp-2">{{ occupation.description }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="opacity-0 group-hover:opacity-100 transition-opacity">
+                             <a href="{% url 'occupation-detail' occupation.id %}" class="p-2 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground">
+                                <i data-lucide="chevron-right" class="w-5 h-5"></i>
+                             </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="text-center py-12 text-muted-foreground">
+                <i data-lucide="file-search" class="mx-auto h-12 w-12 opacity-50 mb-3"></i>
+                <h3 class="text-sm font-medium text-foreground">No occupations found</h3>
+                <p class="mt-1 text-sm">Try adjusting your search or filter.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Footer: Pagination -->
+    <div class="px-6 py-4 bg-muted/30 border-t border-border rounded-b-xl flex items-center justify-between">
+        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+            <div>
+                <p class="text-sm text-muted-foreground">
+                    Showing
+                    <span class="font-medium text-foreground">{{ occupations.start_index }}</span>
+                    to
+                    <span class="font-medium text-foreground">{{ occupations.end_index }}</span>
+                    of
+                    <span class="font-medium text-foreground">{{ occupations.paginator.count }}</span>
+                    results
+                </p>
+            </div>
+            <div>
+                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                    {% if occupations.has_previous %}
+                        <a href="?page={{ occupations.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_industry %}&industry={{ selected_industry }}{% endif %}" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-border bg-card text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground">
+                            <span class="sr-only">Previous</span>
+                            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                        </a>
+                    {% else %}
+                        <span class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-border bg-muted text-sm font-medium text-muted-foreground/50 cursor-not-allowed">
+                            <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                        </span>
+                    {% endif %}
+                    
+                    {% for i in occupations.paginator.page_range %}
+                        {% if occupations.number == i %}
+                            <span class="relative inline-flex items-center px-4 py-2 bg-primary/5 text-sm font-medium text-primary">
+                                {{ i }}
+                            </span>
+                        {% else %}
+                             <!-- Show first, last, current, and surrounding pages logic can be added here if needed, keeping simple for now -->
+                             {% if i > occupations.number|add:'-3' and i < occupations.number|add:'3' %}
+                                <a href="?page={{ i }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_industry %}&industry={{ selected_industry }}{% endif %}" class="relative inline-flex items-center px-4 py-2 border border-border bg-card text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground">
+                                    {{ i }}
+                                </a>
+                             {% endif %}
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if occupations.has_next %}
+                        <a href="?page={{ occupations.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_industry %}&industry={{ selected_industry }}{% endif %}" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-border bg-card text-sm font-medium text-muted-foreground hover:bg-muted hover:text-foreground">
+                            <span class="sr-only">Next</span>
+                            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        </a>
+                    {% else %}
+                         <span class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-border bg-muted text-sm font-medium text-muted-foreground/50 cursor-not-allowed">
+                            <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                        </span>
+                    {% endif %}
+                </nav>
+            </div>
+        </div>
+        <!-- Mobile Pagination -->
+        <div class="flex items-center justify-between sm:hidden w-full">
+            {% if occupations.has_previous %}
+                <a href="?page={{ occupations.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_industry %}&industry={{ selected_industry }}{% endif %}" class="relative inline-flex items-center px-4 py-2 border border-border text-sm font-medium rounded-md text-foreground bg-card hover:bg-muted">
+                    Previous
+                </a>
+            {% else %}
+                 <button disabled class="relative inline-flex items-center px-4 py-2 border border-border text-sm font-medium rounded-md text-muted-foreground bg-muted cursor-not-allowed">
+                    Previous
+                </button>
+            {% endif %}
+            <span class="text-sm text-foreground">
+                Page {{ occupations.number }} of {{ occupations.paginator.num_pages }}
+            </span>
+            {% if occupations.has_next %}
+                <a href="?page={{ occupations.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if selected_industry %}&industry={{ selected_industry }}{% endif %}" class="relative inline-flex items-center px-4 py-2 border border-border text-sm font-medium rounded-md text-foreground bg-card hover:bg-muted">
+                    Next
+                </a>
+            {% else %}
+                <button disabled class="relative inline-flex items-center px-4 py-2 border border-border text-sm font-medium rounded-md text-muted-foreground bg-muted cursor-not-allowed">
+                    Next
+                </button>
+            {% endif %}
+        </div>
+    </div>
+
+</div>
+{% endblock %}

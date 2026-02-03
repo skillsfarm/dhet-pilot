@@ -1,0 +1,130 @@
+{% extends "layouts/dashboard_page_view.html" %}
+
+{% block title %}{{ occupation.ofo_title }} - Details{% endblock %}
+
+{% block page_title %}
+<div class="flex flex-col gap-4">
+    <a href="{% url 'occupations' %}" class="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors">
+        <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i>
+        Back to Occupations
+    </a>
+    <div class="flex items-center justify-between w-full">
+        <span>{{ occupation.ofo_title }}</span>
+        {% if user.is_staff or user.is_superuser %}
+        <a href="{% url 'occupation-edit' occupation.id %}" class="app-btn app-btn-primary text-sm">
+            <i data-lucide="pencil" class="w-4 h-4 mr-2"></i>
+            Edit
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block page_description %}
+<div class="flex items-center gap-2">
+    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-zinc-100 text-zinc-800 dark:bg-zinc-700 dark:text-zinc-200">
+        {{ occupation.ofo_code }}
+    </span>
+    {% if occupation.industry %}
+        <span class="text-muted-foreground">• {{ occupation.industry.name }}</span>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block page_content %}
+<div class="space-y-6 max-w-6xl">
+    <!-- Main Content -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Details Column -->
+        <div class="{% if user.is_staff %}lg:col-span-3{% else %}lg:col-span-2{% endif %} space-y-6">
+            <!-- Description -->
+            <div class="bg-card p-6 rounded-xl shadow-sm border border-border">
+                <h3 class="text-lg font-semibold mb-4 text-foreground">Description</h3>
+                <div class="prose dark:prose-invert max-w-none text-muted-foreground leading-relaxed">
+                    {% if occupation.description %}
+                        {{ occupation.description|linebreaks }}
+                    {% else %}
+                        <p class="italic text-muted-foreground/60">No description available for this occupation.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Tasks -->
+            {% if occupation.tasks.exists %}
+            <div class="bg-card p-6 rounded-xl shadow-sm border border-border">
+                <h3 class="text-lg font-semibold mb-4 text-foreground">Tasks and Responsibilities</h3>
+                <ul class="space-y-2">
+                    {% for task in occupation.tasks.all %}
+                        <li class="flex items-start gap-2 px-2">
+                            <div class="shrink-0 mt-2">
+                                <div class="w-1.5 h-1.5 rounded-full bg-gray-400"></div>
+                            </div>
+                            <span class="text-muted-foreground text-sm leading-relaxed">{{ task.description|default:task.title }}</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar / Actions -->
+        <div class="space-y-6">
+            {% if user.candidate %}
+                <!-- Progress/Action Card -->
+                <div class="bg-card p-6 rounded-xl shadow-sm border border-border">
+                    <h3 class="font-semibold text-foreground mb-4">Your Progress</h3>
+                    
+                    {% if proficiency_score is not None %}
+                        <div class="flex flex-col items-center justify-center p-6 bg-muted/30 rounded-lg mb-6 border border-border/50">
+                            <span class="text-4xl font-bold 
+                                {% if proficiency_score >= 75 %}text-green-500 dark:text-green-400{% elif proficiency_score >= 50 %}text-green-700 dark:text-green-500{% else %}text-zinc-500 dark:text-zinc-400{% endif %}">
+                                {{ proficiency_score }}%
+                            </span>
+                            <span class="text-sm text-muted-foreground mt-2 font-medium">Proficiency Score</span>
+                        </div>
+                    {% endif %}
+
+                    <div class="space-y-3">
+                        {% if is_target %}
+                            {% if proficiency_score is not None %}
+                                <a href="{% url 'candidates:occupation-assessment' occupation.id %}" class="app-btn w-full justify-center flex items-center gap-2 py-2 px-4 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+                                    <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                                    Review Assessment
+                                </a>
+                            {% else %}
+                                <a href="{% url 'candidates:occupation-assessment' occupation.id %}" class="app-btn w-full justify-center flex items-center gap-2 py-2 px-4 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+                                    <i data-lucide="play-circle" class="w-4 h-4"></i>
+                                    Start Assessment
+                                </a>
+                            {% endif %}
+                        {% else %}
+                            <button disabled class="app-btn w-full justify-center flex items-center gap-2 py-2 px-4 rounded-lg bg-muted text-muted-foreground opacity-50 cursor-not-allowed">
+                                <i data-lucide="lock" class="w-4 h-4"></i>
+                                Add identifying as target to assess
+                            </button>
+                            <p class="text-xs text-center text-muted-foreground mt-2">
+                                You must add this occupation to your targets to take or review the assessment.
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Stats / Info -->
+                <div class="bg-card p-6 rounded-xl shadow-sm border border-border">
+                   <h3 class="font-semibold text-foreground mb-4">Requirements</h3>
+                   <div class="space-y-4 text-sm">
+                       <div class="flex justify-between items-center py-2 border-b border-border/50">
+                           <span class="text-muted-foreground">NQF Level</span>
+                           <span class="font-medium text-foreground">{{ occupation.preferred_nqf_level|default:"Not specified" }}</span>
+                       </div>
+                       <div class="flex justify-between items-center py-2 border-b border-border/50">
+                           <span class="text-muted-foreground">Experience</span>
+                           <span class="font-medium text-foreground">{{ occupation.years_of_experience }} Years</span>
+                       </div>
+                   </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
