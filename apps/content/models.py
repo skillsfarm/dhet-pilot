@@ -43,6 +43,10 @@ class Occupation(CuidModel):
     years_of_experience = models.PositiveIntegerField(
         default=0, help_text="Typical years of experience required"
     )
+    preferred_nqf_level = models.PositiveIntegerField(
+        default=0, 
+        help_text="Preferred NQF level (0=Any, 4=Matric, 5=Certificate, 6=Diploma, 7=Degree, 8=Honours, 9=Masters, 10=Doctorate)"
+    )
 
     history = HistoricalRecords()
 

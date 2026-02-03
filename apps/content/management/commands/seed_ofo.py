@@ -71,9 +71,10 @@ class Command(BaseCommand):
         occupations_data = [
             {
                 "ofo_code": "133102",
-                "ofo_title": "ICT Project Manager",
+                "ofo_title": "ICT Project Manager (Mid-Level)",
                 "description": "Manages and delivers ICT projects from initiation to closeout. Responsible for scoping, planning, execution, monitoring, and handover of projects.",
                 "years_of_experience": 5,
+                "preferred_nqf_level": 7,  # Bachelor's Degree
                 "tasks": [
                     {
                         "title": "Develop project plans",
@@ -124,9 +125,10 @@ class Command(BaseCommand):
             },
             {
                 "ofo_code": "133103",
-                "ofo_title": "ICT Infrastructure Project Manager",
+                "ofo_title": "ICT Infrastructure Project Manager (Senior)",
                 "description": "Leads and delivers infrastructure and telecommunications technology projects. Manages projects involving network connectivity, data centres, and cloud platforms.",
                 "years_of_experience": 7,
+                "preferred_nqf_level": 8,  # Honours Degree
                 "tasks": [
                     {
                         "title": "Manage project lifecycle",
@@ -182,9 +184,10 @@ class Command(BaseCommand):
             },
             {
                 "ofo_code": "133104",
-                "ofo_title": "Senior ICT Project Manager",
+                "ofo_title": "Senior ICT Project Manager (Principal)",
                 "description": "Manages and delivers multiple cross-functional and large-scale IT projects aligned with organisational strategy.",
                 "years_of_experience": 8,
+                "preferred_nqf_level": 9,  # Master's Degree
                 "tasks": [
                     {
                         "title": "Execute strategic projects",
@@ -255,9 +258,10 @@ class Command(BaseCommand):
             },
             {
                 "ofo_code": "251201",
-                "ofo_title": "Software Developer",
-                "description": "Designs, develops, tests, maintains and documents program code in accordance with user requirements, and system and technical specifications.",
-                "years_of_experience": 3,
+                "ofo_title": "Junior Software Developer (Entry-Level)",
+                "description": "Designs, develops, tests, maintains and documents program code in accordance with user requirements, and system and technical specifications. Entry-level position suitable for recent graduates.",
+                "years_of_experience": 0,
+                "preferred_nqf_level": 6,  # Diploma
                 "industry": industry,
                 "tasks": [
                     {
@@ -284,9 +288,10 @@ class Command(BaseCommand):
             },
             {
                 "ofo_code": "252201",
-                "ofo_title": "Systems Administrator",
+                "ofo_title": "Systems Administrator (Mid-Level)",
                 "description": "Plans, develops, installs, troubleshoots, maintains and supports an operating system and associated server hardware, software and databases.",
                 "years_of_experience": 4,
+                "preferred_nqf_level": 6,  # Diploma
                 "industry": industry,
                 "tasks": [
                     {
@@ -325,6 +330,7 @@ class Command(BaseCommand):
                     "ofo_title": occ_data["ofo_title"],
                     "description": occ_data["description"],
                     "years_of_experience": occ_data["years_of_experience"],
+                    "preferred_nqf_level": occ_data.get("preferred_nqf_level", 0),
                     "industry": occ_data.get("industry", industry),
                 },
             )
@@ -350,11 +356,23 @@ class Command(BaseCommand):
                     self.stdout.write(f"    - Created task: {task.title}")
             else:
                 self.stdout.write(f"  Occupation already exists: {occupation.ofo_code}")
-                # Ensure industry is linked for existing occupations
+                # Update existing occupation with new fields
+                updated = False
                 if not occupation.industry:
                     occupation.industry = industry
+                    updated = True
+                if occupation.ofo_title != occ_data["ofo_title"]:
+                    occupation.ofo_title = occ_data["ofo_title"]
+                    updated = True
+                if occupation.years_of_experience != occ_data["years_of_experience"]:
+                    occupation.years_of_experience = occ_data["years_of_experience"]
+                    updated = True
+                if occupation.preferred_nqf_level != occ_data.get("preferred_nqf_level", 0):
+                    occupation.preferred_nqf_level = occ_data.get("preferred_nqf_level", 0)
+                    updated = True
+                if updated:
                     occupation.save()
-                    self.stdout.write(self.style.SUCCESS(f"    -> Linked to industry: {industry.name}"))
+                    self.stdout.write(self.style.SUCCESS(f"    -> Updated occupation: {occupation.ofo_title}"))
 
         self.stdout.write(self.style.SUCCESS("\nOFO data seeding completed!"))
         self.stdout.write(f"  Total Occupations: {Occupation.objects.count()}")
