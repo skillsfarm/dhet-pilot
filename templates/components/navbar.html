@@ -25,7 +25,8 @@
                         <span class="hidden sm:inline">API</span>
                     </a>
                 {% endif %}
-                {% if show_admin %}
+                {# Super Admin Only #}
+                {% if user.is_superuser or user|has_any_role:'super_admin' %}
                     <a href="/admin/"
                        target="_blank"
                        rel="noopener noreferrer"
@@ -39,7 +40,7 @@
                       class="inline-flex items-center">
                     {% csrf_token %}
                     <button type="submit"
-                            class="flex items-center gap-1 rounded-lg px-3 py-1 text-destructive transition hover:bg-destructive/5">
+                            class="flex items-center gap-1 rounded-lg px-3 py-1 text-primary transition hover:bg-primary/20">
                         <i data-lucide="power" class="w-4 h-4"></i>
                         <span class="hidden sm:inline">Logout</span>
                     </button>
@@ -53,20 +54,47 @@
                 <div class="w-full max-w-7xl flex flex-wrap gap-6 px-4">
                     {# Dashboard - visible to all authenticated users #}
                     {# Dashboard - visible to all authenticated users EXCEPT admins #}
-                    {% if not show_admin %}
+                    {% if user.candidate %}
                         <a href="/dashboard"
-                           class="relative flex items-center gap-2 py-4 text-sm font-medium transition-colors {% if current == 'dashboard' or current == 'user-dashboard' or current == 'content-manager-dashboard' %}text-primary after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-primary{% else %}text-muted-foreground hover:text-card-foreground{% endif %}"
-                           aria-current="{% if current == 'dashboard' or current == 'user-dashboard' or current == 'content-manager-dashboard' %}page{% endif %}">
+                           class="relative flex items-center gap-2 py-4 text-sm font-medium transition-colors {% if current and 'dashboard' in current %}text-primary after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-primary{% else %}text-muted-foreground hover:text-primary{% endif %}"
+                           aria-current="{% if current and 'dashboard' in current %}page{% endif %}">
                             <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
-                            <span class="hidden md:inline">Dashboard</span>
+                            <span class="">Dashboard</span>
+                        </a>
+                    {% endif %}
+                    {# Occupations - visible to candidates and content managers #}
+                    {% if user.candidate or user|has_any_role:'content_manager,admin' or user.is_superuser %}
+                        <a href="{% url 'occupations' %}"
+                           class="relative flex items-center gap-2 py-4 text-sm font-medium transition-colors {% if current and 'occupation' in current and current != 'occupation-assessment' %}text-primary after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-primary{% else %}text-muted-foreground hover:text-primary{% endif %}"
+                           aria-current="{% if current and 'occupation' in current and current != 'occupation-assessment' %}page{% endif %}">
+                            <i data-lucide="briefcase" class="w-4 h-4"></i>
+                            <span class="">Occupations</span>
+                        </a>
+                    {% endif %}
+                    {# Users - visible to superadmin, admin, developer #}
+                    {% if user|has_any_role:'super_admin,admin,developer' or user.is_superuser %}
+                        <a href="{% url 'user_list' %}"
+                           class="relative flex items-center gap-2 py-4 text-sm font-medium transition-colors {% if current and 'user_' in current %}text-primary after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-primary{% else %}text-muted-foreground hover:text-primary{% endif %}"
+                           aria-current="{% if current and 'user_' in current %}page{% endif %}">
+                            <i data-lucide="users" class="w-4 h-4"></i>
+                            <span class="">Users</span>
+                        </a>
+                    {% endif %}
+                    {# Assessments - visible to candidates only #}
+                    {% if role == 'user' %}
+                        <a href="{% url 'candidates:assessment-list' %}"
+                           class="relative flex items-center gap-2 py-4 text-sm font-medium transition-colors {% if current and 'assessment' in current %}text-primary after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-primary{% else %}text-muted-foreground hover:text-primary{% endif %}"
+                           aria-current="{% if current and 'assessment' in current %}page{% endif %}">
+                            <i data-lucide="clipboard-list" class="w-4 h-4"></i>
+                            <span class="">Assessments</span>
                         </a>
                     {% endif %}
                     {# Profile - visible to all authenticated users #}
                     <a href="{{ profile_url }}"
-                       class="relative flex items-center gap-2 py-4 text-sm font-medium transition-colors {% if current == 'user-profile' or current == 'developer-profile' or current == 'content-manager-profile' or current == 'admin-profile' or current == 'super-profile' %}text-primary after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-primary{% else %}text-muted-foreground hover:text-card-foreground{% endif %}"
-                       aria-current="{% if current == 'user-profile' or current == 'developer-profile' or current == 'content-manager-profile' or current == 'admin-profile' or current == 'super-profile' %}page{% endif %}">
+                       class="relative flex items-center gap-2 py-4 text-sm font-medium transition-colors {% if current and 'profile' in current %}text-primary after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-primary{% else %}text-muted-foreground hover:text-primary{% endif %}"
+                       aria-current="{% if current and 'profile' in current %}page{% endif %}">
                         <i data-lucide="user" class="w-4 h-4"></i>
-                        <span class="hidden md:inline">Profile</span>
+                        <span class="">Profile</span>
                     </a>
                 </div>
             </div>

@@ -1,0 +1,65 @@
+<div class="relative w-full {{ class }}" 
+     x-data="{ 
+        open: false, 
+        selected: '{{ value|default:'' }}',
+        label: '{% if value %}{% spaceless %}{% for option in options %}{% if use_tuple %}{% if option.0|stringformat:'s' == value|stringformat:'s' %}{{ option.1|escapejs }}{% endif %}{% else %}{% if option.id|stringformat:'s' == value|stringformat:'s' %}{{ option.name|escapejs }}{% endif %}{% endif %}{% endfor %}{% endspaceless %}{% endif %}'
+     }">
+    {% if label %}
+    <label for="{{ name }}" class="block mb-2 text-sm font-medium text-muted-foreground">{{ label }}</label>
+    {% endif %}
+    
+    <!-- Trigger Button -->
+    <button type="button" 
+            {% if not disabled %}
+            @click="open = !open" 
+            @click.away="open = false"
+            {% endif %}
+            {% if x_disabled %}:disabled="{{ x_disabled }}"{% endif %}
+            class="relative w-full rounded-lg bg-input py-2 pl-3 pr-10 text-left focus:outline-none focus:ring-1 focus:ring-primary sm:text-sm shadow-sm border border-border transition-colors {% if disabled %}cursor-not-allowed opacity-60{% else %}cursor-pointer hover:border-primary/50{% endif %}"
+            {% if x_disabled %}:class="{ 'cursor-not-allowed opacity-60': {{ x_disabled }}, 'cursor-pointer hover:border-primary/50': !({{ x_disabled }}) }"{% endif %}>
+        <span class="block truncate text-foreground" x-text="label ? label : '{{ placeholder|default:'Select option' }}'" :class="{ 'text-muted-foreground': !label }">
+        </span>
+        <span class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+            <i data-lucide="chevron-down" class="h-4 w-4 text-muted-foreground"></i>
+        </span>
+    </button>
+
+    <!-- Dropdown Panel -->
+    <div x-show="open" 
+         x-transition:enter="transition ease-out duration-100"
+         x-transition:enter-start="transform opacity-0 scale-95"
+         x-transition:enter-end="transform opacity-100 scale-100"
+         x-transition:leave="transition ease-in duration-75"
+         x-transition:leave-start="transform opacity-100 scale-100"
+         x-transition:leave-end="transform opacity-0 scale-95"
+         class="absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-xl bg-popover py-1 text-base shadow-lg focus:outline-none sm:text-sm border border-border"
+         style="display: none;">
+        
+        <ul class="p-1">
+            {% for option in options %}
+                {% if use_tuple %}
+                    <li class="relative cursor-pointer select-none py-2.5 pl-3 pr-9 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors"
+                        :class="{ 'bg-accent/50 text-accent-foreground font-medium': selected === '{{ option.0 }}', 'text-foreground': selected !== '{{ option.0 }}' }"
+                        @click="selected = '{{ option.0 }}'; label = '{{ option.1|escapejs }}'; $refs.input.value = '{{ option.0 }}'; $refs.input.dispatchEvent(new Event('input', {bubbles:true})); $refs.input.dispatchEvent(new Event('change', {bubbles:true})); {% if autosubmit %}$refs.input.form.submit();{% endif %} open = false;">
+                        <span class="block truncate">{{ option.1 }}</span>
+                        <span x-show="selected === '{{ option.0 }}'" class="absolute inset-y-0 right-0 flex items-center pr-3 text-primary">
+                            <i data-lucide="check" class="h-4 w-4"></i>
+                        </span>
+                    </li>
+                {% else %}
+                    <li class="relative cursor-pointer select-none py-2.5 pl-3 pr-9 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors"
+                        :class="{ 'bg-accent/50 text-accent-foreground font-medium': selected === '{{ option.id }}', 'text-foreground': selected !== '{{ option.id }}' }"
+                        @click="selected = '{{ option.id }}'; label = '{{ option.name|escapejs }}'; $refs.input.value = '{{ option.id }}'; $refs.input.dispatchEvent(new Event('input', {bubbles:true})); $refs.input.dispatchEvent(new Event('change', {bubbles:true})); {% if autosubmit %}$refs.input.form.submit();{% endif %} open = false;">
+                        <span class="block truncate">{{ option.name }}</span>
+                        <span x-show="selected === '{{ option.id }}'" class="absolute inset-y-0 right-0 flex items-center pr-3 text-primary">
+                            <i data-lucide="check" class="h-4 w-4"></i>
+                        </span>
+                    </li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    </div>
+    
+    <!-- Hidden input -->
+    <input type="hidden" name="{{ name }}" x-ref="input" value="{{ value|default:'' }}" {% if x_model %}x-model="{{ x_model }}"{% endif %}>
+</div>
