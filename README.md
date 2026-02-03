@@ -23,37 +23,37 @@ A Django 5 starter with Tailwind CSS v4, Flowbite, HTMX, Alpine.js, and role-bas
 
 ## Quick Start
 
-1. **Clone and setup environment**
+**Clone and setup environment**
 
 ```bash
 cp .env.example .env  # Edit with your settings
 ```
 
-1. **Install Python dependencies**
+**Install Python dependencies**
 
 ```bash
 uv sync
 ```
 
-1. **Install frontend dependencies**
+**Install frontend dependencies**
 
 ```bash
 pnpm install
 ```
 
-1. **Build CSS**
+**Build CSS**
 
 ```bash
 pnpm run build
 ```
 
-1. **Run migrations**
+**Run migrations**
 
 ```bash
 uv run python manage.py migrate
 ```
 
-1. **Seed Database (Required)**
+**Seed Database (Required)**
 
 ```bash
 uv run python manage.py seed_roles        # Create role groups
@@ -61,26 +61,26 @@ uv run python manage.py seed_cookie_groups # Create default cookie groups
 uv run python manage.py update_site       # Update Django Site name/domain
 ```
 
-1. **Seed Optional Data**
+**Seed Optional Data**
 
 ```bash
 uv run python manage.py seed_users        # Create dummy users (requires DEBUG=True)
 uv run python manage.py seed_ofo          # Create OFO occupation data
 ```
 
-1. **Create superuser**
+**Create superuser**
 
 ```bash
 uv run python manage.py createsuperuser
 ```
 
-1. **Collect static files**
+**Collect static files**
 
 ```bash
 uv run python manage.py collectstatic --noinput
 ```
 
-1. **Run development servers**
+**Run development servers**
 
 In one terminal (Frontend):
 
@@ -98,53 +98,85 @@ uv run python manage.py runserver
 
 ```text
 dhet_app/
-├── dhet_app/          # Django config
-│   ├── settings.py
-│   ├── urls.py
-│   ├── roles.py        # Role definitions
-│   └── wsgi.py
-├── users/              # User app
-│   ├── views.py        # UI views
-│   ├── viewsets.py     # API viewsets
-│   ├── serializers.py
-│   ├── adapter.py      # Allauth customization
-│   └── forms.py
-├── templates/
-│   ├── base.html
-│   └── users/
-│       ├── dashboard.html
-│       ├── onboarding.html
-│       └── profile.html
-├── theme/
-│   ├── main.css        # Tailwind entry
-│   └── dist/           # Built assets
-├── manage.py
-└── .env
+├── apps/                       # Django applications
+│   ├── accounts/               # User authentication & profiles
+│   │   ├── views.py            # UI views
+│   │   ├── viewsets.py         # API viewsets
+│   │   ├── serializers.py      # DRF serializers
+│   │   ├── adapter.py          # Allauth customization
+│   │   ├── forms.py            # Django forms
+│   │   ├── models.py           # User-related models
+│   │   ├── signals.py          # User signals
+│   │   ├── admin.py            # Admin customization
+│   │   └── management/         # Management commands
+│   ├── candidates/             # Candidate management
+│   ├── content/                # Content management
+│   ├── core/                   # Core functionality
+│   │   ├── models.py           # CuidModel base class
+│   │   ├── views.py            # Common views
+│   │   ├── middleware.py       # Request ID & logging middleware
+│   │   ├── logging_config.py   # Logging configuration
+│   │   ├── context_processors.py
+│   │   └── management/         # Core management commands
+│   ├── notifications/          # Notification system
+│   └── storage/                # File storage utilities
+├── dhet_app/                   # Django project config
+│   ├── settings.py             # Django settings
+│   ├── urls.py                 # Root URL configuration
+│   ├── roles.py                # Role definitions (RBAC)
+│   ├── cookies.py              # Cookie consent config
+│   ├── context_processors.py  # Global template context
+│   ├── wsgi.py                 # WSGI entry point
+│   └── asgi.py                 # ASGI entry point
+├── templates/                  # HTML templates
+│   ├── base.html               # Base template
+│   ├── accounts/               # Account-related templates
+│   ├── candidates/             # Candidate templates
+│   ├── content/                # Content templates
+│   ├── components/             # Reusable components
+│   ├── layouts/                # Layout templates
+│   ├── cookie_consent/         # Cookie consent UI
+│   └── admin/                  # Admin customizations
+├── theme/                      # Frontend assets
+│   ├── main.css                # Tailwind CSS entry
+│   └── dist/                   # Built CSS/JS assets
+├── static/                     # Static files (images, etc.)
+├── staticfiles/                # Collected static files (production)
+├── logs/                       # Application logs
+│   ├── development.log
+│   ├── testing.log
+│   ├── production.log
+│   └── errors.log
+├── scalar/                     # API documentation theme
+├── manage.py                   # Django management script
+├── pyproject.toml              # Python dependencies (uv)
+├── package.json                # Frontend dependencies (pnpm)
+├── .env                        # Environment variables
+└── .env.example                # Example environment config
 ```
 
 ## Roles and Permissions
 
 ### User (Normal)
+
 - Can edit own profile
 - Complete onboarding after signup
 - Redirected to `/onboarding/` on first login
 
-### Developer
-- All user permissions
-- Can manage technical content
-- Access to developer tools
-
 ### Content Manager
+
 - All user permissions
 - Can create and edit content
 - Can manage OFO occupations and skills
 
 ### Admin
+
 - All content manager permissions
 - Can manage users
 - Can manage system configuration
 
 ### Super Admin
+
 - All admin permissions
 - Full system access
 - Can edit system settings
@@ -163,7 +195,7 @@ dhet_app/
 - `/api/docs/` - API documentation (Scalar)
 - `/admin/` - Django admin
 
-## Environment Variables
+## Essential Environment Variables
 
 ```env
 # Django
@@ -188,20 +220,6 @@ EMAIL_HOST_USER=your-email@example.com
 EMAIL_HOST_PASSWORD=your-password
 DEFAULT_FROM_EMAIL=noreply@example.com
 ACCOUNT_EMAIL_VERIFICATION=mandatory  # none, optional, mandatory
-
-# S3 / Object Storage (Optional)
-ACCESS_KEY_ID=""
-SECRET_ACCESS_KEY=""
-STORAGE_BUCKET_NAME=""
-S3_ENDPOINT_URL="https://nyc3.digitaloceanspaces.com"
-S3_REGION_NAME="nyc3"
-S3_CUSTOM_DOMAIN=""  # Optional: Set if you have a custom domain or CDN
-
-# Cookie Consent
-COOKIE_CONSENT_ENABLED=False
-
-# Notifications
-NOTIFICATION_TEST_EMAIL=""
 ```
 
 ## Database Setup
@@ -209,20 +227,23 @@ NOTIFICATION_TEST_EMAIL=""
 ### PostgreSQL (Recommended)
 
 1. Create a PostgreSQL database:
+
 ```bash
 createdb dhet_db
 ```
 
-2. Set DATABASE_URL in .env:
+1. Set DATABASE_URL in .env:
+
 ```env
 DATABASE_URL=postgresql://user:password@localhost:5432/dhet_db
 ```
 
-3. Install psycopg (included in dependencies)
+1. Install psycopg (included in dependencies)
 
 ### SQLite (Development Only)
 
 For quick local development:
+
 ```env
 DATABASE_URL=sqlite:///db.sqlite3
 ```
