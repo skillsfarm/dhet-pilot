@@ -12,7 +12,12 @@
                             <p class="font-medium text-foreground">{{ record.job_title }}</p>
                             <p class="text-sm text-muted-foreground">{{ record.company }}</p>
                             <p class="text-xs text-muted-foreground">
-                                {{ record.start_date|date:"M Y" }} - {% if record.end_date %}{{ record.end_date|date:"M Y" }}{% else %}Present{% endif %}
+                                {{ record.start_date|date:"M Y" }} -
+                                {% if record.end_date %}
+                                    {{ record.end_date|date:"M Y" }}
+                                {% else %}
+                                    Present
+                                {% endif %}
                                 ({{ record.years_experience }} years)
                             </p>
                         </div>
@@ -72,7 +77,9 @@
                 </div>
                 <div>
                     <label for="{{ form.end_date.id_for_label }}"
-                           class="block mb-2 text-sm font-medium text-muted-foreground">End Date (Leave blank if current)</label>
+                           class="block mb-2 text-sm font-medium text-muted-foreground">
+                        End Date (Leave blank if current)
+                    </label>
                     {{ form.end_date }}
                     {% if form.end_date.errors %}
                         <ul class="mt-2 text-sm font-medium text-destructive list-none">
@@ -86,7 +93,11 @@
         <div class="-mx-8 -mb-8 mt-6 px-8 py-4 bg-muted border-t border-border">
             <div class="flex items-center justify-between">
                 <div class="text-sm text-muted-foreground">
-                    {% if work_records %}Add another or continue to next step{% else %}Add at least one work experience record{% endif %}
+                    {% if work_records %}
+                        Add another or continue to next step
+                    {% else %}
+                        Add at least one work experience record
+                    {% endif %}
                 </div>
                 <div class="flex items-center gap-3">
                     {% if work_records %}
@@ -112,8 +123,10 @@
         </div>
     </form>
 </div>
-
-<div id="score-data" data-score="{{ score|default:0 }}" data-active-tab="{{ active_tab|default:'experience' }}" style="display:none;"></div>
+<div id="score-data"
+     data-score="{{ score|default:0 }}"
+     data-active-tab="{{ active_tab|default:'experience' }}"
+     style="display:none"></div>
 <script>
     (function() {
         const scoreData = document.getElementById('score-data');

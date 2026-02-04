@@ -1,94 +1,89 @@
 {% extends "base.html" %}
 {% load i18n static cookie_consent_tags cookie_tags %}
-
-{% block title %}{% trans "Cookie Policy" %}{% endblock %}
-
+{% block title %}
+    {% trans "Cookie Policy" %}
+{% endblock %}
 {% block content %}
-<section class="min-h-screen bg-background text-foreground py-16 px-4 sm:px-6">
-    <div class="max-w-4xl mx-auto">
-        {% if request|cookie_consent_enabled %}
-            <!-- Header -->
-            <div class="mb-12 text-center">
-                <div class="inline-flex items-center justify-center p-2 mb-4 rounded-xl bg-primary/10 text-primary">
-                    <i data-lucide="cookie" class="w-8 h-8"></i>
+    <section class="min-h-screen bg-background text-foreground py-16 px-4 sm:px-6">
+        <div class="max-w-4xl mx-auto">
+            {% if request|cookie_consent_enabled %}
+                <!-- Header -->
+                <div class="mb-12 text-center">
+                    <div class="inline-flex items-center justify-center p-2 mb-4 rounded-xl bg-primary/10 text-primary">
+                        <i data-lucide="cookie" class="w-8 h-8"></i>
+                    </div>
+                    <h1 class="text-3xl font-black tracking-tight text-foreground mb-4">{% trans "Cookie Policy" %}</h1>
+                    <p class="text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+                        {% trans "Transparency is at the heart of what we do. Below you can discover which cookies we use and control your privacy preferences." %}
+                    </p>
                 </div>
-                <h1 class="text-3xl font-black tracking-tight text-foreground mb-4">
-                    {% trans "Cookie Policy" %}
-                </h1>
-                <p class="text-base text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                    {% trans "Transparency is at the heart of what we do. Below you can discover which cookies we use and control your privacy preferences." %}
-                </p>
-            </div>
-
-            {% all_cookie_groups_extended request "policy-cookie-data" %}
-            <div x-data="cookiePolicy">
-                <div class="space-y-10">
-                    <template x-for="(group, index) in groups" :key="group.varname">
-                        <div class="app-card !p-0 overflow-hidden bg-card border border-border/60 shadow-xl hover:shadow-2xl transition-all duration-300 group/card">
-                            <div class="p-8 md:p-10">
-                                <div class="flex flex-col md:flex-row md:items-start justify-between gap-8">
-                                    <div class="flex gap-6">
-                                        <!-- Group Icon -->
-                                        <div class="hidden sm:flex shrink-0 w-14 h-14 rounded-2xl bg-primary/5 text-primary items-center justify-center group-hover/card:bg-primary group-hover/card:text-primary-foreground transition-colors duration-300">
-                                            <i :data-lucide="
-                                                group.varname === 'essential' ? 'shield-check' : (
-                                                group.varname === 'analytics' ? 'line-chart' : (
-                                                group.varname === 'marketing' ? 'megaphone' : (
-                                                group.varname === 'preferences' ? 'settings' : 'cookie'
-                                            )))" class="w-7 h-7"></i>
-                                        </div>
-
-                                        <div class="flex-1">
-                                            <div class="flex items-center gap-3 mb-2">
-                                                <h3 class="text-xl font-extrabold text-foreground tracking-tight" x-text="group.name"></h3>
-                                                <template x-if="group.is_required">
-                                                    <span class="text-[10px] font-black uppercase tracking-widest text-primary-foreground bg-primary px-2 py-0.5 rounded-full shadow-sm">
-                                                        {% trans "Required" %}
-                                                    </span>
-                                                </template>
+                {% all_cookie_groups_extended request "policy-cookie-data" %}
+                <div x-data="cookiePolicy">
+                    <div class="space-y-10">
+                        <template x-for="(group, index) in groups" :key="group.varname">
+                            <div class="app-card !p-0 overflow-hidden bg-card border border-border/60 shadow-xl hover:shadow-2xl transition-all duration-300 group/card">
+                                <div class="p-8 md:p-10">
+                                    <div class="flex flex-col md:flex-row md:items-start justify-between gap-8">
+                                        <div class="flex gap-6">
+                                            <!-- Group Icon -->
+                                            <div class="hidden sm:flex shrink-0 w-14 h-14 rounded-2xl bg-primary/5 text-primary items-center justify-center group-hover/card:bg-primary group-hover/card:text-primary-foreground transition-colors duration-300">
+                                                <i :data-lucide=" group.varname === 'essential' ? 'shield-check' : ( group.varname === 'analytics' ? 'line-chart' : ( group.varname === 'marketing' ? 'megaphone' : ( group.varname === 'preferences' ? 'settings' : 'cookie' )))"
+                                                   class="w-7 h-7"></i>
                                             </div>
-                                            <p class="text-sm text-muted-foreground leading-relaxed font-medium opacity-80" x-text="group.description"></p>
-                                        </div>
-                                    </div>
-                                    
-                                    <div class="flex items-center justify-end">
-                                        <template x-if="!group.is_required">
-                                            <label class="relative inline-flex items-center cursor-pointer">
-                                                <input type="checkbox" x-model="group.accepted" class="sr-only peer">
-                                                <div class="w-11 h-6 bg-muted peer-focus:outline-none ring-primary/20 peer-focus:ring-4 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary transition-colors"></div>
-                                            </label>
-                                        </template>
-                                        <template x-if="group.is_required">
-                                            <div class="w-11 h-6 bg-primary/10 rounded-full flex items-center justify-center text-primary">
-                                                <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+                                            <div class="flex-1">
+                                                <div class="flex items-center gap-3 mb-2">
+                                                    <h3 class="text-xl font-extrabold text-foreground tracking-tight"
+                                                        x-text="group.name"></h3>
+                                                    <template x-if="group.is_required">
+                                                        <span class="text-[10px] font-black uppercase tracking-widest text-primary-foreground bg-primary px-2 py-0.5 rounded-full shadow-sm">
+                                                            {% trans "Required" %}
+                                                        </span>
+                                                    </template>
+                                                </div>
+                                                <p class="text-sm text-muted-foreground leading-relaxed font-medium opacity-80"
+                                                   x-text="group.description"></p>
                                             </div>
-                                        </template>
+                                        </div>
+                                        <div class="flex items-center justify-end">
+                                            <template x-if="!group.is_required">
+                                                <label class="relative inline-flex items-center cursor-pointer">
+                                                    <input type="checkbox" x-model="group.accepted" class="sr-only peer">
+                                                    <div class="w-11 h-6 bg-muted peer-focus:outline-none ring-primary/20 peer-focus:ring-4 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary transition-colors">
+                                                    </div>
+                                                </label>
+                                            </template>
+                                            <template x-if="group.is_required">
+                                                <div class="w-11 h-6 bg-primary/10 rounded-full flex items-center justify-center text-primary">
+                                                    <i data-lucide="lock" class="w-3.5 h-3.5"></i>
+                                                </div>
+                                            </template>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+                        </template>
+                    </div>
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-6 pt-12 border-t border-border/40">
+                        <p class="text-sm text-muted-foreground max-w-sm text-center sm:text-left italic">
+                            {% trans "By saving these settings, you authorize us to store cookies according to your specific choices." %}
+                        </p>
+                        <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+                            <a href="/"
+                               class="app-btn bg-accent/50 text-foreground hover:bg-accent outline-none">
+                                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                                {% trans "Return" %}
+                            </a>
+                            <button @click="save()"
+                                    :disabled="saving"
+                                    class="app-btn app-btn-primary px-10">
+                                <i data-lucide="save" class="w-4 h-4" x-show="!saving"></i>
+                                <i data-lucide="loader-2" class="w-4 h-4 animate-spin" x-show="saving"></i>
+                                <span x-text="saving ? '{% trans "Saving..." %}' : '{% trans "Save Preferences" %}'"></span>
+                            </button>
                         </div>
-                    </template>
-                </div>
-
-                <div class="flex flex-col sm:flex-row items-center justify-between gap-6 pt-12 border-t border-border/40">
-                    <p class="text-sm text-muted-foreground max-w-sm text-center sm:text-left italic">
-                        {% trans "By saving these settings, you authorize us to store cookies according to your specific choices." %}
-                    </p>
-                    <div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-                        <a href="/" class="app-btn bg-accent/50 text-foreground hover:bg-accent outline-none">
-                            <i data-lucide="arrow-left" class="w-4 h-4"></i>
-                            {% trans "Return" %}
-                        </a>
-                        <button @click="save()" :disabled="saving" class="app-btn app-btn-primary px-10">
-                            <i data-lucide="save" class="w-4 h-4" x-show="!saving"></i>
-                            <i data-lucide="loader-2" class="w-4 h-4 animate-spin" x-show="saving"></i>
-                            <span x-text="saving ? '{% trans "Saving..." %}' : '{% trans "Save Preferences" %}'"></span>
-                        </button>
                     </div>
                 </div>
-            </div>
-            
-            <script>
+                <script>
                 document.addEventListener('alpine:init', () => {
                     Alpine.data('cookiePolicy', () => ({
                         groups: [],
@@ -127,24 +122,24 @@
                         }
                     }));
                 });
-            </script>
-        {% else %}
-            <div class="text-center py-24 bg-card border border-border/60 rounded-[2rem] shadow-2xl">
-                <div class="mb-8 flex justify-center">
-                    <div class="p-6 rounded-3xl bg-muted/20 text-muted-foreground animate-pulse">
-                        <i data-lucide="cookie-off" class="w-20 h-20"></i>
+                </script>
+            {% else %}
+                <div class="text-center py-24 bg-card border border-border/60 rounded-[2rem] shadow-2xl">
+                    <div class="mb-8 flex justify-center">
+                        <div class="p-6 rounded-3xl bg-muted/20 text-muted-foreground animate-pulse">
+                            <i data-lucide="cookie-off" class="w-20 h-20"></i>
+                        </div>
                     </div>
+                    <h1 class="text-4xl font-black text-foreground mb-4">{% trans "Consent Vault Closed" %}</h1>
+                    <p class="text-lg text-muted-foreground max-w-md mx-auto mb-10 leading-relaxed font-medium">
+                        {% trans "The cookie consent manager is currently inactive. We are only processing architectural cookies essential for baseline functionality." %}
+                    </p>
+                    <a href="/" class="app-btn app-btn-primary px-10">
+                        <i data-lucide="home" class="w-4 h-4"></i>
+                        {% trans "Return to HQ" %}
+                    </a>
                 </div>
-                <h1 class="text-4xl font-black text-foreground mb-4">{% trans "Consent Vault Closed" %}</h1>
-                <p class="text-lg text-muted-foreground max-w-md mx-auto mb-10 leading-relaxed font-medium">
-                    {% trans "The cookie consent manager is currently inactive. We are only processing architectural cookies essential for baseline functionality." %}
-                </p>
-                <a href="/" class="app-btn app-btn-primary px-10">
-                    <i data-lucide="home" class="w-4 h-4"></i>
-                    {% trans "Return to HQ" %}
-                </a>
-            </div>
-        {% endif %}
-    </div>
-</section>
+            {% endif %}
+        </div>
+    </section>
 {% endblock %}

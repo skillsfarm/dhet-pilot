@@ -1,43 +1,42 @@
 <!-- Work Experience Card -->
 <div x-data="{ adding: false }" class="app-card space-y-6">
     {% include "components/card_header.html" with title="Work Experience" description="Manage your professional experience" %}
-    
     <!-- List of existing experience -->
     <div class="space-y-4">
         {% for job in work_experience %}
-             {% include "accounts/partials/item_experience.html" %}
+            {% include "accounts/partials/item_experience.html" %}
         {% empty %}
             <div class="text-center py-8 border border-dashed border-border rounded-lg">
                 <p class="text-muted-foreground">No work experience added yet.</p>
-                <button type="button" @click="adding = true" class="mt-2 text-sm text-primary hover:underline">
-                    Add your first job
-                </button>
+                <button type="button"
+                        @click="adding = true"
+                        class="mt-2 text-sm text-primary hover:underline">Add your first job</button>
             </div>
         {% endfor %}
     </div>
-
     <!-- Card Footer -->
-    <div x-show="!adding" class="-mx-8 -mb-8 mt-6 px-8 py-4 bg-muted border-t border-border">
+    <div x-show="!adding"
+         class="-mx-8 -mb-8 mt-6 px-8 py-4 bg-muted border-t border-border">
         <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div class="text-sm text-muted-foreground">
-                Add your work history to highlight your experience.
-            </div>
-            <button type="button" @click="adding = true" class="app-btn app-btn-primary w-full sm:w-auto flex items-center justify-center gap-2">
+            <div class="text-sm text-muted-foreground">Add your work history to highlight your experience.</div>
+            <button type="button"
+                    @click="adding = true"
+                    class="app-btn app-btn-primary w-full sm:w-auto flex items-center justify-center gap-2">
                 <i data-lucide="plus" class="w-4 h-4"></i>
                 Add Experience
             </button>
         </div>
     </div>
-
     <!-- Form to add new -->
     <div x-show="adding" class="pt-6 border-t border-border" x-transition>
         <div class="flex items-center justify-between mb-4">
             <h4 class="font-medium">Add Work Experience</h4>
-            <button type="button" @click="adding = false" class="text-muted-foreground hover:text-foreground">
+            <button type="button"
+                    @click="adding = false"
+                    class="text-muted-foreground hover:text-foreground">
                 <i data-lucide="x" class="w-4 h-4"></i>
             </button>
         </div>
-        
         <form method="post"
               action="{% url 'profile-experience' %}"
               hx-post="{% url 'profile-experience' %}"
@@ -48,14 +47,12 @@
               @htmx:afterRequest="isSubmitting = false"
               @htmx:responseError="isSubmitting = false">
             {% csrf_token %}
-            
             {% if form.non_field_errors %}
                 <div class="app-alert app-alert-error mb-4">
                     <i data-lucide="alert-circle" class="w-4 h-4"></i>
                     <div>{{ form.non_field_errors }}</div>
                 </div>
             {% endif %}
-
             <div class="space-y-4">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
@@ -89,7 +86,6 @@
                         {% endif %}
                     </div>
                 </div>
-
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label for="{{ form.start_date.id_for_label }}"
@@ -107,14 +103,17 @@
                     </div>
                     <div>
                         <div class="flex items-center justify-between mb-2">
-                             <label for="{{ form.end_date.id_for_label }}"
-                               class="text-sm font-medium text-muted-foreground">End Date</label>
-                             <div class="flex items-center">
-                                <input type="checkbox" id="current_job" x-model="isCurrent" class="mr-2 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary">
-                                <label for="current_job" class="text-xs text-muted-foreground cursor-pointer">Current Job</label>
-                             </div>
+                            <label for="{{ form.end_date.id_for_label }}"
+                                   class="text-sm font-medium text-muted-foreground">End Date</label>
+                            <div class="flex items-center">
+                                <input type="checkbox"
+                                       id="current_job"
+                                       x-model="isCurrent"
+                                       class="mr-2 h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary">
+                                <label for="current_job"
+                                       class="text-xs text-muted-foreground cursor-pointer">Current Job</label>
+                            </div>
                         </div>
-                       
                         <input type="date"
                                name="{{ form.end_date.name }}"
                                id="{{ form.end_date.id_for_label }}"
@@ -129,11 +128,8 @@
                     </div>
                 </div>
             </div>
-
             <div class="flex items-center justify-end gap-3 mt-6">
-                <button type="button" @click="adding = false" class="app-btn app-btn-ghost">
-                    Cancel
-                </button>
+                <button type="button" @click="adding = false" class="app-btn app-btn-ghost">Cancel</button>
                 <button type="submit"
                         class="app-btn app-btn-primary"
                         :disabled="isSubmitting">

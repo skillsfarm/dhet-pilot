@@ -47,42 +47,42 @@
                             aria-controls="tab-content">Security</button>
                 </li>
                 {% if role == 'user' %}
-                 <!-- Education History Tab -->
-                <li class="flex-1 md:flex-initial md:w-full" role="presentation">
-                    <button type="button"
-                            @click="activeTab = 'education'"
-                            hx-get="{% url 'profile-education' %}"
-                            hx-target="#tab-content"
-                            hx-swap="innerHTML swap:0.5s"
-                            :aria-selected="activeTab === 'education'"
-                            :class="{ 'px-4 py-2 w-full text-left font-medium text-primary': activeTab === 'education', 'px-4 py-2 w-full text-left font-medium text-muted-foreground opacity-50 hover:opacity-75': activeTab !== 'education' }"
-                            role="tab"
-                            aria-controls="tab-content">Education History</button>
-                </li>
-                <!-- Work Experience Tab -->
-                <li class="flex-1 md:flex-initial md:w-full" role="presentation">
-                    <button type="button"
-                            @click="activeTab = 'experience'"
-                            hx-get="{% url 'profile-experience' %}"
-                            hx-target="#tab-content"
-                            hx-swap="innerHTML swap:0.5s"
-                            :aria-selected="activeTab === 'experience'"
-                            :class="{ 'px-4 py-2 w-full text-left font-medium text-primary': activeTab === 'experience', 'px-4 py-2 w-full text-left font-medium text-muted-foreground opacity-50 hover:opacity-75': activeTab !== 'experience' }"
-                            role="tab"
-                            aria-controls="tab-content">Work Experience</button>
-                </li>
-                 <!-- Target Occupations Tab -->
-                <li class="flex-1 md:flex-initial md:w-full" role="presentation">
-                    <button type="button"
-                            @click="activeTab = 'targets'"
-                            hx-get="{% url 'profile-targets' %}"
-                            hx-target="#tab-content"
-                            hx-swap="innerHTML swap:0.5s"
-                            :aria-selected="activeTab === 'targets'"
-                            :class="{ 'px-4 py-2 w-full text-left font-medium text-primary': activeTab === 'targets', 'px-4 py-2 w-full text-left font-medium text-muted-foreground opacity-50 hover:opacity-75': activeTab !== 'targets' }"
-                            role="tab"
-                            aria-controls="tab-content">Target Occupations</button>
-                </li>
+                    <!-- Education History Tab -->
+                    <li class="flex-1 md:flex-initial md:w-full" role="presentation">
+                        <button type="button"
+                                @click="activeTab = 'education'"
+                                hx-get="{% url 'profile-education' %}"
+                                hx-target="#tab-content"
+                                hx-swap="innerHTML swap:0.5s"
+                                :aria-selected="activeTab === 'education'"
+                                :class="{ 'px-4 py-2 w-full text-left font-medium text-primary': activeTab === 'education', 'px-4 py-2 w-full text-left font-medium text-muted-foreground opacity-50 hover:opacity-75': activeTab !== 'education' }"
+                                role="tab"
+                                aria-controls="tab-content">Education History</button>
+                    </li>
+                    <!-- Work Experience Tab -->
+                    <li class="flex-1 md:flex-initial md:w-full" role="presentation">
+                        <button type="button"
+                                @click="activeTab = 'experience'"
+                                hx-get="{% url 'profile-experience' %}"
+                                hx-target="#tab-content"
+                                hx-swap="innerHTML swap:0.5s"
+                                :aria-selected="activeTab === 'experience'"
+                                :class="{ 'px-4 py-2 w-full text-left font-medium text-primary': activeTab === 'experience', 'px-4 py-2 w-full text-left font-medium text-muted-foreground opacity-50 hover:opacity-75': activeTab !== 'experience' }"
+                                role="tab"
+                                aria-controls="tab-content">Work Experience</button>
+                    </li>
+                    <!-- Target Occupations Tab -->
+                    <li class="flex-1 md:flex-initial md:w-full" role="presentation">
+                        <button type="button"
+                                @click="activeTab = 'targets'"
+                                hx-get="{% url 'profile-targets' %}"
+                                hx-target="#tab-content"
+                                hx-swap="innerHTML swap:0.5s"
+                                :aria-selected="activeTab === 'targets'"
+                                :class="{ 'px-4 py-2 w-full text-left font-medium text-primary': activeTab === 'targets', 'px-4 py-2 w-full text-left font-medium text-muted-foreground opacity-50 hover:opacity-75': activeTab !== 'targets' }"
+                                role="tab"
+                                aria-controls="tab-content">Target Occupations</button>
+                    </li>
                 {% endif %}
             </ul>
         </div>
@@ -132,39 +132,39 @@
                             role="tab">Security</button>
                 </li>
                 {% if role == 'user' %}
-                <li role="presentation">
-                    <button type="button"
-                            @click="activeTab = 'education'; drawerOpen = false"
-                            hx-get="{% url 'profile-education' %}"
-                            hx-target="#tab-content"
-                            hx-swap="innerHTML swap:0.5s"
-                            :aria-selected="activeTab === 'education'"
-                            :style="{ color: activeTab === 'education' ? 'var(--primary)' : 'var(--muted-foreground)', opacity: activeTab === 'education' ? '1' : '0.5' }"
-                            class="px-4 py-2 w-full text-left font-medium hover:opacity-75 transition"
-                            role="tab">Education History</button>
-                </li>
-                <li role="presentation">
-                    <button type="button"
-                            @click="activeTab = 'experience'; drawerOpen = false"
-                            hx-get="{% url 'profile-experience' %}"
-                            hx-target="#tab-content"
-                            hx-swap="innerHTML swap:0.5s"
-                            :aria-selected="activeTab === 'experience'"
-                            :style="{ color: activeTab === 'experience' ? 'var(--primary)' : 'var(--muted-foreground)', opacity: activeTab === 'experience' ? '1' : '0.5' }"
-                            class="px-4 py-2 w-full text-left font-medium hover:opacity-75 transition"
-                            role="tab">Work Experience</button>
-                </li>
-                 <li role="presentation">
-                    <button type="button"
-                            @click="activeTab = 'targets'; drawerOpen = false"
-                            hx-get="{% url 'profile-targets' %}"
-                            hx-target="#tab-content"
-                            hx-swap="innerHTML swap:0.5s"
-                            :aria-selected="activeTab === 'targets'"
-                            :style="{ color: activeTab === 'targets' ? 'var(--primary)' : 'var(--muted-foreground)', opacity: activeTab === 'targets' ? '1' : '0.5' }"
-                            class="px-4 py-2 w-full text-left font-medium hover:opacity-75 transition"
-                            role="tab">Target Occupations</button>
-                </li>
+                    <li role="presentation">
+                        <button type="button"
+                                @click="activeTab = 'education'; drawerOpen = false"
+                                hx-get="{% url 'profile-education' %}"
+                                hx-target="#tab-content"
+                                hx-swap="innerHTML swap:0.5s"
+                                :aria-selected="activeTab === 'education'"
+                                :style="{ color: activeTab === 'education' ? 'var(--primary)' : 'var(--muted-foreground)', opacity: activeTab === 'education' ? '1' : '0.5' }"
+                                class="px-4 py-2 w-full text-left font-medium hover:opacity-75 transition"
+                                role="tab">Education History</button>
+                    </li>
+                    <li role="presentation">
+                        <button type="button"
+                                @click="activeTab = 'experience'; drawerOpen = false"
+                                hx-get="{% url 'profile-experience' %}"
+                                hx-target="#tab-content"
+                                hx-swap="innerHTML swap:0.5s"
+                                :aria-selected="activeTab === 'experience'"
+                                :style="{ color: activeTab === 'experience' ? 'var(--primary)' : 'var(--muted-foreground)', opacity: activeTab === 'experience' ? '1' : '0.5' }"
+                                class="px-4 py-2 w-full text-left font-medium hover:opacity-75 transition"
+                                role="tab">Work Experience</button>
+                    </li>
+                    <li role="presentation">
+                        <button type="button"
+                                @click="activeTab = 'targets'; drawerOpen = false"
+                                hx-get="{% url 'profile-targets' %}"
+                                hx-target="#tab-content"
+                                hx-swap="innerHTML swap:0.5s"
+                                :aria-selected="activeTab === 'targets'"
+                                :style="{ color: activeTab === 'targets' ? 'var(--primary)' : 'var(--muted-foreground)', opacity: activeTab === 'targets' ? '1' : '0.5' }"
+                                class="px-4 py-2 w-full text-left font-medium hover:opacity-75 transition"
+                                role="tab">Target Occupations</button>
+                    </li>
                 {% endif %}
             </ul>
         </div>

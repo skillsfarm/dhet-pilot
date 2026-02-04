@@ -1,9 +1,7 @@
 {% extends "layouts/dashboard_page_view.html" %}
 {% block title %}Candidate Onboarding{% endblock %}
 {% block page_title %}Welcome to DHET{% endblock %}
-{% block page_description %}
-    Complete this onboarding to get matched with relevant occupations.
-{% endblock %}
+{% block page_description %}Complete this onboarding to get matched with relevant occupations.{% endblock %}
 {% block page_sidebar %}
     <!-- Vertical Navigation Tabs & Logic -->
     <div x-data="{ activeTab: '{{ active_tab }}', score: {{ onboarding_score }}, drawerOpen: false }"
@@ -30,11 +28,7 @@
                             hx-swap="innerHTML swap:0.5s"
                             :disabled="score < 0"
                             :aria-selected="activeTab === 'profile'"
-                            :class="{ 
-                                'px-4 py-2 w-full text-left font-medium text-primary bg-primary/5': activeTab === 'profile',
-                                'px-4 py-2 w-full text-left font-medium text-primary/70 hover:text-primary hover:bg-primary/5': activeTab !== 'profile' && score >= 0,
-                                'px-4 py-2 w-full text-left font-medium text-muted-foreground opacity-40 cursor-not-allowed': score < 0
-                            }"
+                            :class="{ 'px-4 py-2 w-full text-left font-medium text-primary bg-primary/5': activeTab === 'profile', 'px-4 py-2 w-full text-left font-medium text-primary/70 hover:text-primary hover:bg-primary/5': activeTab !== 'profile' && score >= 0, 'px-4 py-2 w-full text-left font-medium text-muted-foreground opacity-40 cursor-not-allowed': score < 0 }"
                             role="tab"
                             aria-controls="tab-content">
                         Profile
@@ -50,11 +44,7 @@
                             hx-swap="innerHTML swap:0.5s"
                             :disabled="score < 2"
                             :aria-selected="activeTab === 'education'"
-                            :class="{ 
-                                'px-4 py-2 w-full text-left font-medium text-primary bg-primary/5': activeTab === 'education',
-                                'px-4 py-2 w-full text-left font-medium text-primary/70 hover:text-primary hover:bg-primary/5': activeTab !== 'education' && score >= 2,
-                                'px-4 py-2 w-full text-left font-medium text-muted-foreground opacity-40 cursor-not-allowed': score < 2
-                            }"
+                            :class="{ 'px-4 py-2 w-full text-left font-medium text-primary bg-primary/5': activeTab === 'education', 'px-4 py-2 w-full text-left font-medium text-primary/70 hover:text-primary hover:bg-primary/5': activeTab !== 'education' && score >= 2, 'px-4 py-2 w-full text-left font-medium text-muted-foreground opacity-40 cursor-not-allowed': score < 2 }"
                             role="tab"
                             aria-controls="tab-content">
                         Education
@@ -70,11 +60,7 @@
                             hx-swap="innerHTML swap:0.5s"
                             :disabled="score < 4"
                             :aria-selected="activeTab === 'experience'"
-                            :class="{ 
-                                'px-4 py-2 w-full text-left font-medium text-primary bg-primary/5': activeTab === 'experience',
-                                'px-4 py-2 w-full text-left font-medium text-primary/70 hover:text-primary hover:bg-primary/5': activeTab !== 'experience' && score >= 4,
-                                'px-4 py-2 w-full text-left font-medium text-muted-foreground opacity-40 cursor-not-allowed': score < 4
-                            }"
+                            :class="{ 'px-4 py-2 w-full text-left font-medium text-primary bg-primary/5': activeTab === 'experience', 'px-4 py-2 w-full text-left font-medium text-primary/70 hover:text-primary hover:bg-primary/5': activeTab !== 'experience' && score >= 4, 'px-4 py-2 w-full text-left font-medium text-muted-foreground opacity-40 cursor-not-allowed': score < 4 }"
                             role="tab"
                             aria-controls="tab-content">
                         Work Experience
@@ -90,11 +76,7 @@
                             hx-swap="innerHTML swap:0.5s"
                             :disabled="score < 6"
                             :aria-selected="activeTab === 'targets'"
-                            :class="{ 
-                                'px-4 py-2 w-full text-left font-medium text-primary bg-primary/5': activeTab === 'targets',
-                                'px-4 py-2 w-full text-left font-medium text-primary/70 hover:text-primary hover:bg-primary/5': activeTab !== 'targets' && score >= 6,
-                                'px-4 py-2 w-full text-left font-medium text-muted-foreground opacity-40 cursor-not-allowed': score < 6
-                            }"
+                            :class="{ 'px-4 py-2 w-full text-left font-medium text-primary bg-primary/5': activeTab === 'targets', 'px-4 py-2 w-full text-left font-medium text-primary/70 hover:text-primary hover:bg-primary/5': activeTab !== 'targets' && score >= 6, 'px-4 py-2 w-full text-left font-medium text-muted-foreground opacity-40 cursor-not-allowed': score < 6 }"
                             role="tab"
                             aria-controls="tab-content">
                         Targets
@@ -110,11 +92,7 @@
                             hx-swap="innerHTML swap:0.5s"
                             :disabled="score < 8"
                             :aria-selected="activeTab === 'assessment'"
-                            :class="{ 
-                                'px-4 py-2 w-full text-left font-medium text-primary bg-primary/5': activeTab === 'assessment',
-                                'px-4 py-2 w-full text-left font-medium text-primary/70 hover:text-primary hover:bg-primary/5': activeTab !== 'assessment' && score >= 8,
-                                'px-4 py-2 w-full text-left font-medium text-muted-foreground opacity-40 cursor-not-allowed': score < 8
-                            }"
+                            :class="{ 'px-4 py-2 w-full text-left font-medium text-primary bg-primary/5': activeTab === 'assessment', 'px-4 py-2 w-full text-left font-medium text-primary/70 hover:text-primary hover:bg-primary/5': activeTab !== 'assessment' && score >= 8, 'px-4 py-2 w-full text-left font-medium text-muted-foreground opacity-40 cursor-not-allowed': score < 8 }"
                             role="tab"
                             aria-controls="tab-content">
                         Profiency Assessment
@@ -154,11 +132,7 @@
                             hx-swap="innerHTML swap:0.5s"
                             :disabled="score < 0"
                             :aria-selected="activeTab === 'profile'"
-                            :class="{
-                                'px-4 py-2 w-full text-left font-medium text-primary bg-primary/5': activeTab === 'profile',
-                                'px-4 py-2 w-full text-left font-medium text-primary/70 hover:text-primary hover:bg-primary/5': activeTab !== 'profile' && score >= 0,
-                                'px-4 py-2 w-full text-left font-medium text-muted-foreground opacity-40 cursor-not-allowed': score < 0
-                            }"
+                            :class="{ 'px-4 py-2 w-full text-left font-medium text-primary bg-primary/5': activeTab === 'profile', 'px-4 py-2 w-full text-left font-medium text-primary/70 hover:text-primary hover:bg-primary/5': activeTab !== 'profile' && score >= 0, 'px-4 py-2 w-full text-left font-medium text-muted-foreground opacity-40 cursor-not-allowed': score < 0 }"
                             role="tab">
                         Profile
                         <span x-show="score >= 2" class="ml-2">✓</span>
@@ -172,11 +146,7 @@
                             hx-swap="innerHTML swap:0.5s"
                             :disabled="score < 2"
                             :aria-selected="activeTab === 'education'"
-                            :class="{
-                                'px-4 py-2 w-full text-left font-medium text-primary bg-primary/5': activeTab === 'education',
-                                'px-4 py-2 w-full text-left font-medium text-primary/70 hover:text-primary hover:bg-primary/5': activeTab !== 'education' && score >= 2,
-                                'px-4 py-2 w-full text-left font-medium text-muted-foreground opacity-40 cursor-not-allowed': score < 2
-                            }"
+                            :class="{ 'px-4 py-2 w-full text-left font-medium text-primary bg-primary/5': activeTab === 'education', 'px-4 py-2 w-full text-left font-medium text-primary/70 hover:text-primary hover:bg-primary/5': activeTab !== 'education' && score >= 2, 'px-4 py-2 w-full text-left font-medium text-muted-foreground opacity-40 cursor-not-allowed': score < 2 }"
                             role="tab">
                         Education
                         <span x-show="score >= 4" class="ml-2">✓</span>
@@ -190,11 +160,7 @@
                             hx-swap="innerHTML swap:0.5s"
                             :disabled="score < 4"
                             :aria-selected="activeTab === 'experience'"
-                            :class="{
-                                'px-4 py-2 w-full text-left font-medium text-primary bg-primary/5': activeTab === 'experience',
-                                'px-4 py-2 w-full text-left font-medium text-primary/70 hover:text-primary hover:bg-primary/5': activeTab !== 'experience' && score >= 4,
-                                'px-4 py-2 w-full text-left font-medium text-muted-foreground opacity-40 cursor-not-allowed': score < 4
-                            }"
+                            :class="{ 'px-4 py-2 w-full text-left font-medium text-primary bg-primary/5': activeTab === 'experience', 'px-4 py-2 w-full text-left font-medium text-primary/70 hover:text-primary hover:bg-primary/5': activeTab !== 'experience' && score >= 4, 'px-4 py-2 w-full text-left font-medium text-muted-foreground opacity-40 cursor-not-allowed': score < 4 }"
                             role="tab">
                         Experience
                         <span x-show="score >= 6" class="ml-2">✓</span>
@@ -208,11 +174,7 @@
                             hx-swap="innerHTML swap:0.5s"
                             :disabled="score < 6"
                             :aria-selected="activeTab === 'targets'"
-                            :class="{
-                                'px-4 py-2 w-full text-left font-medium text-primary bg-primary/5': activeTab === 'targets',
-                                'px-4 py-2 w-full text-left font-medium text-primary/70 hover:text-primary hover:bg-primary/5': activeTab !== 'targets' && score >= 6,
-                                'px-4 py-2 w-full text-left font-medium text-muted-foreground opacity-40 cursor-not-allowed': score < 6
-                            }"
+                            :class="{ 'px-4 py-2 w-full text-left font-medium text-primary bg-primary/5': activeTab === 'targets', 'px-4 py-2 w-full text-left font-medium text-primary/70 hover:text-primary hover:bg-primary/5': activeTab !== 'targets' && score >= 6, 'px-4 py-2 w-full text-left font-medium text-muted-foreground opacity-40 cursor-not-allowed': score < 6 }"
                             role="tab">
                         Targets
                         <span x-show="score >= 8" class="ml-2">✓</span>
@@ -226,11 +188,7 @@
                             hx-swap="innerHTML swap:0.5s"
                             :disabled="score < 8"
                             :aria-selected="activeTab === 'assessment'"
-                            :class="{
-                                'px-4 py-2 w-full text-left font-medium text-primary bg-primary/5': activeTab === 'assessment',
-                                'px-4 py-2 w-full text-left font-medium text-primary/70 hover:text-primary hover:bg-primary/5': activeTab !== 'assessment' && score >= 8,
-                                'px-4 py-2 w-full text-left font-medium text-muted-foreground opacity-40 cursor-not-allowed': score < 8
-                            }"
+                            :class="{ 'px-4 py-2 w-full text-left font-medium text-primary bg-primary/5': activeTab === 'assessment', 'px-4 py-2 w-full text-left font-medium text-primary/70 hover:text-primary hover:bg-primary/5': activeTab !== 'assessment' && score >= 8, 'px-4 py-2 w-full text-left font-medium text-muted-foreground opacity-40 cursor-not-allowed': score < 8 }"
                             role="tab">
                         Assessment
                         <span x-show="score >= 10" class="ml-2">✓</span>

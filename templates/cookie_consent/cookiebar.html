@@ -1,9 +1,7 @@
 {% load i18n static cookie_consent_tags cookie_tags %}
-
 {% if cookie_groups %}
     {% all_cookie_groups_extended request "cookie-groups-data" %}
     <div class="cookie-bar-container" x-data="cookieBar">
-        
         <!-- Main Banner -->
         <div class="fixed bottom-0 left-0 right-0 z-50 p-6 bg-card border-t border-border shadow-2xl"
              x-show="show"
@@ -13,7 +11,6 @@
              x-transition:leave="transition ease-in duration-200"
              x-transition:leave-start="opacity-100"
              x-transition:leave-end="opacity-0">
-            
             <div class="max-w-7xl mx-auto flex flex-col lg:flex-row items-center justify-between gap-6">
                 <div class="flex-1 text-center lg:text-left">
                     <h3 class="text-xl font-bold text-foreground mb-2 flex items-center justify-center lg:justify-start gap-2">
@@ -22,7 +19,7 @@
                     </h3>
                     <p class="text-sm text-muted-foreground leading-relaxed">
                         {% trans "We use cookies to enhance your browsing experience, serve personalized content, and analyze our traffic. By clicking 'Accept All', you consent to our use of cookies." %}
-                        <button type="button" 
+                        <button type="button"
                                 @click="showModal = true"
                                 class="font-semibold text-primary hover:underline inline-flex items-center gap-1 cursor-pointer">
                             {% trans "Manage preferences" %}
@@ -38,13 +35,10 @@
                     </button>
                     <button type="button"
                             @click="acceptAll()"
-                            class="app-btn app-btn-primary w-full sm:w-auto">
-                        {% trans "Accept All" %}
-                    </button>
+                            class="app-btn app-btn-primary w-full sm:w-auto">{% trans "Accept All" %}</button>
                 </div>
             </div>
         </div>
-
         <!-- Preferences Modal -->
         <div class="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
              x-show="showModal"
@@ -56,21 +50,19 @@
              x-transition:leave-start="opacity-100 scale-100"
              x-transition:leave-end="opacity-0 scale-95"
              @keydown.escape.window="showModal = false">
-            
             <div class="bg-card w-full max-w-2xl rounded-(--radius) border border-border shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
                  @click.away="showModal = false">
-                
                 <!-- Modal Header -->
                 <div class="p-6 border-b border-border flex items-center justify-between">
                     <div>
                         <h2 class="text-2xl font-bold text-foreground">{% trans "Cookie Settings" %}</h2>
                         <p class="text-sm text-muted-foreground mt-1">{% trans "Manage your individual cookie preferences below." %}</p>
                     </div>
-                    <button @click="showModal = false" class="text-muted-foreground hover:text-foreground">
+                    <button @click="showModal = false"
+                            class="text-muted-foreground hover:text-foreground">
                         <i data-lucide="x" class="w-6 h-6"></i>
                     </button>
                 </div>
-
                 <!-- Modal Content -->
                 <div class="p-6 overflow-y-auto space-y-4">
                     <template x-for="group in groups" :key="group.varname">
@@ -91,7 +83,6 @@
                                         <i data-lucide="settings" class="w-5 h-5"></i>
                                     </template>
                                 </div>
-
                                 <div class="flex-1 pr-4">
                                     <div class="flex items-center gap-2">
                                         <h4 class="font-bold text-foreground text-lg" x-text="group.name"></h4>
@@ -101,16 +92,15 @@
                                             </span>
                                         </template>
                                     </div>
-                                    <p class="text-sm text-muted-foreground mt-1 leading-relaxed" x-text="group.description"></p>
+                                    <p class="text-sm text-muted-foreground mt-1 leading-relaxed"
+                                       x-text="group.description"></p>
                                 </div>
-
                                 <div class="flex items-center self-center">
                                     <template x-if="!group.is_required">
                                         <label class="relative inline-flex items-center cursor-pointer">
-                                            <input type="checkbox" 
-                                                   x-model="group.accepted"
-                                                   class="sr-only peer">
-                                            <div class="w-11 h-6 bg-muted peer-focus:outline-none ring-primary/20 peer-focus:ring-4 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary transition-colors"></div>
+                                            <input type="checkbox" x-model="group.accepted" class="sr-only peer">
+                                            <div class="w-11 h-6 bg-muted peer-focus:outline-none ring-primary/20 peer-focus:ring-4 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-border after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary transition-colors">
+                                            </div>
                                         </label>
                                     </template>
                                     <template x-if="group.is_required">
@@ -123,19 +113,14 @@
                         </div>
                     </template>
                 </div>
-
                 <!-- Modal Footer -->
                 <div class="p-6 border-t border-border bg-muted/10 flex justify-end gap-3">
-                    <button type="button" 
+                    <button type="button"
                             @click="showModal = false"
                             class="app-btn bg-transparent border-transparent hover:bg-muted text-foreground">
                         {% trans "Cancel" %}
                     </button>
-                    <button type="button" 
-                            @click="save()"
-                            class="app-btn app-btn-primary">
-                        {% trans "Save Preferences" %}
-                    </button>
+                    <button type="button" @click="save()" class="app-btn app-btn-primary">{% trans "Save Preferences" %}</button>
                 </div>
             </div>
         </div>
@@ -200,7 +185,5 @@
             lucide.createIcons();
         }
     </script>
-    <style>
-        [x-cloak] { display: none !important; }
-    </style>
+    <style>[x-cloak] { display: none !important; }</style>
 {% endif %}

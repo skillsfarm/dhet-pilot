@@ -1,182 +1,163 @@
 {% extends "layouts/dashboard_page_view.html" %}
 {% load static %}
-
 {% block title %}Assessment: {{ occupation.ofo_title }}{% endblock %}
-
 {% block page_title %}
-<div class="mb-4">
-    <a href="{% url 'candidates:assessment-list' %}" class="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors">
-        <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i>
-        Back to Assessments
-    </a>
-</div>
-{{ occupation.ofo_title }}
+    <div class="mb-4">
+        <a href="{% url 'candidates:assessment-list' %}"
+           class="inline-flex items-center text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i>
+            Back to Assessments
+        </a>
+    </div>
+    {{ occupation.ofo_title }}
 {% endblock %}
-
-
 {% block page_description %}
-    {{ occupation.ofo_code }} | 
+    {{ occupation.ofo_code }} |
     {% if is_target %}
         <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium border border-primary/20">
             <i data-lucide="target" class="w-3 h-3"></i>
             Target Occupation
         </span>
     {% endif %}
-    {% if occupation.description %}
-        <p class="mt-2 text-muted-foreground">{{ occupation.description }}</p>
-    {% endif %}
+    {% if occupation.description %}<p class="mt-2 text-muted-foreground">{{ occupation.description }}</p>{% endif %}
 {% endblock %}
-
 {% block page_content %}
-<div class="space-y-6">
-
-    {% if not is_target %}
-        <div class="rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-900/50 dark:bg-yellow-900/20">
-            <div class="flex items-start gap-3">
-                <i data-lucide="alert-triangle" class="h-5 w-5 text-yellow-600 dark:text-yellow-500 mt-0.5"></i>
-                <div class="space-y-1">
-                    <h4 class="font-medium text-yellow-900 dark:text-yellow-200">Assessment Unavailable</h4>
-                    <p class="text-sm text-yellow-800 dark:text-yellow-300">
-                        This assessment is restricted to your target occupations. Please add this occupation to your targets to unlock the assessment.
-                    </p>
-                </div>
-            </div>
-        </div>
-    {% endif %}
-
-    <!-- Progress Card -->
-        <div class="p-2">
-            <div class="flex items-center justify-between mb-3">
-                <h3 class="text-lg font-semibold text-foreground">Assessment Progress</h3>
-                <span class="text-2xl font-bold text-primary">{{ completion_pct }}%</span>
-            </div>
-            
-            <div class="h-3 w-full bg-muted rounded-full overflow-hidden mb-2">
-                <div class="h-full bg-primary transition-all duration-300" style="width: {{ completion_pct }}%"></div>
-            </div>
-            
-            <p class="text-sm text-muted-foreground">
-                {{ answered_count }} of {{ total_tasks }} tasks completed
-            </p>
-        </div>
-
-    <!-- Assessment Form -->
-    <form method="post" 
-          hx-post="{% url 'candidates:occupation-assessment' occupation.id %}"
-          @submit="window.scrollTo({top: 0, behavior: 'smooth'})"
-          class="space-y-2">
-        {% csrf_token %}
-        <fieldset {% if not is_target %}disabled{% endif %} class="contents group/fieldset">
-
-        {% if tasks %}
-            {% for task in tasks %}
-                    <div class="px-2 py-6"  x-data="{ selected: '{{ task.existing_response|default:'' }}' }">
-                        <!-- Task Header -->
-                        <div class="mb-4 pb-4 border-b border-border">
-                            <div class="flex items-start justify-between gap-4 mb-2">
-                                <h3 class="text-lg font-semibold text-foreground flex-1">
-                                    {{ forloop.counter }}. {{ task.title }}
-                                </h3>
-                                <span class="text-xs text-muted-foreground whitespace-nowrap">
-                                    Task {{ forloop.counter }}/{{ total_tasks }}
-                                </span>
-                            </div>
-                            {% if task.description %}
-                                <p class="text-muted-foreground text-sm">{{ task.description }}</p>
-                            {% endif %}
-                        </div>
-
-                        <!-- Response Options -->
-                        <div class="grid grid-cols-1 gap-3">
-                            <!-- Yes -->
-                            <label class="cursor-pointer relative group has-[:disabled]:cursor-not-allowed">
-                                <input type="radio" 
-                                       name="task_{{ task.id }}" 
-                                       value="yes" 
-                                       class="peer sr-only"
-                                       x-model="selected"
-                                       {% if task.existing_response == 'yes' %}checked{% endif %}>
-                                <div class="p-4 rounded-xl border-2 border-border bg-card hover:border-primary/50 hover:bg-muted/50 peer-checked:bg-primary/5 peer-checked:border-primary peer-checked:text-primary peer-disabled:opacity-50 peer-disabled:hover:border-border peer-disabled:hover:bg-card peer-disabled:group-hover:shadow-none transition-all group-hover:shadow-sm">
-                                    <div class="flex items-center gap-3">
-                                        <i data-lucide="check-circle-2" class="w-5 h-5"></i>
-                                        <div>
-                                            <p class="font-medium">Yes, I have done this</p>
-                                            <p class="text-xs text-muted-foreground mt-0.5">I am confident in this task</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </label>
-
-                            <!-- Partially -->
-                            <label class="cursor-pointer relative group has-[:disabled]:cursor-not-allowed">
-                                <input type="radio" 
-                                       name="task_{{ task.id }}" 
-                                       value="partially" 
-                                       class="peer sr-only"
-                                       x-model="selected"
-                                       {% if task.existing_response == 'partially' %}checked{% endif %}>
-                                <div class="p-4 rounded-xl border-2 border-border bg-card hover:border-primary/50 hover:bg-muted/50 peer-checked:bg-primary/5 peer-checked:border-primary peer-checked:text-primary peer-disabled:opacity-50 peer-disabled:hover:border-border peer-disabled:hover:bg-card peer-disabled:group-hover:shadow-none transition-all group-hover:shadow-sm">
-                                    <div class="flex items-center gap-3">
-                                        <i data-lucide="minus-circle" class="w-5 h-5"></i>
-                                        <div>
-                                            <p class="font-medium">Partially / Sometimes</p>
-                                            <p class="text-xs text-muted-foreground mt-0.5">I have some experience</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </label>
-
-                            <!-- No -->
-                            <label class="cursor-pointer relative group has-[:disabled]:cursor-not-allowed">
-                                <input type="radio" 
-                                       name="task_{{ task.id }}" 
-                                       value="no" 
-                                       class="peer sr-only"
-                                       x-model="selected"
-                                       {% if task.existing_response == 'no' %}checked{% endif %}>
-                                <div class="p-4 rounded-xl border-2 border-border bg-card hover:border-primary/50 hover:bg-muted/50 peer-checked:bg-primary/5 peer-checked:border-primary peer-checked:text-primary peer-disabled:opacity-50 peer-disabled:hover:border-border peer-disabled:hover:bg-card peer-disabled:group-hover:shadow-none transition-all group-hover:shadow-sm">
-                                    <div class="flex items-center gap-3">
-                                        <i data-lucide="x-circle" class="w-5 h-5"></i>
-                                        <div>
-                                            <p class="font-medium">No, never</p>
-                                            <p class="text-xs text-muted-foreground mt-0.5">I have no experience with this</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </label>
-                        </div>
-                    </div>
-            {% endfor %}
-        {% else %}
-            <div class="app-card">
-                <div class="p-12 flex flex-col items-center justify-center text-center space-y-4">
-                    <div class="p-4 rounded-full bg-muted">
-                        <i data-lucide="clipboard-list" class="w-12 h-12 text-muted-foreground"></i>
-                    </div>
-                    <div class="space-y-2 max-w-md">
-                        <h3 class="text-xl font-medium text-foreground">No Tasks Available</h3>
-                        <p class="text-muted-foreground">
-                            There are no assessment tasks defined for this occupation yet. Please check back later.
+    <div class="space-y-6">
+        {% if not is_target %}
+            <div class="rounded-lg border border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-900/50 dark:bg-yellow-900/20">
+                <div class="flex items-start gap-3">
+                    <i data-lucide="alert-triangle"
+                       class="h-5 w-5 text-yellow-600 dark:text-yellow-500 mt-0.5"></i>
+                    <div class="space-y-1">
+                        <h4 class="font-medium text-yellow-900 dark:text-yellow-200">Assessment Unavailable</h4>
+                        <p class="text-sm text-yellow-800 dark:text-yellow-300">
+                            This assessment is restricted to your target occupations. Please add this occupation to your targets to unlock the assessment.
                         </p>
                     </div>
                 </div>
             </div>
         {% endif %}
-
-        <!-- Submit Button -->
-        {% if tasks %}
-            <div class="sticky bottom-4 bg-background/80 backdrop-blur-sm rounded-lg border border-border shadow-lg p-4">
-                <div class="flex items-center justify-between gap-4">
-                    <p class="text-sm text-muted-foreground">
-                        <span class="font-medium text-foreground">{{ total_tasks }} questions</span> in this assessment
-                    </p>
-                    <button type="submit" class="app-btn app-btn-primary disabled:bg-muted disabled:text-muted-foreground disabled:border-transparent disabled:shadow-none disabled:cursor-not-allowed">
-                        Save Assessment
-                    </button>
-                </div>
+        <!-- Progress Card -->
+        <div class="p-2">
+            <div class="flex items-center justify-between mb-3">
+                <h3 class="text-lg font-semibold text-foreground">Assessment Progress</h3>
+                <span class="text-2xl font-bold text-primary">{{ completion_pct }}%</span>
             </div>
-        {% endif %}
-        </fieldset>
-    </form>
-</div>
+            <div class="h-3 w-full bg-muted rounded-full overflow-hidden mb-2">
+                <div class="h-full bg-primary transition-all duration-300"
+                     style="width: {{ completion_pct }}%"></div>
+            </div>
+            <p class="text-sm text-muted-foreground">{{ answered_count }} of {{ total_tasks }} tasks completed</p>
+        </div>
+        <!-- Assessment Form -->
+        <form method="post"
+              hx-post="{% url 'candidates:occupation-assessment' occupation.id %}"
+              @submit="window.scrollTo({top: 0, behavior: 'smooth'})"
+              class="space-y-2">
+            {% csrf_token %}
+            <fieldset {% if not is_target %}disabled{% endif %}
+                      class="contents group/fieldset">
+                {% if tasks %}
+                    {% for task in tasks %}
+                        <div class="px-2 py-6"
+                             x-data="{ selected: '{{ task.existing_response|default:'' }}' }">
+                            <!-- Task Header -->
+                            <div class="mb-4 pb-4 border-b border-border">
+                                <div class="flex items-start justify-between gap-4 mb-2">
+                                    <h3 class="text-lg font-semibold text-foreground flex-1">{{ forloop.counter }}. {{ task.title }}</h3>
+                                    <span class="text-xs text-muted-foreground whitespace-nowrap">Task {{ forloop.counter }}/{{ total_tasks }}</span>
+                                </div>
+                                {% if task.description %}<p class="text-muted-foreground text-sm">{{ task.description }}</p>{% endif %}
+                            </div>
+                            <!-- Response Options -->
+                            <div class="grid grid-cols-1 gap-3">
+                                <!-- Yes -->
+                                <label class="cursor-pointer relative group has-[:disabled]:cursor-not-allowed">
+                                    <input type="radio"
+                                           name="task_{{ task.id }}"
+                                           value="yes"
+                                           class="peer sr-only"
+                                           x-model="selected"
+                                           {% if task.existing_response == 'yes' %}checked{% endif %}>
+                                    <div class="p-4 rounded-xl border-2 border-border bg-card hover:border-primary/50 hover:bg-muted/50 peer-checked:bg-primary/5 peer-checked:border-primary peer-checked:text-primary peer-disabled:opacity-50 peer-disabled:hover:border-border peer-disabled:hover:bg-card peer-disabled:group-hover:shadow-none transition-all group-hover:shadow-sm">
+                                        <div class="flex items-center gap-3">
+                                            <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+                                            <div>
+                                                <p class="font-medium">Yes, I have done this</p>
+                                                <p class="text-xs text-muted-foreground mt-0.5">I am confident in this task</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </label>
+                                <!-- Partially -->
+                                <label class="cursor-pointer relative group has-[:disabled]:cursor-not-allowed">
+                                    <input type="radio"
+                                           name="task_{{ task.id }}"
+                                           value="partially"
+                                           class="peer sr-only"
+                                           x-model="selected"
+                                           {% if task.existing_response == 'partially' %}checked{% endif %}>
+                                    <div class="p-4 rounded-xl border-2 border-border bg-card hover:border-primary/50 hover:bg-muted/50 peer-checked:bg-primary/5 peer-checked:border-primary peer-checked:text-primary peer-disabled:opacity-50 peer-disabled:hover:border-border peer-disabled:hover:bg-card peer-disabled:group-hover:shadow-none transition-all group-hover:shadow-sm">
+                                        <div class="flex items-center gap-3">
+                                            <i data-lucide="minus-circle" class="w-5 h-5"></i>
+                                            <div>
+                                                <p class="font-medium">Partially / Sometimes</p>
+                                                <p class="text-xs text-muted-foreground mt-0.5">I have some experience</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </label>
+                                <!-- No -->
+                                <label class="cursor-pointer relative group has-[:disabled]:cursor-not-allowed">
+                                    <input type="radio"
+                                           name="task_{{ task.id }}"
+                                           value="no"
+                                           class="peer sr-only"
+                                           x-model="selected"
+                                           {% if task.existing_response == 'no' %}checked{% endif %}>
+                                    <div class="p-4 rounded-xl border-2 border-border bg-card hover:border-primary/50 hover:bg-muted/50 peer-checked:bg-primary/5 peer-checked:border-primary peer-checked:text-primary peer-disabled:opacity-50 peer-disabled:hover:border-border peer-disabled:hover:bg-card peer-disabled:group-hover:shadow-none transition-all group-hover:shadow-sm">
+                                        <div class="flex items-center gap-3">
+                                            <i data-lucide="x-circle" class="w-5 h-5"></i>
+                                            <div>
+                                                <p class="font-medium">No, never</p>
+                                                <p class="text-xs text-muted-foreground mt-0.5">I have no experience with this</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="app-card">
+                        <div class="p-12 flex flex-col items-center justify-center text-center space-y-4">
+                            <div class="p-4 rounded-full bg-muted">
+                                <i data-lucide="clipboard-list" class="w-12 h-12 text-muted-foreground"></i>
+                            </div>
+                            <div class="space-y-2 max-w-md">
+                                <h3 class="text-xl font-medium text-foreground">No Tasks Available</h3>
+                                <p class="text-muted-foreground">
+                                    There are no assessment tasks defined for this occupation yet. Please check back later.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+                <!-- Submit Button -->
+                {% if tasks %}
+                    <div class="sticky bottom-4 bg-background/80 backdrop-blur-sm rounded-lg border border-border shadow-lg p-4">
+                        <div class="flex items-center justify-between gap-4">
+                            <p class="text-sm text-muted-foreground">
+                                <span class="font-medium text-foreground">{{ total_tasks }} questions</span> in this assessment
+                            </p>
+                            <button type="submit"
+                                    class="app-btn app-btn-primary disabled:bg-muted disabled:text-muted-foreground disabled:border-transparent disabled:shadow-none disabled:cursor-not-allowed">
+                                Save Assessment
+                            </button>
+                        </div>
+                    </div>
+                {% endif %}
+            </fieldset>
+        </form>
+    </div>
 {% endblock %}

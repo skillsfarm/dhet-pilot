@@ -13,7 +13,7 @@
                             <p class="text-sm text-muted-foreground">{{ record.occupation.ofo_code }}</p>
                             <p class="text-xs text-muted-foreground">Priority: {{ record.get_priority_display }}</p>
                         </div>
-                        <button type="button" 
+                        <button type="button"
                                 hx-delete="{% url 'candidates:onboarding-targets' %}?delete_id={{ record.id }}"
                                 hx-target="#tab-content"
                                 hx-swap="innerHTML"
@@ -26,7 +26,6 @@
             {% endfor %}
         </div>
     {% endif %}
-
     <!-- Add Target Form -->
     {% if target_records|length >= 3 %}
         <div class="p-4 rounded-lg bg-muted border border-border flex flex-col items-center justify-center text-center py-8">
@@ -34,9 +33,10 @@
                 <i data-lucide="check-circle" class="w-6 h-6 text-primary"></i>
             </div>
             <h4 class="font-medium text-foreground">Target Limit Reached</h4>
-            <p class="text-sm text-muted-foreground mt-1 max-w-sm">You have selected the maximum of 3 target occupations. You can proceed to the assessment.</p>
+            <p class="text-sm text-muted-foreground mt-1 max-w-sm">
+                You have selected the maximum of 3 target occupations. You can proceed to the assessment.
+            </p>
         </div>
-        
         <!-- Action Buttons (No Form) -->
         <div class="-mx-8 -mb-8 mt-6 px-8 py-4 bg-muted border-t border-border">
             <div class="flex items-center justify-end">
@@ -69,7 +69,7 @@
             {% endif %}
             <div class="space-y-4">
                 <div>
-                     {% include "components/select.html" with name=form.occupation.name label="Occupation" options=form.occupation.field.choices value=form.occupation.value use_tuple=True placeholder="Select occupation" %}
+                    {% include "components/select.html" with name=form.occupation.name label="Occupation" options=form.occupation.field.choices value=form.occupation.value use_tuple=True placeholder="Select occupation" %}
                     {% if form.occupation.errors %}
                         <ul class="mt-2 text-sm font-medium text-destructive list-none">
                             {% for error in form.occupation.errors %}<li>{{ error }}</li>{% endfor %}
@@ -89,7 +89,11 @@
             <div class="-mx-8 -mb-8 mt-6 px-8 py-4 bg-muted border-t border-border">
                 <div class="flex items-center justify-between">
                     <div class="text-sm text-muted-foreground">
-                        {% if target_records %}Add another or continue to next step{% else %}Add at least one target occupation{% endif %}
+                        {% if target_records %}
+                            Add another or continue to next step
+                        {% else %}
+                            Add at least one target occupation
+                        {% endif %}
                     </div>
                     <div class="flex items-center gap-3">
                         {% if target_records %}
@@ -116,8 +120,10 @@
         </form>
     {% endif %}
 </div>
-
-<div id="score-data" data-score="{{ score|default:0 }}" data-active-tab="{{ active_tab|default:'targets' }}" style="display:none;"></div>
+<div id="score-data"
+     data-score="{{ score|default:0 }}"
+     data-active-tab="{{ active_tab|default:'targets' }}"
+     style="display:none"></div>
 <script>
     (function() {
         const scoreData = document.getElementById('score-data');
