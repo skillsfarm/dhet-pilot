@@ -1,60 +1,145 @@
 from django.core.management.base import BaseCommand
 
 from apps.content.models import Industry, Occupation, OccupationTask, Skill
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
     help = "Seed OFO (Organising Framework for Occupations) data"
 
     def handle(self, *args, **options):
-        self.stdout.write("Seeding OFO data...")
+        logger.info("Seeding OFO data...")
 
         # Generic skills applicable across ICT occupations
         skills_data = [
             # Project Management Skills
-            {"name": "Project Planning", "description": "Develop and manage project plans, schedules, and timelines"},
-            {"name": "Budget Management", "description": "Manage project budgets and financial analysis"},
-            {"name": "Risk Management", "description": "Identify, monitor, and mitigate project risks"},
-            {"name": "Stakeholder Management", "description": "Engage and communicate with stakeholders"},
-            {"name": "Vendor Management", "description": "Manage vendors, suppliers, and contracts"},
-            {"name": "Resource Allocation", "description": "Allocate and coordinate resources and teams"},
-            {"name": "Project Governance", "description": "Ensure adherence to governance frameworks and methodologies"},
-            {"name": "Change Management", "description": "Track and manage changes to project scope and requirements"},
+            {
+                "name": "Project Planning",
+                "description": "Develop and manage project plans, schedules, and timelines",
+            },
+            {
+                "name": "Budget Management",
+                "description": "Manage project budgets and financial analysis",
+            },
+            {
+                "name": "Risk Management",
+                "description": "Identify, monitor, and mitigate project risks",
+            },
+            {
+                "name": "Stakeholder Management",
+                "description": "Engage and communicate with stakeholders",
+            },
+            {
+                "name": "Vendor Management",
+                "description": "Manage vendors, suppliers, and contracts",
+            },
+            {
+                "name": "Resource Allocation",
+                "description": "Allocate and coordinate resources and teams",
+            },
+            {
+                "name": "Project Governance",
+                "description": "Ensure adherence to governance frameworks and methodologies",
+            },
+            {
+                "name": "Change Management",
+                "description": "Track and manage changes to project scope and requirements",
+            },
             # Methodologies
-            {"name": "PMBOK", "description": "Project Management Body of Knowledge methodology"},
-            {"name": "PRINCE2", "description": "Projects IN Controlled Environments methodology"},
-            {"name": "Agile/Scrum", "description": "Agile project management and Scrum framework"},
-            {"name": "ITIL", "description": "IT Infrastructure Library service management framework"},
+            {
+                "name": "PMBOK",
+                "description": "Project Management Body of Knowledge methodology",
+            },
+            {
+                "name": "PRINCE2",
+                "description": "Projects IN Controlled Environments methodology",
+            },
+            {
+                "name": "Agile/Scrum",
+                "description": "Agile project management and Scrum framework",
+            },
+            {
+                "name": "ITIL",
+                "description": "IT Infrastructure Library service management framework",
+            },
             # Technical Skills
-            {"name": "Network Infrastructure", "description": "LAN, WAN, network deployments and management"},
-            {"name": "Cloud Platforms", "description": "Cloud infrastructure management and deployment"},
-            {"name": "Data Centre Management", "description": "Server infrastructure and data centre operations"},
-            {"name": "Cybersecurity", "description": "Security platforms and cybersecurity solutions"},
-            {"name": "VoIP Systems", "description": "Voice over IP telecommunications systems"},
-            {"name": "Fibre Connectivity", "description": "Fibre network connectivity deployments"},
+            {
+                "name": "Network Infrastructure",
+                "description": "LAN, WAN, network deployments and management",
+            },
+            {
+                "name": "Cloud Platforms",
+                "description": "Cloud infrastructure management and deployment",
+            },
+            {
+                "name": "Data Centre Management",
+                "description": "Server infrastructure and data centre operations",
+            },
+            {
+                "name": "Cybersecurity",
+                "description": "Security platforms and cybersecurity solutions",
+            },
+            {
+                "name": "VoIP Systems",
+                "description": "Voice over IP telecommunications systems",
+            },
+            {
+                "name": "Fibre Connectivity",
+                "description": "Fibre network connectivity deployments",
+            },
             # Tools
-            {"name": "Project Management Tools", "description": "Project planning and scheduling software"},
-            {"name": "Project Documentation", "description": "Create and maintain project documentation and reports"},
+            {
+                "name": "Project Management Tools",
+                "description": "Project planning and scheduling software",
+            },
+            {
+                "name": "Project Documentation",
+                "description": "Create and maintain project documentation and reports",
+            },
             # Soft Skills
             {"name": "Leadership", "description": "Lead teams and provide guidance"},
-            {"name": "Communication", "description": "Effective verbal and written communication"},
-            {"name": "Negotiation", "description": "Contract negotiation and stakeholder alignment"},
-            {"name": "Problem Solving", "description": "Analytical and critical thinking to resolve issues"},
-            {"name": "Attention to Detail", "description": "Accuracy in documentation and delivery"},
+            {
+                "name": "Communication",
+                "description": "Effective verbal and written communication",
+            },
+            {
+                "name": "Negotiation",
+                "description": "Contract negotiation and stakeholder alignment",
+            },
+            {
+                "name": "Problem Solving",
+                "description": "Analytical and critical thinking to resolve issues",
+            },
+            {
+                "name": "Attention to Detail",
+                "description": "Accuracy in documentation and delivery",
+            },
             # New Skills for additional occupations
-            {"name": "Software Development", "description": "Design and develop software applications"},
-            {"name": "Database Management", "description": "Manage and maintain database systems"},
-            {"name": "System Administration", "description": "Administer and maintain ICT systems and servers"},
+            {
+                "name": "Software Development",
+                "description": "Design and develop software applications",
+            },
+            {
+                "name": "Database Management",
+                "description": "Manage and maintain database systems",
+            },
+            {
+                "name": "System Administration",
+                "description": "Administer and maintain ICT systems and servers",
+            },
         ]
 
         skills = {}
         for skill_data in skills_data:
             skill, created = Skill.objects.get_or_create(
-                name=skill_data["name"], defaults={"description": skill_data["description"]}
+                name=skill_data["name"],
+                defaults={"description": skill_data["description"]},
             )
             skills[skill_data["name"]] = skill
             if created:
-                self.stdout.write(self.style.SUCCESS(f"  Created skill: {skill.name}"))
+                logger.info(f"  Created skill: {skill.name}")
 
         # Create ICT Industry
         industry, created = Industry.objects.get_or_create(
@@ -65,7 +150,7 @@ class Command(BaseCommand):
             },
         )
         if created:
-            self.stdout.write(self.style.SUCCESS(f"  Created industry: {industry.name}"))
+            logger.info(f"  Created industry: {industry.name}")
 
         # Generic OFO Occupations - ICT Project Manager category
         occupations_data = [
@@ -79,7 +164,11 @@ class Command(BaseCommand):
                     {
                         "title": "Develop project plans",
                         "description": "Develop and manage project plans, schedules, budgets, and communication frameworks",
-                        "skills": ["Project Planning", "Budget Management", "Communication"],
+                        "skills": [
+                            "Project Planning",
+                            "Budget Management",
+                            "Communication",
+                        ],
                     },
                     {
                         "title": "Define project scope",
@@ -89,7 +178,12 @@ class Command(BaseCommand):
                     {
                         "title": "Apply project management methodologies",
                         "description": "Apply project management methodologies and techniques to ensure delivery excellence",
-                        "skills": ["PMBOK", "PRINCE2", "Agile/Scrum", "Project Management Tools"],
+                        "skills": [
+                            "PMBOK",
+                            "PRINCE2",
+                            "Agile/Scrum",
+                            "Project Management Tools",
+                        ],
                     },
                     {
                         "title": "Monitor and mitigate risks",
@@ -133,7 +227,11 @@ class Command(BaseCommand):
                     {
                         "title": "Manage project lifecycle",
                         "description": "Manage the full project lifecycle from initiation through to commissioning and handover",
-                        "skills": ["Project Planning", "Project Governance", "Leadership"],
+                        "skills": [
+                            "Project Planning",
+                            "Project Governance",
+                            "Leadership",
+                        ],
                     },
                     {
                         "title": "Deliver concurrent projects",
@@ -163,12 +261,20 @@ class Command(BaseCommand):
                     {
                         "title": "Develop risk registers",
                         "description": "Develop and manage project plans, schedules, budgets, and risk registers",
-                        "skills": ["Risk Management", "Budget Management", "Project Planning"],
+                        "skills": [
+                            "Risk Management",
+                            "Budget Management",
+                            "Project Planning",
+                        ],
                     },
                     {
                         "title": "Provide governance reporting",
                         "description": "Provide project reporting and governance documentation to stakeholders",
-                        "skills": ["Project Governance", "Project Documentation", "Stakeholder Management"],
+                        "skills": [
+                            "Project Governance",
+                            "Project Documentation",
+                            "Stakeholder Management",
+                        ],
                     },
                     {
                         "title": "Manage procurement activities",
@@ -192,7 +298,11 @@ class Command(BaseCommand):
                     {
                         "title": "Execute strategic projects",
                         "description": "Execute and deliver projects on-time, within scope and budget, aligned to strategy",
-                        "skills": ["Project Planning", "Budget Management", "Project Governance"],
+                        "skills": [
+                            "Project Planning",
+                            "Budget Management",
+                            "Project Governance",
+                        ],
                     },
                     {
                         "title": "Define project feasibility",
@@ -202,7 +312,11 @@ class Command(BaseCommand):
                     {
                         "title": "Engage executive stakeholders",
                         "description": "Work with executive stakeholders to define expectations and deliverables",
-                        "skills": ["Stakeholder Management", "Leadership", "Communication"],
+                        "skills": [
+                            "Stakeholder Management",
+                            "Leadership",
+                            "Communication",
+                        ],
                     },
                     {
                         "title": "Develop integrated project plans",
@@ -227,7 +341,11 @@ class Command(BaseCommand):
                     {
                         "title": "Create project documentation",
                         "description": "Create and maintain comprehensive project documentation",
-                        "skills": ["Project Documentation", "Attention to Detail", "Project Management Tools"],
+                        "skills": [
+                            "Project Documentation",
+                            "Attention to Detail",
+                            "Project Management Tools",
+                        ],
                     },
                     {
                         "title": "Perform risk management",
@@ -242,7 +360,11 @@ class Command(BaseCommand):
                     {
                         "title": "Provide status reporting",
                         "description": "Provide regular visibility on project status through reporting",
-                        "skills": ["Communication", "Project Documentation", "Stakeholder Management"],
+                        "skills": [
+                            "Communication",
+                            "Project Documentation",
+                            "Stakeholder Management",
+                        ],
                     },
                     {
                         "title": "Ensure methodology adherence",
@@ -336,8 +458,8 @@ class Command(BaseCommand):
             )
 
             if created:
-                self.stdout.write(
-                    self.style.SUCCESS(f"  Created occupation: {occupation.ofo_code} - {occupation.ofo_title}")
+                logger.info(
+                    f"  Created occupation: {occupation.ofo_code} - {occupation.ofo_title}"
                 )
 
                 # Create tasks for this occupation
@@ -353,9 +475,9 @@ class Command(BaseCommand):
                         if skill_name in skills:
                             task.skills.add(skills[skill_name])
 
-                    self.stdout.write(f"    - Created task: {task.title}")
+                    logger.debug(f"    - Created task: {task.title}")
             else:
-                self.stdout.write(f"  Occupation already exists: {occupation.ofo_code}")
+                logger.debug(f"  Occupation already exists: {occupation.ofo_code}")
                 # Update existing occupation with new fields
                 updated = False
                 if not occupation.industry:
@@ -367,14 +489,18 @@ class Command(BaseCommand):
                 if occupation.years_of_experience != occ_data["years_of_experience"]:
                     occupation.years_of_experience = occ_data["years_of_experience"]
                     updated = True
-                if occupation.preferred_nqf_level != occ_data.get("preferred_nqf_level", 0):
-                    occupation.preferred_nqf_level = occ_data.get("preferred_nqf_level", 0)
+                if occupation.preferred_nqf_level != occ_data.get(
+                    "preferred_nqf_level", 0
+                ):
+                    occupation.preferred_nqf_level = occ_data.get(
+                        "preferred_nqf_level", 0
+                    )
                     updated = True
                 if updated:
                     occupation.save()
-                    self.stdout.write(self.style.SUCCESS(f"    -> Updated occupation: {occupation.ofo_title}"))
+                    logger.info(f"    -> Updated occupation: {occupation.ofo_title}")
 
-        self.stdout.write(self.style.SUCCESS("\nOFO data seeding completed!"))
-        self.stdout.write(f"  Total Occupations: {Occupation.objects.count()}")
-        self.stdout.write(f"  Total Skills: {Skill.objects.count()}")
-        self.stdout.write(f"  Total Tasks: {OccupationTask.objects.count()}")
+        logger.info("\nOFO data seeding completed!")
+        logger.info(f"  Total Occupations: {Occupation.objects.count()}")
+        logger.info(f"  Total Skills: {Skill.objects.count()}")
+        logger.info(f"  Total Tasks: {OccupationTask.objects.count()}")

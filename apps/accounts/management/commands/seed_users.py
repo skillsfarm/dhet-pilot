@@ -17,6 +17,9 @@ from django.core.management.base import BaseCommand
 
 from rolepermissions.roles import assign_role
 from allauth.account.models import EmailAddress
+import logging
+
+logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
@@ -81,7 +84,7 @@ class Command(BaseCommand):
     ]
 
     def handle(self, *args, **options):
-        self.stdout.write("Seeding users...")
+        logger.info("Seeding users...")
 
         # Always create prod users
         for user_data in self.PROD_USERS:
@@ -89,17 +92,13 @@ class Command(BaseCommand):
 
         # Only create dev users if DEBUG is True
         if settings.DEBUG:
-            self.stdout.write(
-                self.style.WARNING("\n  [DEV MODE] Creating development users...")
-            )
+            logger.info("[DEV MODE] Creating development users...")
             for user_data in self.DEV_USERS:
                 self._create_user(user_data)
         else:
-            self.stdout.write(
-                self.style.NOTICE("\n  [PROD MODE] Skipping development-only users.")
-            )
+            logger.info("[PROD MODE] Skipping development-only users.")
 
-        self.stdout.write(self.style.SUCCESS("\nDone!"))
+        logger.info("Done!")
 
     def _create_user(self, user_data: dict):
         email = user_data["email"]
@@ -123,9 +122,9 @@ class Command(BaseCommand):
             # Assign role
             assign_role(user, role)
 
-            self.stdout.write(self.style.SUCCESS(f"  Created: {email} (role: {role})"))
+            logger.info(f"  Created: {email} (role: {role})")
         else:
-            self.stdout.write(f"  Exists: {email}")
+            logger.debug(f"  Exists: {email}")
 
         # Bypass allauth email verification
         EmailAddress.objects.get_or_create(

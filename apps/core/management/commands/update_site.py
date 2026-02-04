@@ -1,6 +1,9 @@
 from django.core.management.base import BaseCommand
 from django.contrib.sites.models import Site
 from django.conf import settings
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
@@ -24,11 +27,7 @@ class Command(BaseCommand):
         site.save()
 
         if created:
-            self.stdout.write(self.style.SUCCESS(f"Created Site: {name} ({domain})"))
+            logger.info(f"Created Site: {name} ({domain})")
         else:
-            self.stdout.write(
-                self.style.SUCCESS(f"Updated Site: '{old_name}' -> '{name}'")
-            )
-            self.stdout.write(
-                self.style.SUCCESS(f"Updated Domain: '{old_domain}' -> '{domain}'")
-            )
+            logger.info(f"Updated Site: '{old_name}' -> '{name}'")
+            logger.info(f"Updated Domain: '{old_domain}' -> '{domain}'")

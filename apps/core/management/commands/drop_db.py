@@ -13,6 +13,9 @@ import sys
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import connection
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
@@ -37,20 +40,14 @@ class Command(BaseCommand):
         # Safety check: prevent running in production
         mode = getattr(settings, "MODE", "development").lower()
         if mode == "production":
-            self.stdout.write(
-                self.style.ERROR(
-                    "BLOCKED: Cannot drop database in PRODUCTION mode for safety."
-                )
-            )
-            self.stdout.write("  Change MODE to 'development' or 'testing' to proceed.")
+            logger.error("BLOCKED: Cannot drop database in PRODUCTION mode for safety.")
+            logger.info("  Change MODE to 'development' or 'testing' to proceed.")
             sys.exit(1)
 
         # Only support PostgreSQL and SQLite
         if "postgresql" not in db_engine and "sqlite" not in db_engine:
-            self.stdout.write(
-                self.style.ERROR(
-                    f"Unsupported database engine: {db_engine}. Only PostgreSQL and SQLite are supported."
-                )
+            logger.error(
+                f"Unsupported database engine: {db_engine}. Only PostgreSQL and SQLite are supported."
             )
             sys.exit(1)
 
@@ -58,19 +55,17 @@ class Command(BaseCommand):
 
         # Confirmation prompt
         if not options["yes"]:
-            self.stdout.write(
-                self.style.WARNING(
-                    f"\n{'=' * 60}\nDANGER: This will DELETE ALL DATA in the database!\n{'=' * 60}"
-                )
+            logger.warning(
+                f"\n{'=' * 60}\nDANGER: This will DELETE ALL DATA in the database!\n{'=' * 60}"
             )
-            self.stdout.write(f"  Database: {db_name}")
-            self.stdout.write(f"  Engine:   {db_engine}")
-            self.stdout.write(f"  Mode:     {mode.upper()}")
-            self.stdout.write("")
+            logger.info(f"  Database: {db_name}")
+            logger.info(f"  Engine:   {db_engine}")
+            logger.info(f"  Mode:     {mode.upper()}")
+            logger.info("")
 
             confirm = input("Type 'DELETE ALL DATA' to confirm: ")
             if confirm != "DELETE ALL DATA":
-                self.stdout.write(self.style.ERROR("Aborted."))
+                logger.error("Aborted.")
                 sys.exit(0)
 
         # Handle SQLite
@@ -79,23 +74,17 @@ class Command(BaseCommand):
 
             if os.path.exists(db_name):
                 os.remove(db_name)
-                self.stdout.write(
-                    self.style.SUCCESS(f"Deleted SQLite database: {db_name}")
-                )
+                logger.info(f"Deleted SQLite database: {db_name}")
             else:
-                self.stdout.write(
-                    self.style.WARNING(f"SQLite database not found: {db_name}")
-                )
+                logger.warning(f"SQLite database not found: {db_name}")
 
             if not options["no_recreate"]:
                 # Run migrations to recreate
-                self.stdout.write("\nRecreating database...")
+                logger.info("\nRecreating database...")
                 from django.core.management import call_command
 
                 call_command("migrate", "--noinput")
-                self.stdout.write(
-                    self.style.SUCCESS("Database recreated successfully.")
-                )
+                logger.info("Database recreated successfully.")
 
         # Handle PostgreSQL
         elif "postgresql" in db_engine:
@@ -139,47 +128,35 @@ class Command(BaseCommand):
 
                         # Drop the database
                         cur.execute(f'DROP DATABASE IF EXISTS "{db_name}";')
-                        self.stdout.write(
-                            self.style.SUCCESS(
-                                f"Dropped PostgreSQL database: {db_name}"
-                            )
-                        )
+                        logger.info(f"Dropped PostgreSQL database: {db_name}")
 
                         # Recreate if requested
                         if not options["no_recreate"]:
                             cur.execute(f'CREATE DATABASE "{db_name}";')
-                            self.stdout.write(
-                                self.style.SUCCESS(
-                                    f"Created PostgreSQL database: {db_name}"
-                                )
-                            )
+                            logger.info(f"Created PostgreSQL database: {db_name}")
 
                 if not options["no_recreate"]:
                     # Run migrations
-                    self.stdout.write("\nRunning migrations...")
+                    logger.info("\nRunning migrations...")
                     from django.core.management import call_command
 
                     call_command("migrate", "--noinput")
-                    self.stdout.write(
-                        self.style.SUCCESS("Migrations completed successfully.")
-                    )
+                    logger.info("Migrations completed successfully.")
 
             except Exception as e:
-                self.stdout.write(
-                    self.style.ERROR(f"Failed to drop PostgreSQL database: {e}")
-                )
+                logger.error(f"Failed to drop PostgreSQL database: {e}")
                 sys.exit(1)
 
-        self.stdout.write("")
-        self.stdout.write(
-            self.style.SUCCESS("Done! Database has been reset.")
-            if not options["no_recreate"]
-            else self.style.SUCCESS("Done! Database has been dropped.")
-        )
-        self.stdout.write("")
-        self.stdout.write("Next steps:")
+        logger.info("")
         if not options["no_recreate"]:
-            self.stdout.write("  uv run python manage.py seed_roles")
-            self.stdout.write("  uv run python manage.py seed_users")
-            self.stdout.write("  uv run python manage.py seed_cookie_groups")
-            self.stdout.write("  uv run python manage.py update_site")
+            logger.info("Done! Database has been reset.")
+        else:
+            logger.info("Done! Database has been dropped.")
+
+        logger.info("")
+        logger.info("Next steps:")
+        if not options["no_recreate"]:
+            logger.info("  uv run python manage.py seed_roles")
+            logger.info("  uv run python manage.py seed_users")
+            logger.info("  uv run python manage.py seed_cookie_groups")
+            logger.info("  uv run python manage.py update_site")
