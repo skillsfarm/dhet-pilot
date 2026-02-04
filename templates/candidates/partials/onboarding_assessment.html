@@ -1,5 +1,4 @@
-<!-- Assessment Card -->
-<!-- Assessment Card -->
+{# djlint:off #}
 <div x-data="{ 
     step: 1, 
     total: {{ tasks|length|default:0 }},
@@ -169,7 +168,6 @@
         40%, 60% { transform: translate3d(4px, 0, 0); }
     }
 </style>
-
 <div id="score-data" data-score="{{ score|default:0 }}" data-active-tab="{{ active_tab|default:'assessment' }}" style="display:none;"></div>
 <script>
     (function() {
@@ -184,3 +182,4 @@
         }
     })();
 </script>
+{# djlint:on #}

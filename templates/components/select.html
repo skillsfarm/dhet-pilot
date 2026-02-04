@@ -1,3 +1,4 @@
+{# djlint:off #}
 <div class="relative w-full {{ class }}" 
      x-data="{ 
         open: false, 
@@ -63,3 +64,4 @@
     <!-- Hidden input -->
     <input type="hidden" name="{{ name }}" x-ref="input" value="{{ value|default:'' }}" {% if x_model %}x-model="{{ x_model }}"{% endif %}>
 </div>
+{# djlint:on #}
