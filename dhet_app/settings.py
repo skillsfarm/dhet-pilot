@@ -18,10 +18,6 @@ USE_TZ = True
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Create logs directory if it doesn't exist
-LOGS_DIR = BASE_DIR / "logs"
-LOGS_DIR.mkdir(exist_ok=True)
-
 SECRET_KEY = config("SECRET_KEY")
 DEBUG = config("DEBUG", cast=bool)
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", cast=Csv())

@@ -143,18 +143,10 @@ def get_logging_config(mode: str, debug: bool = False) -> dict[str, Any]:
             "stream": sys.stdout,
         }
 
-        config["handlers"]["file"] = {
-            "class": "logging.handlers.RotatingFileHandler",
-            "filename": "logs/development.log",
-            "maxBytes": 10485760,  # 10MB
-            "backupCount": 5,
-            "formatter": "verbose",
-        }
-
         # Add handlers to loggers
         for logger in config["loggers"].values():
-            logger["handlers"] = ["console", "file"]
-        config["root"]["handlers"] = ["console", "file"]
+            logger["handlers"] = ["console"]
+        config["root"]["handlers"] = ["console"]
 
     # TESTING MODE
     elif mode == "testing":
@@ -172,19 +164,11 @@ def get_logging_config(mode: str, debug: bool = False) -> dict[str, Any]:
             "filters": ["require_debug_true"],
         }
 
-        config["handlers"]["test_file"] = {
-            "class": "logging.handlers.RotatingFileHandler",
-            "filename": "logs/testing.log",
-            "maxBytes": 5242880,  # 5MB
-            "backupCount": 3,
-            "formatter": "simple",
-        }
-
         # Only log warnings and above during tests
         for logger in config["loggers"].values():
-            logger["handlers"] = ["console", "test_file"]
+            logger["handlers"] = ["console"]
             logger["level"] = "WARNING"
-        config["root"]["handlers"] = ["console", "test_file"]
+        config["root"]["handlers"] = ["console"]
         config["root"]["level"] = "WARNING"
 
     # PRODUCTION MODE
@@ -210,27 +194,10 @@ def get_logging_config(mode: str, debug: bool = False) -> dict[str, Any]:
             "stream": sys.stdout,
         }
 
-        config["handlers"]["file"] = {
-            "class": "logging.handlers.RotatingFileHandler",
-            "filename": "logs/production.log",
-            "maxBytes": 52428800,  # 50MB
-            "backupCount": 10,
-            "formatter": "json",
-        }
-
-        config["handlers"]["error_file"] = {
-            "class": "logging.handlers.RotatingFileHandler",
-            "filename": "logs/errors.log",
-            "maxBytes": 52428800,  # 50MB
-            "backupCount": 10,
-            "formatter": "json",
-            "level": "ERROR",
-        }
-
         # Add handlers to loggers
         for logger in config["loggers"].values():
-            logger["handlers"] = ["console", "file", "error_file"]
-        config["root"]["handlers"] = ["console", "file", "error_file"]
+            logger["handlers"] = ["console"]
+        config["root"]["handlers"] = ["console"]
 
         # Set production log levels
         config["loggers"]["django"]["level"] = "WARNING"
