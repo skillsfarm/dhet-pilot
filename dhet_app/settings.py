@@ -1,9 +1,9 @@
 from pathlib import Path
 
-from decouple import config, Csv
-from django.templatetags.static import static
 import dj_database_url
+from decouple import Csv, config
 
+from apps.core.logging_config import get_logging_config
 
 # ------------- Mode Configuration -------------
 # MODE: development, testing, production
@@ -26,6 +26,7 @@ SECRET_KEY = config("SECRET_KEY")
 DEBUG = config("DEBUG", cast=bool)
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", cast=Csv())
 
+# ------------- Application Definition -------------
 INSTALLED_APPS = [
     "dhet_admin",  # admin theme
     "dhet_admin.contrib.import_export",
@@ -69,6 +70,8 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = "dhet_app.urls"
+WSGI_APPLICATION = "dhet_app.wsgi.application"
+
 SITE_ID = 1
 SITE_NAME = config("SITE_NAME", default="DHET")
 SITE_DOMAIN = config("SITE_DOMAIN", default="localhost:8000")
@@ -92,11 +95,11 @@ TEMPLATES = [
 
 DATABASES = {"default": dj_database_url.parse(config("DATABASE_URL", cast=str))}
 
+# ------------- Static & Media Files -------------
 STATIC_URL = "/staticfiles/"
 STATICFILES_DIRS = [BASE_DIR / "theme" / "dist", BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-# ------------- Storage Configuration -------------
 # Generic S3 / Object Storage credentials
 ACCESS_KEY_ID = config("ACCESS_KEY_ID", default=None)
 SECRET_ACCESS_KEY = config("SECRET_ACCESS_KEY", default=None)
@@ -150,23 +153,25 @@ else:
     MEDIA_URL = "/media/"
     MEDIA_ROOT = BASE_DIR / "media"
 
-# ------------- allauth -------------
+# ------------- Authentication (Allauth) -------------
 AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
 AUTH_USER_MODEL = "accounts.User"
+LOGIN_REDIRECT_URL = "/dashboard/"
+ACCOUNT_LOGOUT_REDIRECT_URL = "/"
+
+# Allauth settings
 ACCOUNT_EMAIL_VERIFICATION = config("ACCOUNT_EMAIL_VERIFICATION", default="mandatory")
 ACCOUNT_LOGIN_METHODS = {"email"}
 ACCOUNT_SIGNUP_FIELDS = ["email*", "password1*", "password2*"]
 ACCOUNT_ADAPTER = "apps.accounts.adapter.AccountAdapter"
-LOGIN_REDIRECT_URL = "/dashboard/"
-ACCOUNT_LOGOUT_REDIRECT_URL = "/"
 SOCIALACCOUNT_ENABLED = False
 ACCOUNT_LOGIN_BY_CODE_ENABLED = True
 ACCOUNT_EMAIL_SUBJECT_PREFIX = ""
 
-# ------------- Email Configuration (Zoho Recommended) -------------
+# ------------- Email Configuration -------------
 EMAIL_BACKEND = config(
     "EMAIL_BACKEND", default="django.core.mail.backends.smtp.EmailBackend"
 )
@@ -178,7 +183,7 @@ EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="")
 EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="")
 DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="")
 
-# ------------- DRF -------------
+# ------------- DRF Configuration -------------
 REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
     "DEFAULT_AUTHENTICATION_CLASSES": [
@@ -195,10 +200,10 @@ SPECTACULAR_SETTINGS = {
     "SCHEMA_PATH_PREFIX": "/api/",
 }
 
-# ------------- rolepermissions -------------
+# ------------- Application Configuration -------------
 ROLEPERMISSIONS_MODULE = "dhet_app.roles"
 
-# ------------- Cookie Consent -------------
+# Cookie Consent
 COOKIE_CONSENT_ENABLED = config("COOKIE_CONSENT_ENABLED", default=True, cast=bool)
 COOKIE_CONSENT_LOG_ENABLED = False
 COOKIE_CONSENT_CACHE_BACKEND = "default"
@@ -206,19 +211,31 @@ COOKIE_CONSENT_SUCCESS_URL = "/"
 COOKIE_CONSENT_NAME = "cookie_consent_status"
 COOKIE_CONSENT_HTTPONLY = False  # Allow JS to check if cookie is set
 
-# Allow JS to read CSRF token
-CSRF_COOKIE_HTTPONLY = False
+# Security
+CSRF_COOKIE_HTTPONLY = False  # Allow JS to read CSRF token
 
-# ------------- Logging Configuration -------------
-from apps.core.logging_config import get_logging_config
-
+# Logging
 LOGGING = get_logging_config(mode=MODE, debug=DEBUG)
 
 # ------------- Mode-Specific Settings -------------
 if MODE == "development":
     # Development-specific settings
-    # Show detailed error pages
     DEBUG_PROPAGATE_EXCEPTIONS = False
+    INTERNAL_IPS = ["127.0.0.1"]
+
+    # Debug Toolbar
+    ENABLE_DEBUG_TOOLBAR = config("ENABLE_DEBUG_TOOLBAR", default=False, cast=bool)
+    if ENABLE_DEBUG_TOOLBAR:
+        INSTALLED_APPS += ["debug_toolbar"]
+        MIDDLEWARE = ["debug_toolbar.middleware.DebugToolbarMiddleware"] + MIDDLEWARE
+
+    # Silk Profiling
+    ENABLE_SILK = config("ENABLE_SILK", default=False, cast=bool)
+    if ENABLE_SILK:
+        INSTALLED_APPS += ["silk"]
+        MIDDLEWARE += ["silk.middleware.SilkyMiddleware"]
+        SILKY_PYTHON_PROFILER = True
+        SILKY_INTERCEPT_PERCENT = 100
 
 elif MODE == "testing":
     # Testing-specific settings
@@ -226,14 +243,6 @@ elif MODE == "testing":
     PASSWORD_HASHERS = [
         "django.contrib.auth.hashers.MD5PasswordHasher",
     ]
-    # Disable migrations for faster tests
-    # Note: Uncomment if you want to disable migrations in tests
-    # class DisableMigrations:
-    #     def __contains__(self, item):
-    #         return True
-    #     def __getitem__(self, item):
-    #         return None
-    # MIGRATION_MODULES = DisableMigrations()
 
 elif MODE == "production":
     # Production-specific settings
@@ -249,3 +258,5 @@ elif MODE == "production":
     # SECURE_HSTS_SECONDS = 31536000  # 1 year
     # SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     # SECURE_HSTS_PRELOAD = True
+
+MIDDLEWARE += ["django.middleware.gzip.GZipMiddleware"]
