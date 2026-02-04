@@ -220,6 +220,10 @@ EMAIL_HOST_USER=your-email@example.com
 EMAIL_HOST_PASSWORD=your-password
 DEFAULT_FROM_EMAIL=noreply@example.com
 ACCOUNT_EMAIL_VERIFICATION=mandatory  # none, optional, mandatory
+
+# Debugging and Profiling
+ENABLE_DEBUG_TOOLBAR=False
+ENABLE_SILK=False
 ```
 
 ## Database Setup
