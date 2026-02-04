@@ -71,36 +71,68 @@ class UserAdminForm(forms.ModelForm):
         help_text="Select roles for this user.",
     )
 
+    def __init__(self, *args, **kwargs):
+        from rolepermissions.checkers import has_role
+
+        self.user = kwargs.pop("user", None)
+        super(UserAdminForm, self).__init__(*args, **kwargs)
+
+        is_superuser = self.user and self.user.is_superuser
+        is_super_admin = self.user and has_role(self.user, "super_admin")
+
+        if not (is_superuser or is_super_admin):
+            if "groups" in self.fields:
+                del self.fields["groups"]
+
     class Meta:
         model = User
         fields = ["username", "email", "first_name", "last_name", "is_active", "groups"]
         widgets = {
-            "username": forms.TextInput(
-                attrs={
-                    "class": "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-green-500 dark:focus:border-green-500"
-                }
-            ),
-            "email": forms.EmailInput(
-                attrs={
-                    "class": "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-green-500 dark:focus:border-green-500"
-                }
-            ),
-            "first_name": forms.TextInput(
-                attrs={
-                    "class": "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-green-500 dark:focus:border-green-500"
-                }
-            ),
-            "last_name": forms.TextInput(
-                attrs={
-                    "class": "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-green-500 dark:focus:border-green-500"
-                }
-            ),
+            "username": forms.TextInput(attrs={"class": "app-input"}),
+            "email": forms.EmailInput(attrs={"class": "app-input"}),
+            "first_name": forms.TextInput(attrs={"class": "app-input"}),
+            "last_name": forms.TextInput(attrs={"class": "app-input"}),
             "is_active": forms.CheckboxInput(
                 attrs={
-                    "class": "w-4 h-4 text-green-600 bg-gray-100 border-gray-300 rounded focus:ring-green-500 dark:focus:ring-green-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+                    "class": "app-btn p-2 text-primary border-border rounded focus:ring-primary"
                 }
             ),
         }
+
+    password = forms.CharField(
+        required=False,
+        widget=forms.PasswordInput(attrs={"class": "app-input"}),
+        help_text="Leave blank to keep current password.",
+        label="Password",
+    )
+    confirm_password = forms.CharField(
+        required=False,
+        widget=forms.PasswordInput(attrs={"class": "app-input"}),
+        help_text="Enter the same password as above, for verification.",
+        label="Confirm Password",
+    )
+
+    def clean_confirm_password(self):
+        p1 = self.cleaned_data.get("password")
+        p2 = self.cleaned_data.get("confirm_password")
+        if p1 and p1 != p2:
+            raise forms.ValidationError("Passwords do not match")
+        if p2 and not p1:
+            raise forms.ValidationError("Please enter a new password.")
+        return p2
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+
+        password = self.cleaned_data.get("password")
+        if password:
+            user.set_password(password)
+
+        if commit:
+            user.save()
+            self.save_m2m()
+
+        return user
 
     def clean_username(self):
         username = self.cleaned_data.get("username")

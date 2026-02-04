@@ -429,7 +429,7 @@ def user_edit(request, pk):
         return redirect("user_list")
 
     if request.method == "POST":
-        form = UserAdminForm(request.POST, instance=target_user)
+        form = UserAdminForm(request.POST, instance=target_user, user=request.user)
         if form.is_valid():
             form.save()
             messages.success(
@@ -437,7 +437,7 @@ def user_edit(request, pk):
             )
             return redirect("user_list")
     else:
-        form = UserAdminForm(instance=target_user)
+        form = UserAdminForm(instance=target_user, user=request.user)
 
     context = navbar_context(request)
     context.update(
