@@ -16,25 +16,6 @@
                     <i data-lucide="at-sign" class="w-4 h-4"></i>
                     <span class="hidden sm:inline">{{ user.username }}</span>
                 </span>
-                {% if show_api_docs %}
-                    <a href="/api/docs/"
-                       target="_blank"
-                       rel="noopener noreferrer"
-                       class="flex items-center gap-1 rounded-lg px-3 py-1 text-primary transition hover:bg-primary/5">
-                        <i data-lucide="book-open" class="w-4 h-4"></i>
-                        <span class="hidden sm:inline">API</span>
-                    </a>
-                {% endif %}
-                {# Super Admin Only #}
-                {% if user.is_superuser or user|has_any_role:'super_admin' %}
-                    <a href="/admin/"
-                       target="_blank"
-                       rel="noopener noreferrer"
-                       class="flex items-center gap-1 rounded-lg px-3 py-1 text-primary transition hover:bg-primary/5">
-                        <i data-lucide="shield" class="w-4 h-4"></i>
-                        <span class="hidden sm:inline">Admin</span>
-                    </a>
-                {% endif %}
                 <form method="post"
                       action="{% url 'account_logout' %}"
                       class="inline-flex items-center">
@@ -94,7 +75,7 @@
                        class="relative flex items-center gap-2 py-4 text-sm font-medium transition-colors {% if current and 'profile' in current %}text-primary after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-primary{% else %}text-muted-foreground hover:text-primary{% endif %}"
                        aria-current="{% if current and 'profile' in current %}page{% endif %}">
                         <i data-lucide="user" class="w-4 h-4"></i>
-                        <span class="">Profile</span>
+                        <span class="">My Profile</span>
                     </a>
                 </div>
             </div>
