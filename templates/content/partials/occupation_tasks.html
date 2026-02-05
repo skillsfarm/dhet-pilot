@@ -1,15 +1,7 @@
 <div class="app-card space-y-6">
     {% include "components/card_header.html" with title="Tasks and Responsibilities" description="Manage the tasks associated with this occupation" %}
-    <!-- List of Existing Tasks -->
-    <div id="tasks-list" class="space-y-4">
-        {% for task in tasks %}
-            {% include "content/partials/item_task.html" with task=task occupation=occupation %}
-        {% empty %}
-            <div class="text-center py-8 text-muted-foreground italic">No tasks defined for this occupation yet.</div>
-        {% endfor %}
-    </div>
     <!-- Add New Task Form -->
-    <div class="pt-6 border-t border-border">
+    <div class="pb-6 mb-6 border-b border-border">
         <h4 class="text-sm font-semibold text-foreground mb-4">Add New Task</h4>
         <form method="post"
               action="{% url 'occupation-tasks-partial' occupation.id %}"
@@ -56,15 +48,25 @@
                     </ul>
                 {% endif %}
             </div>
-            <button type="submit"
-                    class="app-btn app-btn-primary"
-                    :disabled="isSubmitting">
-                <span x-show="!isSubmitting">Add Task</span>
-                <span x-show="isSubmitting" class="flex items-center gap-2">
-                    <i data-lucide="loader" class="w-4 h-4 animate-spin-smooth"></i>
-                    Adding...
-                </span>
-            </button>
+            <div class="flex justify-end">
+                <button type="submit"
+                        class="app-btn app-btn-primary"
+                        :disabled="isSubmitting">
+                    <span x-show="!isSubmitting">Add Task</span>
+                    <span x-show="isSubmitting" class="flex items-center gap-2">
+                        <i data-lucide="loader" class="w-4 h-4 animate-spin-smooth"></i>
+                        Adding...
+                    </span>
+                </button>
+            </div>
         </form>
+    </div>
+    <!-- List of Existing Tasks -->
+    <div id="tasks-list" class="space-y-4">
+        {% for task in tasks %}
+            {% include "content/partials/item_task.html" with task=task occupation=occupation %}
+        {% empty %}
+            <div class="text-center py-8 text-muted-foreground italic">No tasks defined for this occupation yet.</div>
+        {% endfor %}
     </div>
 </div>
