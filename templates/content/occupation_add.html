@@ -1,0 +1,348 @@
+{% extends "layouts/dashboard_page_view.html" %}
+{% block title %}Add Occupation{% endblock %}
+{% block page_title %}
+    <div class="flex flex-col gap-4">
+        <a href="{% url 'occupations' %}"
+           class="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors">
+            <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i>
+            Back to Occupations
+        </a>
+        <span>Add Occupation</span>
+    </div>
+{% endblock %}
+{% block page_description %}Create a new occupation in the system.{% endblock %}
+{% block page_content %}
+    <div class="w-full"
+         x-data='{ tasks: [{ title: "", description: "", readonly: false }], industryName: "", industryId: "", industries: {{ industries_json|safe }}, commonTasks: {{ common_tasks_json|safe }}, industrySearch: "", industryOpen: false, openTaskModal: false,  get filteredIndustries() { if (!this.industrySearch) return this.industries; return this.industries.filter(i => i.name.toLowerCase().includes(this.industrySearch.toLowerCase())); } }'>
+        <div class="app-card space-y-8">
+            {% include "components/card_header.html" with title="Create New Occupation" description="Define the occupation details, industry association, and specific tasks." %}
+            <form method="post">
+                {% csrf_token %}
+                {% if form.non_field_errors %}
+                    <div class="app-alert app-alert-error mb-6">
+                        <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                        <div>{{ form.non_field_errors }}</div>
+                    </div>
+                {% endif %}
+                <!-- Main Occupation Fields -->
+                <div class="flex flex-col gap-4">
+                    <!-- Column 1: Core Identifiers -->
+                    <div class="space-y-6">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label for="{{ form.ofo_code.id_for_label }}"
+                                       class="block mb-2 text-sm font-medium text-muted-foreground">OFO Code</label>
+                                <input type="text"
+                                       name="{{ form.ofo_code.name }}"
+                                       id="{{ form.ofo_code.id_for_label }}"
+                                       value="{{ form.ofo_code.value|default:'' }}"
+                                       class="app-input {% if form.ofo_code.errors %}border-destructive{% endif %}"
+                                       required>
+                                {% if form.ofo_code.errors %}
+                                    <ul class="mt-2 text-sm font-medium text-destructive list-none">
+                                        {% for error in form.ofo_code.errors %}<li>{{ error }}</li>{% endfor %}
+                                    </ul>
+                                {% endif %}
+                            </div>
+                            <div>
+                                <label for="{{ form.ofo_title.id_for_label }}"
+                                       class="block mb-2 text-sm font-medium text-muted-foreground">Title</label>
+                                <input type="text"
+                                       name="{{ form.ofo_title.name }}"
+                                       id="{{ form.ofo_title.id_for_label }}"
+                                       value="{{ form.ofo_title.value|default:'' }}"
+                                       class="app-input {% if form.ofo_title.errors %}border-destructive{% endif %}"
+                                       required>
+                                {% if form.ofo_title.errors %}
+                                    <ul class="mt-2 text-sm font-medium text-destructive list-none">
+                                        {% for error in form.ofo_title.errors %}<li>{{ error }}</li>{% endfor %}
+                                    </ul>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div>
+                            <label for="{{ form.description.id_for_label }}"
+                                   class="block mb-2 text-sm font-medium text-muted-foreground">Description</label>
+                            <textarea name="{{ form.description.name }}"
+                                      id="{{ form.description.id_for_label }}"
+                                      rows="5"
+                                      class="app-input {% if form.description.errors %}border-destructive{% endif %}">{{ form.description.value|default:'' }}</textarea>
+                            {% if form.description.errors %}
+                                <ul class="mt-2 text-sm font-medium text-destructive list-none">
+                                    {% for error in form.description.errors %}
+                                        <li>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <!-- Column 2: Classification Details -->
+                    <div class="space-y-6">
+                        <!-- Industry Autocomplete -->
+                        <div class="relative">
+                            <label class="block mb-2 text-sm font-medium text-muted-foreground">
+                                Industry
+                                <span class="text-xs text-muted-foreground/70 font-normal ml-1">(Select existing or type to create new)</span>
+                            </label>
+                            <div @click.away="industryOpen = false">
+                                <input type="text"
+                                       x-model="industrySearch"
+                                       @focus="industryOpen = true"
+                                       @input="industryOpen = true; industryId = ''"
+                                       placeholder="Search or type new industry..."
+                                       class="app-input {% if form.industry.errors %}border-destructive{% endif %}"
+                                       name="industry_name"
+                                       autocomplete="off">
+                                <input type="hidden" name="industry" :value="industryId">
+                                <div x-show="industryOpen && filteredIndustries.length > 0"
+                                     class="absolute z-50 w-full bg-popover border border-border rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto"
+                                     style="display: none">
+                                    <template x-for="industry in filteredIndustries" :key="industry.id">
+                                        <div @click="industryId = industry.id; industrySearch = industry.name; industryOpen = false"
+                                             class="p-3 hover:bg-accent cursor-pointer text-sm transition-colors border-b border-border last:border-0"
+                                             x-text="industry.name"></div>
+                                    </template>
+                                </div>
+                                <div x-show="industryOpen && industrySearch && filteredIndustries.length === 0"
+                                     class="absolute z-50 w-full bg-popover border border-border rounded-lg shadow-lg mt-1 p-3 text-xs text-muted-foreground italic"
+                                     style="display: none">
+                                    New industry will be created: "<span x-text="industrySearch"
+      class="text-primary font-medium text-underline"></span>"
+                                </div>
+                            </div>
+                            {% if form.industry.errors %}
+                                <ul class="mt-2 text-sm font-medium text-destructive list-none">
+                                    {% for error in form.industry.errors %}<li>{{ error }}</li>{% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label for="{{ form.years_of_experience.id_for_label }}"
+                                       class="block mb-2 text-sm font-medium text-muted-foreground">
+                                    Years of Experience
+                                </label>
+                                <input type="number"
+                                       name="{{ form.years_of_experience.name }}"
+                                       id="{{ form.years_of_experience.id_for_label }}"
+                                       value="{{ form.years_of_experience.value|default:0 }}"
+                                       class="app-input {% if form.years_of_experience.errors %}border-destructive{% endif %}">
+                                {% if form.years_of_experience.errors %}
+                                    <ul class="mt-2 text-sm font-medium text-destructive list-none">
+                                        {% for error in form.years_of_experience.errors %}<li>{{ error }}</li>{% endfor %}
+                                    </ul>
+                                {% endif %}
+                            </div>
+                            <div>
+                                {% include "components/select.html" with name=form.preferred_nqf_level.name label="Preferred NQF Level" options=nqf_levels value=form.preferred_nqf_level.value|default:"0"|stringformat:"s" %}
+                                {% if form.preferred_nqf_level.errors %}
+                                    <ul class="mt-2 text-sm font-medium text-destructive list-none">
+                                        {% for error in form.preferred_nqf_level.errors %}<li>{{ error }}</li>{% endfor %}
+                                    </ul>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Tasks Section -->
+                    <div class="border-t border-border pt-8 mt-10">
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h3 class="text-xl font-semibold text-foreground">Occupation Tasks</h3>
+                                <p class="text-sm text-muted-foreground mt-1">Define the specific tasks and responsibilities for this occupation.</p>
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <button type="button"
+                                        @click="openTaskModal = true"
+                                        class="app-btn app-btn-ghost">
+                                    <i data-lucide="search" class="w-4 h-4 mr-2"></i>
+                                    Search Existing Tasks
+                                </button>
+                                <button type="button"
+                                        @click="tasks.push({ title: '', description: '', readonly: false })"
+                                        class="app-btn app-btn-primary">
+                                    <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
+                                    Create New Task
+                                </button>
+                            </div>
+                        </div>
+                        <div class="space-y-6">
+                            <template x-for="(task, index) in tasks" :key="index">
+                                <div class="p-6 bg-muted/20 border border-border rounded-xl relative group hover:border-primary/30 transition-colors">
+                                    <div class="flex justify-between items-start gap-4 mb-4">
+                                        <h4 class="text-sm font-semibold uppercase tracking-wider text-muted-foreground pt-1"
+                                            x-text="'Task ' + (index + 1)"></h4>
+                                        <div class="flex items-center gap-2">
+                                            <span x-show="task.readonly"
+                                                  class="px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-700 border border-blue-200">
+                                                Existing
+                                            </span>
+                                            <button type="button"
+                                                    @click="tasks.splice(index, 1)"
+                                                    class="app-btn app-btn-ghost text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors"
+                                                    title="Remove Task">
+                                                <span>Remove</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="space-y-4">
+                                        <div>
+                                            <label class="block mb-2 text-sm font-medium text-foreground">Task Title</label>
+                                            <div class="relative" x-data="{ open: false, search: '' }">
+                                                <input type="text"
+                                                       name="task_titles[]"
+                                                       x-model="task.title"
+                                                       :readonly="task.readonly"
+                                                       :class="{'opacity-75 bg-muted cursor-not-allowed': task.readonly}"
+                                                       @focus="!task.readonly && (open = true)"
+                                                       @input="!task.readonly && (open = true; search = task.title)"
+                                                       @click.away="open = false"
+                                                       placeholder="E.g. Manage project timelines..."
+                                                       class="app-input"
+                                                       autocomplete="off"
+                                                       required>
+                                                <!-- Autocomplete dropdown only if not readonly -->
+                                                <div x-show="!task.readonly && open && commonTasks.filter(t => t.toLowerCase().includes(search.toLowerCase())).length > 0"
+                                                     class="absolute z-50 w-full bg-popover border border-border rounded-lg shadow-xl mt-1 max-h-40 overflow-y-auto"
+                                                     style="display: none">
+                                                    <template x-for="t in commonTasks.filter(t => t.toLowerCase().includes(search.toLowerCase()))"
+                                                              :key="t">
+                                                        <div @click="task.title = t; open = false"
+                                                             class="p-2.5 hover:bg-accent cursor-pointer text-sm transition-colors border-b border-border last:border-0"
+                                                             x-text="t"></div>
+                                                    </template>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <label class="block mb-2 text-sm font-medium text-foreground">Description</label>
+                                            <textarea name="task_descriptions[]"
+                                                      x-model="task.description"
+                                                      :readonly="task.readonly"
+                                                      :class="{'opacity-75 bg-muted cursor-not-allowed': task.readonly}"
+                                                      rows="3"
+                                                      placeholder="Describe what this task entails..."
+                                                      class="app-input"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                        <div x-show="tasks.length === 0"
+                             class="text-center py-12 border-2 border-dashed border-border rounded-xl bg-muted/10">
+                            <div class="inline-flex items-center justify-center w-12 h-12 rounded-full bg-muted text-muted-foreground mb-3">
+                                <i data-lucide="list-todo" class="w-6 h-6"></i>
+                            </div>
+                            <h3 class="text-base font-medium text-foreground">No tasks added yet</h3>
+                            <p class="text-sm text-muted-foreground mt-1 mb-4">An occupation must have at least one task.</p>
+                            <div class="flex items-center justify-center gap-3">
+                                <button type="button"
+                                        @click="openTaskModal = true"
+                                        class="app-btn app-btn-ghost">
+                                    <i data-lucide="search" class="w-4 h-4 mr-2"></i>
+                                    Search Existing
+                                </button>
+                                <button type="button"
+                                        @click="tasks.push({ title: '', description: '', readonly: false })"
+                                        class="app-btn app-btn-primary">
+                                    <i data-lucide="plus" class="w-4 h-4 mr-2"></i>
+                                    Create New
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="-mx-8 -mb-8 mt-12 px-8 py-6 bg-muted/50 border-t border-border flex items-center justify-end gap-3 rounded-b-xl">
+                        <a href="{% url 'occupations' %}" class="app-btn app-btn-ghost">Cancel</a>
+                        <button type="submit" class="app-btn app-btn-primary px-8">Save Occupation</button>
+                    </div>
+                </form>
+                <!-- Task Selector Modal -->
+                <template x-teleport="body">
+                    <div x-show="openTaskModal"
+                         class="fixed inset-0 z-50 overflow-y-auto"
+                         style="display: none"
+                         aria-labelledby="modal-title"
+                         role="dialog"
+                         aria-modal="true">
+                        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+                            <!-- Overlay -->
+                            <div x-show="openTaskModal"
+                                 x-transition:enter="ease-out duration-300"
+                                 x-transition:enter-start="opacity-0"
+                                 x-transition:enter-end="opacity-100"
+                                 x-transition:leave="ease-in duration-200"
+                                 x-transition:leave-start="opacity-100"
+                                 x-transition:leave-end="opacity-0"
+                                 class="fixed inset-0 bg-background/80 transition-opacity"
+                                 aria-hidden="true"
+                                 @click="openTaskModal = false"></div>
+                            <span class="hidden sm:inline-block sm:align-middle sm:h-screen"
+                                  aria-hidden="true">&#8203;</span>
+                            <div x-show="openTaskModal"
+                                 x-transition:enter="ease-out duration-300"
+                                 x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                                 x-transition:leave="ease-in duration-200"
+                                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                                 class="relative z-10 inline-block align-bottom bg-card rounded-xl text-left shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-3xl sm:w-full border border-border">
+                                <div class="px-6 py-4 border-b border-border flex items-center justify-between">
+                                    <h3 class="text-lg font-semibold text-foreground" id="modal-title">Select Tasks from Database</h3>
+                                    <button type="button"
+                                            @click="openTaskModal = false"
+                                            class="text-muted-foreground hover:text-foreground">
+                                        <i data-lucide="x" class="w-5 h-5"></i>
+                                    </button>
+                                </div>
+                                <div class="p-6">
+                                    <!-- Search Input -->
+                                    <div class="relative mb-6">
+                                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted-foreground">
+                                            <i data-lucide="search" class="w-4 h-4"></i>
+                                        </div>
+                                        <input type="text"
+                                               name="q"
+                                               hx-get="{% url 'task-list-partial' %}"
+                                               hx-trigger="input changed delay:500ms, search"
+                                               hx-target="#task-selector-body"
+                                               class="app-input pl-10"
+                                               placeholder="Search tasks by title or description...">
+                                    </div>
+                                    <!-- Results Table -->
+                                    <div class="rounded-lg overflow-hidden">
+                                        <table class="min-w-full border border-border/50">
+                                            <thead class="bg-muted">
+                                                <tr>
+                                                    <th scope="col"
+                                                        class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                                                        Title
+                                                    </th>
+                                                    <th scope="col"
+                                                        class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                                                        Description
+                                                    </th>
+                                                    <th scope="col" class="relative px-6 py-3">
+                                                        <span class="sr-only">Select</span>
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="task-selector-body"
+                                                   class="bg-card"
+                                                   hx-get="{% url 'task-list-partial' %}"
+                                                   hx-trigger="load">
+                                                <tr>
+                                                    <td colspan="3" class="px-6 py-12 text-center text-muted-foreground">
+                                                        <div class="loader-sm mx-auto mb-2"></div>
+                                                        Loading tasks...
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    {% endblock %}
