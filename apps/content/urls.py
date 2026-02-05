@@ -2,8 +2,18 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path("occupations/<str:occupation_id>/edit/", views.occupation_edit, name="occupation-edit"),
-    
+    path("occupations/add/", views.occupation_add, name="occupation-add"),
+    path("occupations/upload/", views.occupation_upload, name="occupation-upload"),
+    path(
+        "occupations/<str:occupation_id>/edit/",
+        views.occupation_edit,
+        name="occupation-edit",
+    ),
+    path(
+        "occupations/<str:occupation_id>/delete/",
+        views.occupation_delete,
+        name="occupation-delete",
+    ),
     # HTMX Partials
     path(
         "occupations/<str:occupation_id>/partials/details/",
@@ -19,5 +29,15 @@ urlpatterns = [
         "occupations/<str:occupation_id>/partials/tasks/<str:task_id>/",
         views.occupation_task_detail,
         name="occupation-task-detail",
+    ),
+    path(
+        "occupations/bulk-delete/",
+        views.occupation_bulk_delete,
+        name="occupation-bulk-delete",
+    ),
+    path(
+        "occupations/partials/task-selector/",
+        views.task_list_partial,
+        name="task-list-partial",
     ),
 ]
