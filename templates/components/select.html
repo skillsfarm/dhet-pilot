@@ -16,7 +16,7 @@
             @click.away="open = false"
             {% endif %}
             {% if x_disabled %}:disabled="{{ x_disabled }}"{% endif %}
-            class="relative w-full rounded-lg bg-input py-2 pl-3 pr-10 text-left focus:outline-none focus:ring-1 focus:ring-primary sm:text-sm shadow-sm border border-border transition-colors {% if disabled %}cursor-not-allowed opacity-60{% else %}cursor-pointer hover:border-primary/50{% endif %}"
+            class="relative w-full rounded-lg bg-input py-3 pl-3 pr-10 text-left focus:outline-none focus:ring-1 focus:ring-primary text-base shadow-sm border border-border transition-colors {% if disabled %}cursor-not-allowed opacity-60{% else %}cursor-pointer hover:border-primary/50{% endif %}"
             {% if x_disabled %}:class="{ 'cursor-not-allowed opacity-60': {{ x_disabled }}, 'cursor-pointer hover:border-primary/50': !({{ x_disabled }}) }"{% endif %}>
         <span class="block truncate text-foreground" x-text="label ? label : '{{ placeholder|default:'Select option' }}'" :class="{ 'text-muted-foreground': !label }">
         </span>
