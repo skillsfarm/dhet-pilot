@@ -8,7 +8,17 @@
             <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i>
             Back to Details
         </a>
-        <div>Edit Occupation</div>
+        <div class="flex items-center justify-between w-full">
+            <div>Edit Occupation</div>
+            {% if user|has_any_role:"content_manager,admin,super_admin" or user.is_staff or user.is_superuser %}
+                <button type="button"
+                        @click="$dispatch('open-dialog', { title: 'Delete Occupation', message: 'Are you sure you want to permanently delete &quot;{{ occupation.ofo_title }}&quot;? This action cannot be undone.', confirmText: 'Delete Occupation', confirmBtnClass: 'app-btn-destructive', actionUrl: '{% url 'occupation-delete' occupation.id %}' })"
+                        class="app-btn text-destructive transition-colors text-sm font-medium">
+                    <i data-lucide="trash-2" class="w-4 h-4 mr-2"></i>
+                    Delete Occupation
+                </button>
+            {% endif %}
+        </div>
     </div>
 {% endblock %}
 {% block page_description %}
@@ -130,4 +140,5 @@
             </div>
         </div>
     </div>
+    {% include "components/dialog.html" %}
 {% endblock %}
