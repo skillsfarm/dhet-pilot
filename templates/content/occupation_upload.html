@@ -1,0 +1,94 @@
+{% extends "layouts/dashboard_page_view.html" %}
+{% block title %}Bulk Upload Occupations{% endblock %}
+{% block page_title %}
+    <div class="flex flex-col gap-4">
+        <a href="{% url 'occupations' %}"
+           class="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors">
+            <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i>
+            Back to Occupations
+        </a>
+        <span>Bulk Upload Occupations</span>
+    </div>
+{% endblock %}
+{% block page_description %}Upload a CSV file to add multiple occupations at once.{% endblock %}
+{% block page_content %}
+    <div class="app-card space-y-8">
+        {% include "components/card_header.html" with title="CSV Upload" description="Upload a CSV file with the following columns:" %}
+        <div class="p-4 rounded-xl bg-muted/50 border border-border">
+            <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-muted-foreground">
+                <li class="flex items-center gap-2">
+                    <i data-lucide="check-circle-2" class="w-4 h-4 text-primary"></i>
+                    <span>ofo_code (required)</span>
+                </li>
+                <li class="flex items-center gap-2">
+                    <i data-lucide="check-circle-2" class="w-4 h-4 text-primary"></i>
+                    <span>ofo_title (required)</span>
+                </li>
+                <li class="flex items-center gap-2">
+                    <i data-lucide="check-circle-2" class="w-4 h-4 text-primary"></i>
+                    <span>description</span>
+                </li>
+                <li class="flex items-center gap-2">
+                    <i data-lucide="check-circle-2" class="w-4 h-4 text-primary"></i>
+                    <span>industry_code (lookup by code)</span>
+                </li>
+                <li class="flex items-center gap-2">
+                    <i data-lucide="check-circle-2" class="w-4 h-4 text-primary"></i>
+                    <span>years_of_experience (numeric)</span>
+                </li>
+                <li class="flex items-center gap-2">
+                    <i data-lucide="check-circle-2" class="w-4 h-4 text-primary"></i>
+                    <span>preferred_nqf_level (numeric)</span>
+                </li>
+            </ul>
+        </div>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="space-y-6">
+                <div>
+                    <label for="csv_file"
+                           class="block mb-2 text-sm font-medium text-muted-foreground">Select CSV File</label>
+                    <div class="flex items-center justify-center w-full">
+                        <label for="csv_file"
+                               class="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-border rounded-xl cursor-pointer bg-muted/30 hover:bg-muted/50 hover:border-primary/50 transition-all">
+                            <div class="flex flex-col items-center justify-center p-6">
+                                <i data-lucide="upload-cloud"
+                                   class="w-10 h-10 mb-3 text-muted-foreground"></i>
+                                <p class="mb-2 text-sm text-muted-foreground">
+                                    <span class="font-semibold text-foreground">Click to upload</span> or drag and drop
+                                </p>
+                                <p class="text-xs text-muted-foreground">CSV file only</p>
+                            </div>
+                            <input id="csv_file"
+                                   name="file"
+                                   type="file"
+                                   class="hidden"
+                                   accept=".csv"
+                                   required />
+                        </label>
+                    </div>
+                </div>
+                <div id="file-info"
+                     class="hidden p-4 rounded-lg bg-primary/5 border border-primary/20">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="file-text" class="w-5 h-5 text-primary"></i>
+                        <span id="file-name" class="text-sm font-medium text-foreground">-</span>
+                    </div>
+                </div>
+            </div>
+            <div class="-mx-8 -mb-8 mt-12 px-8 py-6 bg-muted/50 border-t border-border flex items-center justify-end gap-3">
+                <a href="{% url 'occupations' %}" class="app-btn app-btn-ghost">Cancel</a>
+                <button type="submit" class="app-btn app-btn-primary">Upload and Process</button>
+            </div>
+        </form>
+    </div>
+    <script>
+    document.getElementById('csv_file').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            document.getElementById('file-info').classList.remove('hidden');
+            document.getElementById('file-name').textContent = file.name;
+        }
+    });
+    </script>
+{% endblock %}
