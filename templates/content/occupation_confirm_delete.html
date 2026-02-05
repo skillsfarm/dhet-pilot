@@ -1,0 +1,29 @@
+{% extends "layouts/dashboard_page_view.html" %}
+{% block title %}Delete Occupation{% endblock %}
+{% block page_title %}Delete Occupation{% endblock %}
+{% block page_description %}Confirm deletion of occupation.{% endblock %}
+{% block page_content %}
+    <div class="app-card border-destructive/20 overflow-hidden">
+        <div class="-mx-8 -mt-8 p-8 text-center border-destructive/10">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-destructive/10 text-destructive mb-4">
+                <i data-lucide="alert-triangle" class="w-8 h-8"></i>
+            </div>
+            <h3 class="text-xl font-bold text-foreground mb-2">Are you absolutely sure?</h3>
+            <p class="text-muted-foreground">
+                This action cannot be undone. This will permanently delete
+                <span class="font-semibold text-foreground">{{ occupation.ofo_title }}</span> ({{ occupation.ofo_code }})
+                and all its associated tasks and skills data.
+            </p>
+        </div>
+        <div class="-mx-8 -mb-8 p-6 bg-muted border-t border-border">
+            <div class="flex items-center justify-center gap-4">
+                <a href="{% url 'occupation-edit' occupation.id %}"
+                   class="app-btn app-btn-ghost">Cancel, keep it</a>
+                <form method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="app-btn app-btn-destructive">Yes, delete occupation</button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
