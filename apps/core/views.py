@@ -25,11 +25,11 @@ def dashboard_redirect(request):
     Central dispatch view to route users to their appropriate dashboard based on role.
     """
     if request.user.is_superuser:
-        return redirect("super-profile")
+        return redirect("occupations")
     if request.user.is_staff:
-        return redirect("admin-profile")
+        return redirect("occupations")
     if has_role(request.user, "content_manager"):
-        return redirect("content-manager-dashboard")
+        return redirect("occupations")
 
     # Standard users go to the user dashboard
     return redirect("user-dashboard")
