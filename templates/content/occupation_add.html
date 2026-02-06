@@ -134,7 +134,11 @@
                                 {% endif %}
                             </div>
                             <div>
-                                {% include "components/select.html" with name=form.preferred_nqf_level.name label="Preferred NQF Level" options=nqf_levels value=form.preferred_nqf_level.value|default:"0"|stringformat:"s" %}
+                                {% if form.is_bound %}
+                                    {% include "components/select.html" with name=form.preferred_nqf_level.name label="Preferred NQF Level" options=nqf_levels value=form.preferred_nqf_level.value|default:"0"|stringformat:"s" %}
+                                {% else %}
+                                    {% include "components/select.html" with name=form.preferred_nqf_level.name label="Preferred NQF Level" options=nqf_levels value="4" %}
+                                {% endif %}
                                 {% if form.preferred_nqf_level.errors %}
                                     <ul class="mt-2 text-sm font-medium text-destructive list-none">
                                         {% for error in form.preferred_nqf_level.errors %}<li>{{ error }}</li>{% endfor %}
