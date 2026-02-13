@@ -196,8 +196,114 @@ SPECTACULAR_SETTINGS = {
     "SCHEMA_PATH_PREFIX": "/api/",
 }
 
+# ------------- Admin Sidebar Navigation -------------
+DHET_ADMIN = {
+    "SIDEBAR": {
+        "show_search": False,
+        "command_search": False,
+        "show_all_applications": False,
+        "navigation": [
+            {
+                "title": "Accounts",
+                "items": [
+                    {"title": "Users", "link": "/admin/accounts/user/"},
+                    {"title": "Groups", "link": "/admin/auth/group/"},
+                    {"title": "Permissions", "link": "/admin/auth/permission/"},
+                ],
+            },
+            {
+                "title": "Candidates",
+                "items": [
+                    {
+                        "title": "Candidate Profiles",
+                        "link": "/admin/candidates/candidateprofile/",
+                    },
+                    {
+                        "title": "Education Histories",
+                        "link": "/admin/candidates/educationhistory/",
+                    },
+                    {
+                        "title": "Work Experiences",
+                        "link": "/admin/candidates/workexperience/",
+                    },
+                    {
+                        "title": "Occupation Targets",
+                        "link": "/admin/candidates/occupationtarget/",
+                    },
+                    {
+                        "title": "Assessment Responses",
+                        "link": "/admin/candidates/assessmentresponse/",
+                    },
+                ],
+            },
+            {
+                "title": "Content",
+                "items": [
+                    {"title": "Occupations", "link": "/admin/content/occupation/"},
+                    {
+                        "title": "Occupation Tasks",
+                        "link": "/admin/content/occupationtask/",
+                    },
+                    {
+                        "title": "Occupation Media",
+                        "link": "/admin/content/occupationmedia/",
+                    },
+                    {"title": "Industries", "link": "/admin/content/industry/"},
+                    {"title": "Skills", "link": "/admin/content/skill/"},
+                ],
+            },
+            {
+                "title": "Notifications",
+                "items": [
+                    {
+                        "title": "Notifications",
+                        "link": "/admin/notifications/notification/",
+                    }
+                ],
+            },
+            {
+                "title": "Storage",
+                "items": [{"title": "Files", "link": "/admin/storage/file/"}],
+            },
+            {
+                "title": "System",
+                "items": [
+                    {"title": "Feature Flags", "link": "/admin/core/featureflag/"},
+                    {
+                        "title": "Cookie Groups",
+                        "link": "/admin/cookie_consent/cookiegroup/",
+                    },
+                    {"title": "Cookies", "link": "/admin/cookie_consent/cookie/"},
+                    {
+                        "title": "User Cookie Consents",
+                        "link": "/admin/core/usercookieconsent/",
+                    },
+                    {"title": "Sites", "link": "/admin/sites/site/"},
+                ],
+            },
+        ],
+    }
+}
+
 # ------------- Application Configuration -------------
 ROLEPERMISSIONS_MODULE = "dhet_app.roles"
+
+# ------------- Feature Flags -------------
+# Example: FEATURE_FLAGS=content_feed:off,other_feature:on
+FEATURE_FLAGS = config("FEATURE_FLAGS", default="", cast=str)
+FEATURE_FLAG_OVERRIDES = {}
+if FEATURE_FLAGS:
+    for pair in FEATURE_FLAGS.split(","):
+        if not pair.strip():
+            continue
+        if ":" not in pair:
+            continue
+        key, value = pair.split(":", 1)
+        key = key.strip()
+        value = value.strip().lower()
+        if not key:
+            continue
+        FEATURE_FLAG_OVERRIDES[key] = value in ["1", "true", "on", "yes", "enabled"]
 
 # Cookie Consent
 COOKIE_CONSENT_ENABLED = config("COOKIE_CONSENT_ENABLED", default=True, cast=bool)

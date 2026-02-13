@@ -1,4 +1,5 @@
 from django.db import models
+from simple_history.models import HistoricalRecords
 from cuid2 import cuid_wrapper
 
 # Initialize the CUID generator once
@@ -27,10 +28,9 @@ class UserCookieConsent(CuidModel):
     """
     Logs cookie consent choices for authenticated users.
     """
+
     user = models.ForeignKey(
-        "accounts.User",
-        on_delete=models.CASCADE,
-        related_name="cookie_consents"
+        "accounts.User", on_delete=models.CASCADE, related_name="cookie_consents"
     )
     group_varname = models.CharField(max_length=100)
     action = models.CharField(max_length=20)  # 'accepted' or 'declined'
@@ -44,3 +44,45 @@ class UserCookieConsent(CuidModel):
 
     def __str__(self):
         return f"{self.user.username} - {self.group_varname} ({self.action})"
+
+
+class FeatureFlag(CuidModel):
+    """
+    Feature flag configuration stored in the database.
+    Environment variables can override database settings.
+    """
+
+    key = models.CharField(max_length=100, unique=True)
+    name = models.CharField(max_length=150)
+    description = models.TextField(blank=True)
+    is_enabled = models.BooleanField(default=True)
+    history = HistoricalRecords()
+
+    class Meta:
+        verbose_name = "Feature Flag"
+        verbose_name_plural = "Feature Flags"
+        ordering = ["key"]
+
+    def __str__(self):
+        return f"{self.key} ({'enabled' if self.is_enabled else 'disabled'})"
+
+    @classmethod
+    def is_enabled_key(cls, key):
+        from django.conf import settings
+
+        overrides = getattr(settings, "FEATURE_FLAG_OVERRIDES", {})
+        if key in overrides:
+            return overrides[key]
+        flag = cls.objects.filter(key=key).first()
+        if flag is None:
+            return True
+        return flag.is_enabled
+
+    @property
+    def is_active(self):
+        from django.conf import settings
+
+        overrides = getattr(settings, "FEATURE_FLAG_OVERRIDES", {})
+        if self.key in overrides:
+            return overrides[self.key]
+        return self.is_enabled

@@ -1,20 +1,19 @@
-{% load role_tags %}
+{% load role_tags feature_flags %}
 <nav class="bg-card shadow-sm w-screen">
     <div class="w-full flex justify-center border-b border-border sm:px-6 lg:px-8">
-        <div class="w-full max-w-7xl flex flex-wrap items-center justify-between gap-4 py-3 px-4">
+        <div class="w-full max-w-7xl flex flex-wrap items-center justify-between gap-4 p-4">
             <a href="/" class="flex items-center gap-3">
                 {% load static %}
                 <img src="{% static 'images/branding/logo-light.png' %}"
                      alt="dhet_app"
-                     class="h-10 w-auto block dark:hidden">
+                     class="h-16 w-auto block dark:hidden">
                 <img src="{% static 'images/branding/logo-dark.png' %}"
                      alt="dhet_app"
-                     class="h-10 w-auto hidden dark:block">
+                     class="h-16 w-auto hidden dark:block">
             </a>
             <div class="flex flex-wrap items-center gap-2 text-xs text-muted-foreground sm:text-sm">
                 <span class="flex items-center gap-1 rounded-full bg-muted/40 px-3 py-1">
-                    <i data-lucide="at-sign" class="w-4 h-4"></i>
-                    <span class="hidden sm:inline">{{ user.username }}</span>
+                    <img src="{% static 'images/flag.png' %}" alt="Flag" class="h-16">
                 </span>
                 <form method="post"
                       action="{% url 'account_logout' %}"
@@ -44,22 +43,55 @@
                         </a>
                     {% endif %}
                     {# Occupations - visible to candidates and content managers #}
-                    {% if user.candidate or user|has_any_role:'content_manager,admin' or user.is_superuser %}
-                        <a href="{% url 'occupations' %}"
-                           class="relative flex items-center gap-2 py-4 text-sm font-medium transition-colors {% if current and 'occupation' in current and current != 'occupation-assessment' %}text-primary after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-primary{% else %}text-muted-foreground hover:text-primary{% endif %}"
-                           aria-current="{% if current and 'occupation' in current and current != 'occupation-assessment' %}page{% endif %}">
-                            <i data-lucide="briefcase" class="w-4 h-4"></i>
-                            <span class="">Occupations</span>
-                        </a>
+                    {% if user.candidate or user|has_any_role:'content_manager,admin,super_admin' or user.is_superuser %}
+                        {% if user|has_any_role:'content_manager,admin,super_admin' or user.is_staff or user.is_superuser %}
+                            <div class="relative group">
+                                <button type="button"
+                                        class="relative flex items-center gap-2 py-4 text-sm font-medium transition-colors {% if current and 'occupation' in current and current != 'occupation-assessment' or current and 'industry' in current %}text-primary after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-primary{% else %}text-muted-foreground hover:text-primary{% endif %}">
+                                    <i data-lucide="briefcase" class="w-4 h-4"></i>
+                                    <span>Occupations</span>
+                                    <i data-lucide="chevron-down" class="w-4 h-4 opacity-70"></i>
+                                </button>
+                                <div class="absolute left-0 top-full mt-0 hidden min-w-[12rem] rounded-xl border border-border bg-card shadow-lg group-hover:block group-focus-within:block">
+                                    <a href="{% url 'occupations' %}"
+                                       class="flex items-center px-4 py-2 text-sm text-muted-foreground hover:text-primary hover:bg-muted rounded-t-xl">
+                                        <span>Occupations</span>
+                                    </a>
+                                    <a href="{% url 'industry-list' %}"
+                                       class="flex items-center px-4 py-2 text-sm text-muted-foreground hover:text-primary hover:bg-muted rounded-b-xl">
+                                        <span>Industries</span>
+                                    </a>
+                                </div>
+                            </div>
+                        {% else %}
+                            <a href="{% url 'occupations' %}"
+                               class="relative flex items-center gap-2 py-4 text-sm font-medium transition-colors {% if current and 'occupation' in current and current != 'occupation-assessment' %}text-primary after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-primary{% else %}text-muted-foreground hover:text-primary{% endif %}"
+                               aria-current="{% if current and 'occupation' in current and current != 'occupation-assessment' %}page{% endif %}">
+                                <i data-lucide="briefcase" class="w-4 h-4"></i>
+                                <span>Occupations</span>
+                            </a>
+                        {% endif %}
                     {% endif %}
                     {# Users - visible to superadmin, admin, developer #}
                     {% if user|has_any_role:'super_admin,admin,developer' or user.is_superuser %}
-                        <a href="{% url 'user_list' %}"
-                           class="relative flex items-center gap-2 py-4 text-sm font-medium transition-colors {% if current and 'user_' in current %}text-primary after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-primary{% else %}text-muted-foreground hover:text-primary{% endif %}"
-                           aria-current="{% if current and 'user_' in current %}page{% endif %}">
-                            <i data-lucide="users" class="w-4 h-4"></i>
-                            <span class="">Users</span>
-                        </a>
+                        <div class="relative group">
+                            <button type="button"
+                                    class="relative flex items-center gap-2 py-4 text-sm font-medium transition-colors {% if current and 'user_' in current %}text-primary after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-primary{% else %}text-muted-foreground hover:text-primary{% endif %}">
+                                <i data-lucide="users" class="w-4 h-4"></i>
+                                <span>Users</span>
+                                <i data-lucide="chevron-down" class="w-4 h-4 opacity-70"></i>
+                            </button>
+                            <div class="absolute left-0 top-full mt-0 hidden min-w-[12rem] rounded-xl border border-border bg-card shadow-lg group-hover:block group-focus-within:block">
+                                <a href="{% url 'user_list' %}?view=staff"
+                                   class="flex items-center px-4 py-2 text-sm text-muted-foreground hover:text-primary hover:bg-muted rounded-t-xl">
+                                    <span>Staff Users</span>
+                                </a>
+                                <a href="{% url 'user_list' %}?view=candidates"
+                                   class="flex items-center px-4 py-2 text-sm text-muted-foreground hover:text-primary hover:bg-muted rounded-b-xl">
+                                    <span>Candidates</span>
+                                </a>
+                            </div>
+                        </div>
                     {% endif %}
                     {# Assessments - visible to candidates only #}
                     {% if role == 'user' %}
@@ -69,6 +101,14 @@
                             <i data-lucide="clipboard-list" class="w-4 h-4"></i>
                             <span class="">Assessments</span>
                         </a>
+                        {% feature_enabled 'content_feed' as feed_enabled %}
+                        {% if feed_enabled %}
+                            <a href="{% url 'candidates:content-feed' %}"
+                               class="relative flex items-center gap-2 py-4 text-sm font-medium transition-colors {% if current and 'content-feed' in current %}text-primary after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-full after:bg-primary{% else %}text-muted-foreground hover:text-primary{% endif %}">
+                                <i data-lucide="play" class="w-4 h-4"></i>
+                                <span class="">My Library</span>
+                            </a>
+                        {% endif %}
                     {% endif %}
                     {# Profile - visible to all authenticated users #}
                     <a href="{{ profile_url }}"
@@ -77,9 +117,11 @@
                         <i data-lucide="user" class="w-4 h-4"></i>
                         <span class="">My Profile</span>
                     </a>
+                    
+
                 </div>
             </div>
         {% endwith %}
     {% endif %}
-</div>
+    </div>
 </nav>

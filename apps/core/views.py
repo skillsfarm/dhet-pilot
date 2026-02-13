@@ -1,6 +1,7 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse
+from django.contrib import messages
 from django.db.models import Q
 from django.views.decorators.csrf import ensure_csrf_cookie
 from rolepermissions.checkers import has_role
@@ -12,7 +13,7 @@ from cookie_consent.util import (
     set_cookie_dict_to_response,
     delete_cookies,
 )
-from .models import UserCookieConsent
+from .models import UserCookieConsent, FeatureFlag
 from cookie_consent.conf import settings
 
 from .context_processors import navbar_context
@@ -45,6 +46,8 @@ def home(request):
 @login_required
 def user_dashboard(request):
     context = navbar_context(request)
+    show_matching_scores = False
+    completed_assessments = set()
 
     # Extra check: Ensure standard users are TRULY onboarded (score >= 10)
     if (
@@ -70,6 +73,16 @@ def user_dashboard(request):
             from apps.candidates.services import compute_candidate_stats
 
             compute_candidate_stats(candidate)
+
+        if candidate.assessment_progress:
+            for ofo_code, data in candidate.assessment_progress.items():
+                if data.get("percentage") == 100:
+                    completed_assessments.add(str(ofo_code))
+
+            show_matching_scores = len(completed_assessments) > 0
+
+    context["show_matching_scores"] = show_matching_scores
+    context["completed_assessments"] = list(completed_assessments)
 
     return render(request, "core/dashboard.html", context)
 
@@ -129,6 +142,39 @@ def save_cookie_preferences(request):
         except Exception as e:
             return JsonResponse({"status": "error", "message": str(e)}, status=400)
     return HttpResponse(status=405)
+
+
+@login_required
+def platform_settings(request):
+    """
+    Platform settings view for managing feature flags.
+    Accessible to super_admin only.
+    """
+    if not has_role(request.user, "super_admin") and not request.user.is_superuser:
+        return redirect("dashboard")
+
+    if request.method == "POST":
+        for flag in FeatureFlag.objects.all():
+            value = request.POST.get(f"flag_{flag.key}") == "on"
+            if flag.is_enabled != value:
+                flag.is_enabled = value
+                flag.save()
+        messages.success(request, "Platform settings updated.")
+        if request.headers.get("HX-Request"):
+            flags = FeatureFlag.objects.all()
+            context = navbar_context(request)
+            context["flags"] = flags
+            return render(request, "core/partials/platform_settings.html", context)
+        return redirect("platform-settings")
+
+    flags = FeatureFlag.objects.all()
+    context = navbar_context(request)
+    context["flags"] = flags
+
+    if request.headers.get("HX-Request"):
+        return render(request, "core/partials/platform_settings.html", context)
+
+    return render(request, "core/platform_settings.html", context)
 
 
 @login_required
@@ -203,8 +249,17 @@ def occupation_list(request):
         for item in candidate.recommended_occupations:
             cached_scores[item.get("ofo_code")] = item.get("score", 0)
 
+        completed_assessments = set()
+        if candidate.assessment_progress:
+            for ofo_code, data in candidate.assessment_progress.items():
+                if data.get("percentage") == 100:
+                    completed_assessments.add(str(ofo_code))
+
         for occ in occupations:
-            occ.proficiency_score = cached_scores.get(occ.ofo_code, 0)
+            if str(occ.ofo_code) in completed_assessments:
+                occ.proficiency_score = cached_scores.get(occ.ofo_code)
+            else:
+                occ.proficiency_score = None
 
     industries = Industry.objects.all()
     industry_options = []
@@ -228,6 +283,9 @@ def occupation_list(request):
             "has_interests": len(interested_industry_ids) > 0,
         }
     )
+
+    if request.headers.get("HX-Request"):
+        return render(request, "core/partials/occupation_list_content.html", context)
 
     return render(request, "core/occupation_list.html", context)
 
@@ -261,17 +319,22 @@ def occupation_detail(request, occupation_id):
             candidate=candidate, occupation=occupation
         ).exists()
 
-        # Get score if available
-        if candidate.recommended_occupations:
+        # Check active assessment status
+        progress_data = None
+        if candidate.assessment_progress:
+            progress_data = candidate.assessment_progress.get(str(occupation.ofo_code))
+            if progress_data:
+                context["assessment_progress_data"] = progress_data
+
+        # Get score only if this assessment is fully completed
+        if (
+            progress_data
+            and progress_data.get("percentage") == 100
+            and candidate.recommended_occupations
+        ):
             for item in candidate.recommended_occupations:
                 if item.get("ofo_code") == occupation.ofo_code:
                     context["proficiency_score"] = item.get("score")
                     break
-
-        # Check active assessment status
-        if candidate.assessment_progress:
-            progress_data = candidate.assessment_progress.get(occupation.ofo_code)
-            if progress_data:
-                context["assessment_progress_data"] = progress_data
 
     return render(request, "core/occupation_detail.html", context)

@@ -19,6 +19,9 @@ class ContentManager(AbstractUserRole):
     available_permissions = {
         "edit_own_profile": True,
         "manage_content": True,
+        "manage_occupations": True,
+        "manage_industries": True,
+        "manage_skills": True,
     }
 
 
@@ -27,6 +30,10 @@ class Admin(AbstractUserRole):
     available_permissions = {
         "edit_own_profile": True,
         "manage_users": True,
+        "manage_content": True,
+        "manage_candidates": True,
+        "manage_notifications": True,
+        "manage_storage": True,
     }
 
 
@@ -35,5 +42,9 @@ class SuperAdmin(AbstractUserRole):
     available_permissions = {
         "edit_own_profile": True,
         "manage_users": True,
+        "manage_content": True,
+        "manage_candidates": True,
+        "manage_notifications": True,
+        "manage_storage": True,
         "edit_system_settings": True,
     }
