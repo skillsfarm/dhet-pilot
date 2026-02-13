@@ -35,8 +35,8 @@ class Command(BaseCommand):
         {
             "email": "superadmin@app.local",
             "username": "superadmin",
-            "first_name": "Super",
-            "last_name": "Admin",
+            "first_name": "Sifiso",
+            "last_name": "Mokoteli",
             "role": "super_admin",
             "is_staff": True,
             "is_superuser": True,
@@ -44,8 +44,8 @@ class Command(BaseCommand):
         {
             "email": "admin@app.local",
             "username": "admin",
-            "first_name": "Admin",
-            "last_name": "User",
+            "first_name": "Johannes",
+            "last_name": "Smith",
             "role": "admin",
             "is_staff": True,
             "is_superuser": False,
@@ -57,8 +57,8 @@ class Command(BaseCommand):
         {
             "email": "developer@app.local",
             "username": "developer",
-            "first_name": "Dev",
-            "last_name": "User",
+            "first_name": "Rahul",
+            "last_name": "Kumar",
             "role": "developer",
             "is_staff": False,
             "is_superuser": False,
@@ -66,8 +66,8 @@ class Command(BaseCommand):
         {
             "email": "contentmanager@app.local",
             "username": "contentmanager",
-            "first_name": "Content",
-            "last_name": "Manager",
+            "first_name": "Thandi",
+            "last_name": "Mnyeni",
             "role": "content_manager",
             "is_staff": True,
             "is_superuser": False,

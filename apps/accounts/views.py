@@ -1,14 +1,24 @@
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, logout
 from django.contrib import messages
 
 from apps.core.context_processors import navbar_context
+from apps.core.permissions import is_admin_or_super_admin, is_super_admin
+from rolepermissions.checkers import has_role
 from .forms import ProfileForm
 
 
 @login_required
 def profile(request):
+    from apps.candidates.forms import EducationHistoryForm, OccupationTargetForm
+    from apps.candidates.forms import WorkExperienceForm
+    from apps.candidates.models import (
+        EducationHistory,
+        OccupationTarget,
+        WorkExperience,
+    )
+
     if request.method == "POST":
         form = ProfileForm(request.POST, instance=request.user)
         if form.is_valid():
@@ -19,7 +29,26 @@ def profile(request):
         form = ProfileForm(instance=request.user)
 
     context = navbar_context(request)
-    context["form"] = form
+    context["account_form"] = form
+    context["has_candidate"] = hasattr(request.user, "candidate")
+
+    if context["has_candidate"]:
+        candidate = request.user.candidate
+        context.update(
+            {
+                "education_form": EducationHistoryForm(),
+                "education_history": EducationHistory.objects.filter(
+                    candidate=candidate
+                ),
+                "experience_form": WorkExperienceForm(),
+                "work_experience": WorkExperience.objects.filter(candidate=candidate),
+                "target_form": OccupationTargetForm(candidate=candidate),
+                "target_occupations": OccupationTarget.objects.filter(
+                    candidate=candidate
+                ).select_related("occupation"),
+            }
+        )
+
     return render(request, "accounts/profile.html", context)
 
 
@@ -47,10 +76,20 @@ def profile_security(request):
 
 
 @login_required
+def profile_deactivate(request):
+    if request.method == "POST":
+        request.user.is_active = False
+        request.user.save(update_fields=["is_active"])
+        logout(request)
+        messages.success(request, "Your account has been deactivated.")
+        return redirect("home")
+
+    return redirect("user-profile")
+
+
+@login_required
 def profile_onboarding(request):
     """HTMX partial view for onboarding tab"""
-    from rolepermissions.checkers import has_role
-
     # Prevent privileged users from accessing this view
     if (
         has_role(request.user, "content_manager")
@@ -368,17 +407,16 @@ def user_list(request):
     """
     from django.core.paginator import Paginator
     from django.db.models import Q
-    from rolepermissions.checkers import has_role
 
     if not (
-        request.user.is_superuser
-        or has_role(request.user, "admin")
-        or has_role(request.user, "developer")
-        or has_role(request.user, "super_admin")
+        is_admin_or_super_admin(request.user) or has_role(request.user, "developer")
     ):
         return redirect("dashboard")
 
+    from apps.candidates.models import CandidateProfile
+
     query = request.GET.get("q", "")
+    view_type = request.GET.get("view", "staff")
     users_qs = get_user_model().objects.all().order_by("-date_joined")
 
     if query:
@@ -389,17 +427,30 @@ def user_list(request):
             | Q(last_name__icontains=query)
         )
 
-    paginator = Paginator(users_qs, 20)  # Show 20 users per page
-    page_number = request.GET.get("page")
-    users_page = paginator.get_page(page_number)
+    candidates = CandidateProfile.objects.select_related("user").all()
+    if query:
+        candidates = candidates.filter(user__email__icontains=query)
+
+    if view_type == "candidates":
+        paginator = Paginator(candidates, 20)
+        page_number = request.GET.get("page")
+        users_page = paginator.get_page(page_number)
+    else:
+        users_qs = users_qs.filter(candidate__isnull=True)
+        paginator = Paginator(users_qs, 20)
+        page_number = request.GET.get("page")
+        users_page = paginator.get_page(page_number)
 
     context = navbar_context(request)
     context.update(
         {
             "users": users_page,
+            "candidates": candidates,
             "search_query": query,
+            "view_type": view_type,
         }
     )
+
     return render(request, "accounts/user_list.html", context)
 
 
@@ -409,14 +460,10 @@ def user_edit(request, pk):
     Edit a user. Accessible by superadmin, admin, and developer.
     """
     from django.shortcuts import get_object_or_404
-    from rolepermissions.checkers import has_role
     from .forms import UserAdminForm
 
     if not (
-        request.user.is_superuser
-        or has_role(request.user, "admin")
-        or has_role(request.user, "developer")
-        or has_role(request.user, "super_admin")
+        is_admin_or_super_admin(request.user) or has_role(request.user, "developer")
     ):
         return redirect("dashboard")
 
@@ -426,6 +473,10 @@ def user_edit(request, pk):
     # Prevent non-superusers from editing superusers
     if target_user.is_superuser and not request.user.is_superuser:
         messages.error(request, "You do not have permission to edit a superuser.")
+        return redirect("user_list")
+
+    if is_super_admin(target_user) and not is_super_admin(request.user):
+        messages.error(request, "You do not have permission to edit a super admin.")
         return redirect("user_list")
 
     if request.method == "POST":

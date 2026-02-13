@@ -1,0 +1,5 @@
+{% if view_type == 'candidates' %}
+    {% include "accounts/partials/user_candidates_list.html" %}
+{% else %}
+    {% include "accounts/partials/user_staff_list.html" %}
+{% endif %}

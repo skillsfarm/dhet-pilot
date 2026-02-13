@@ -1,0 +1,25 @@
+<!-- Deactivate Account Card -->
+<div class="app-card space-y-6">
+    {% include "components/card_header.html" with title="Deactivate Account" description="Disable your account and stop all access" %}
+    <div class="space-y-3">
+        <p class="text-sm text-muted-foreground">
+            Deactivating your account will immediately sign you out and prevent future logins until an administrator reactivates it.
+        </p>
+        <div class="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm text-destructive">
+            This action does not delete your data. It only disables access.
+        </div>
+    </div>
+    <div class="-mx-8 -mb-8 mt-6 px-8 py-4 bg-muted border-t border-border">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div class="text-sm text-muted-foreground">You can contact support to reactivate your account.</div>
+            <form method="post"
+                  action="{% url 'profile-deactivate' %}"
+                  onsubmit="return confirm('Deactivate your account and sign out?');">
+                {% csrf_token %}
+                <button type="submit" class="app-btn app-btn-ghost text-destructive hover:bg-destructive/10">
+                    Deactivate Account
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
