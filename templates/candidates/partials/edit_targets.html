@@ -1,0 +1,105 @@
+<div class="space-y-6">
+    <div class="app-card space-y-6">
+        {% include "components/card_header.html" with title="Add Target" description="Set an occupation target (max 3)" %}
+        {% if target_records.count < 3 %}
+        <form method="post"
+              action="{% url 'candidates:candidate-edit-targets' candidate.id %}"
+              hx-post="{% url 'candidates:candidate-edit-targets' candidate.id %}"
+              hx-target="#tab-content"
+              hx-swap="innerHTML swap:0.5s"
+              x-data="{ isSubmitting: false }"
+              @submit="isSubmitting = true"
+              @htmx:afterRequest="isSubmitting = false"
+              @htmx:responseError="isSubmitting = false"
+              class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <label for="{{ form.occupation.id_for_label }}"
+                       class="block mb-2 text-sm font-medium text-muted-foreground">{{ form.occupation.label }}</label>
+                {{ form.occupation }}
+                {% if form.occupation.errors %}
+                    <p class="mt-2 text-sm text-destructive">{{ form.occupation.errors.0 }}</p>
+                {% endif %}
+            </div>
+            <div>
+                <label for="{{ form.priority.id_for_label }}"
+                       class="block mb-2 text-sm font-medium text-muted-foreground">{{ form.priority.label }}</label>
+                {{ form.priority }}
+                {% if form.priority.errors %}
+                    <p class="mt-2 text-sm text-destructive">{{ form.priority.errors.0 }}</p>
+                {% endif %}
+                {% if available_priorities|length == 0 %}
+                    <p class="mt-1 text-xs text-muted-foreground">All priority levels are in use</p>
+                {% endif %}
+            </div>
+            <div class="-mx-8 -mb-8 mt-6 px-8 py-4 bg-muted border-t border-border">
+                <div class="flex items-center justify-between">
+                    <div class="text-sm text-muted-foreground">Targets help guide assessment focus</div>
+                    <button type="submit"
+                            class="app-btn app-btn-primary"
+                            :disabled="isSubmitting"
+                            {% if available_priorities|length == 0 %}disabled{% endif %}>
+                        <span x-show="!isSubmitting">Add Target</span>
+                        <span x-show="isSubmitting" class="flex items-center gap-2">
+                            <i data-lucide="loader" class="w-4 h-4 animate-spin-smooth"></i>
+                            Saving...
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </form>
+        {% else %}
+        <div class="bg-orange-500/10 border border-orange-500/30 rounded-lg p-4">
+            <p class="text-sm text-orange-600">
+                <i data-lucide="alert-circle" class="w-4 h-4 inline mr-2"></i>
+                Maximum of 3 occupation targets reached. Delete one to add another.
+            </p>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="app-card space-y-6">
+        {% include "components/card_header.html" with title="Target List" description="Review and remove existing targets" %}
+        {% if target_records %}
+            <div class="space-y-3">
+                {% for target in target_records %}
+                    <div class="flex items-start justify-between p-4 border border-border rounded-lg hover:bg-muted/30 transition-colors">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <i data-lucide="target" class="w-5 h-5 text-primary"></i>
+                                <h4 class="font-medium">{{ target.occupation.ofo_title }}</h4>
+                                <span class="text-xs px-2 py-1 rounded-full
+                                    {% if target.priority == 1 %}bg-red-500/20 text-red-600{% elif target.priority == 2 %}bg-orange-500/20 text-orange-600{% else %}bg-blue-500/20 text-blue-600{% endif %}">
+                                    {{ target.get_priority_display }}
+                                </span>
+                            </div>
+                            <p class="text-sm text-muted-foreground ml-8">
+                                {{ target.occupation.ofo_code }} - {{ target.occupation.ofo_description|truncatewords:20 }}
+                            </p>
+                        </div>
+                        <form method="post"
+                              action="{% url 'candidates:candidate-edit-targets' candidate.id %}"
+                              hx-post="{% url 'candidates:candidate-edit-targets' candidate.id %}"
+                              hx-target="#tab-content"
+                              hx-swap="innerHTML swap:0.5s"
+                              onsubmit="return confirm('Are you sure you want to delete this occupation target?');">
+                            {% csrf_token %}
+                            <input type="hidden" name="delete_id" value="{{ target.id }}">
+                            <button type="submit" class="text-destructive hover:text-destructive/80">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </form>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-12 text-muted-foreground">
+                <i data-lucide="target" class="w-12 h-12 mx-auto mb-4 opacity-50"></i>
+                <p>No occupation targets set</p>
+            </div>
+        {% endif %}
+        <div class="-mx-8 -mb-8 mt-6 px-8 py-4 bg-muted border-t border-border">
+            <div class="text-sm text-muted-foreground">Targets are limited to three priorities</div>
+        </div>
+    </div>
+</div>

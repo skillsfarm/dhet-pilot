@@ -62,9 +62,7 @@ class WorkExperienceForm(forms.ModelForm):
             "company": forms.TextInput(
                 attrs={"class": "app-input", "placeholder": "Company name"}
             ),
-            "start_date": forms.DateInput(
-                attrs={"class": "app-input", "type": "date"}
-            ),
+            "start_date": forms.DateInput(attrs={"class": "app-input", "type": "date"}),
             "end_date": forms.DateInput(
                 attrs={
                     "class": "app-input",
@@ -94,29 +92,36 @@ class OccupationTargetForm(forms.ModelForm):
             # 1. Filter Occupations
             # Get IDs of occupations already targeted by this candidate
             # If we are editing an existing instance, exclude it from the "already targeted" list (though usually we don't change occupation on edit)
-            existing_targets_query = OccupationTarget.objects.filter(candidate=self.candidate)
+            existing_targets_query = OccupationTarget.objects.filter(
+                candidate=self.candidate
+            )
             if self.instance and self.instance.pk:
-                existing_targets_query = existing_targets_query.exclude(pk=self.instance.pk)
-            
-            taken_occupation_ids = existing_targets_query.values_list("occupation_id", flat=True)
-            
+                existing_targets_query = existing_targets_query.exclude(
+                    pk=self.instance.pk
+                )
+
+            taken_occupation_ids = existing_targets_query.values_list(
+                "occupation_id", flat=True
+            )
+
             if taken_occupation_ids:
                 # Filter the queryset of the 'occupation' field
-                self.fields["occupation"].queryset = self.fields["occupation"].queryset.exclude(
-                    id__in=taken_occupation_ids
-                )
+                self.fields["occupation"].queryset = self.fields[
+                    "occupation"
+                ].queryset.exclude(id__in=taken_occupation_ids)
 
             # 2. Filter Priorities
             # Get priorities already taken
             taken_priorities = existing_targets_query.values_list("priority", flat=True)
-            
+
             if taken_priorities:
                 # Remove taken priorities from choices
                 # 'priority' is a ChoiceField (or derived from model choices)
                 # We need to reconstruct choices provided by the model field
                 current_choices = self.fields["priority"].choices
                 new_choices = [
-                    choice for choice in current_choices 
+                    choice
+                    for choice in current_choices
                     if choice[0] not in taken_priorities and choice[0] != ""
                 ]
                 # Ensure we have a placeholder if there are choices left, or if empty (though logic might handle empty differently)
@@ -128,3 +133,28 @@ class OccupationTargetForm(forms.ModelForm):
                 # Let's add one.
                 final_choices = [("", "Select Priority")] + new_choices
                 self.fields["priority"].choices = final_choices
+
+
+class CandidateCreateForm(forms.ModelForm):
+    class Meta:
+        model = CandidateProfile
+        fields = ["user"]
+        widgets = {
+            "user": forms.Select(attrs={"class": "app-input"}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["user"].queryset = User.objects.filter(candidate__isnull=True)
+
+
+class CandidateUpdateForm(forms.ModelForm):
+    class Meta:
+        model = CandidateProfile
+        fields = ["stats_update_needed", "files"]
+        widgets = {
+            "stats_update_needed": forms.CheckboxInput(
+                attrs={"class": "app-btn p-2 text-primary border-border rounded"}
+            ),
+            "files": forms.CheckboxSelectMultiple(),
+        }

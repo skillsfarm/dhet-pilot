@@ -15,6 +15,14 @@ class CandidateProfile(CuidModel):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="candidate"
     )
 
+    # Optional file attachments
+    files = models.ManyToManyField(
+        "storage.File",
+        blank=True,
+        related_name="candidate_profiles",
+        help_text="Optional files attached to this candidate profile",
+    )
+
     history = HistoricalRecords()
 
     class Meta:
@@ -25,13 +33,25 @@ class CandidateProfile(CuidModel):
         return f"{self.user.username}'s candidate profile"
 
     # Computed Stats
-    highest_nqf_level = models.CharField(max_length=50, blank=True, help_text="Cached highest NQF level")
-    occupation_matches_count = models.PositiveIntegerField(default=0, help_text="Number of occupation matches found")
-    recommended_occupations = models.JSONField(default=list, blank=True, help_text="List of recommended occupation IDs or details")
-    assessment_progress = models.JSONField(default=dict, blank=True, help_text="Progress stats per occupation")
-    
+    highest_nqf_level = models.CharField(
+        max_length=50, blank=True, help_text="Cached highest NQF level"
+    )
+    occupation_matches_count = models.PositiveIntegerField(
+        default=0, help_text="Number of occupation matches found"
+    )
+    recommended_occupations = models.JSONField(
+        default=list,
+        blank=True,
+        help_text="List of recommended occupation IDs or details",
+    )
+    assessment_progress = models.JSONField(
+        default=dict, blank=True, help_text="Progress stats per occupation"
+    )
+
     # Flags
-    stats_update_needed = models.BooleanField(default=True, help_text="Flag to trigger stats re-computation")
+    stats_update_needed = models.BooleanField(
+        default=True, help_text="Flag to trigger stats re-computation"
+    )
     stats_last_computed = models.DateTimeField(null=True, blank=True)
 
 
@@ -81,7 +101,9 @@ class WorkExperience(CuidModel):
     job_title = models.CharField(max_length=255)
     company = models.CharField(max_length=255)
     start_date = models.DateField()
-    end_date = models.DateField(null=True, blank=True, help_text="Leave blank if current position")
+    end_date = models.DateField(
+        null=True, blank=True, help_text="Leave blank if current position"
+    )
     tasks = models.ManyToManyField(
         "content.OccupationTask", related_name="work_experiences", blank=True
     )
@@ -144,6 +166,7 @@ class AssessmentResponse(CuidModel):
     """
     Stores a candidate's response to an assessment task.
     """
+
     class ResponseType(models.TextChoices):
         YES = "yes", "Yes, I have done this"
         PARTIALLY = "partially", "Partially / Sometimes"
@@ -153,10 +176,12 @@ class AssessmentResponse(CuidModel):
         CandidateProfile, on_delete=models.CASCADE, related_name="assessment_responses"
     )
     task = models.ForeignKey(
-        "content.OccupationTask", on_delete=models.CASCADE, related_name="candidate_responses"
+        "content.OccupationTask",
+        on_delete=models.CASCADE,
+        related_name="candidate_responses",
     )
     response = models.CharField(max_length=20, choices=ResponseType.choices)
-    
+
     history = HistoricalRecords()
 
     class Meta:

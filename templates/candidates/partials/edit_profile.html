@@ -1,0 +1,117 @@
+<div class="space-y-6">
+    <div class="app-card space-y-6">
+        {% include "components/card_header.html" with title="Basic Details" description="Update the candidate's name and contact email" %}
+        <form method="post"
+              action="{% url 'candidates:candidate-edit-profile' candidate.id %}"
+              hx-post="{% url 'candidates:candidate-edit-profile' candidate.id %}"
+              hx-target="#tab-content"
+              hx-swap="innerHTML swap:0.5s"
+              x-data="{ isSubmitting: false }"
+              @submit="isSubmitting = true"
+              @htmx:afterRequest="isSubmitting = false"
+              @htmx:responseError="isSubmitting = false">
+            {% csrf_token %}
+            <div class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="first_name"
+                               class="block mb-2 text-sm font-medium text-muted-foreground">First Name</label>
+                        <input type="text"
+                               id="first_name"
+                               name="first_name"
+                               value="{{ candidate.user.first_name }}"
+                               class="app-input w-full"
+                               required>
+                    </div>
+                    <div>
+                        <label for="last_name"
+                               class="block mb-2 text-sm font-medium text-muted-foreground">Last Name</label>
+                        <input type="text"
+                               id="last_name"
+                               name="last_name"
+                               value="{{ candidate.user.last_name }}"
+                               class="app-input w-full"
+                               required>
+                    </div>
+                </div>
+                <div>
+                    <label for="email"
+                           class="block mb-2 text-sm font-medium text-muted-foreground">Email Address</label>
+                    <input type="email"
+                           id="email"
+                           name="email"
+                           value="{{ candidate.user.email }}"
+                           class="app-input w-full"
+                           required>
+                </div>
+            </div>
+            <div class="-mx-8 -mb-8 mt-6 px-8 py-4 bg-muted border-t border-border">
+                <div class="flex items-center justify-between">
+                    <div class="text-sm text-muted-foreground">Changes update the candidate profile</div>
+                    <button type="submit" class="app-btn app-btn-primary" :disabled="isSubmitting">
+                        <span x-show="!isSubmitting">Save Changes</span>
+                        <span x-show="isSubmitting" class="flex items-center gap-2">
+                            <i data-lucide="loader" class="w-4 h-4 animate-spin-smooth"></i>
+                            Saving...
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="app-card space-y-6">
+        {% include "components/card_header.html" with title="Account Status" description="View account verification and activity" %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <p class="text-xs text-muted-foreground">Account Created</p>
+                <p class="text-sm font-medium">{{ candidate.user.date_joined|date:"F d, Y g:i A" }}</p>
+            </div>
+            <div>
+                <p class="text-xs text-muted-foreground">Last Login</p>
+                <p class="text-sm font-medium">
+                    {% if candidate.user.last_login %}
+                        {{ candidate.user.last_login|date:"F d, Y g:i A" }}
+                    {% else %}
+                        Never
+                    {% endif %}
+                </p>
+            </div>
+            <div>
+                <p class="text-xs text-muted-foreground">Email Verified</p>
+                <p class="text-sm font-medium">
+                    {% if candidate.user.emailaddress_set.first.verified %}
+                        <span class="inline-flex items-center gap-1 text-green-600">
+                            <i data-lucide="check-circle" class="w-4 h-4"></i>
+                            Verified
+                        </span>
+                    {% else %}
+                        <span class="inline-flex items-center gap-1 text-orange-600">
+                            <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                            Not Verified
+                        </span>
+                    {% endif %}
+                </p>
+            </div>
+            <div>
+                <p class="text-xs text-muted-foreground">Active Status</p>
+                <p class="text-sm font-medium">
+                    {% if candidate.user.is_active %}
+                        <span class="inline-flex items-center gap-1 text-green-600">
+                            <i data-lucide="check-circle" class="w-4 h-4"></i>
+                            Active
+                        </span>
+                    {% else %}
+                        <span class="inline-flex items-center gap-1 text-red-600">
+                            <i data-lucide="x-circle" class="w-4 h-4"></i>
+                            Inactive
+                        </span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+        <div class="-mx-8 -mb-8 mt-6 px-8 py-4 bg-muted border-t border-border">
+            <div class="text-sm text-muted-foreground">Account information is view-only</div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,106 @@
+<div class="space-y-6">
+    <div class="app-card space-y-6">
+        {% include "components/card_header.html" with title="Add Education" description="Capture a new education record for this candidate" %}
+        <form method="post"
+              action="{% url 'candidates:candidate-edit-education' candidate.id %}"
+              hx-post="{% url 'candidates:candidate-edit-education' candidate.id %}"
+              hx-target="#tab-content"
+              hx-swap="innerHTML swap:0.5s"
+              x-data="{ isSubmitting: false }"
+              @submit="isSubmitting = true"
+              @htmx:afterRequest="isSubmitting = false"
+              @htmx:responseError="isSubmitting = false"
+              class="space-y-4">
+            {% csrf_token %}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="{{ form.education_type.id_for_label }}"
+                           class="block mb-2 text-sm font-medium text-muted-foreground">{{ form.education_type.label }}</label>
+                    {{ form.education_type }}
+                    {% if form.education_type.errors %}
+                        <p class="mt-2 text-sm text-destructive">{{ form.education_type.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="{{ form.year_completed.id_for_label }}"
+                           class="block mb-2 text-sm font-medium text-muted-foreground">{{ form.year_completed.label }}</label>
+                    {{ form.year_completed }}
+                    {% if form.year_completed.errors %}
+                        <p class="mt-2 text-sm text-destructive">{{ form.year_completed.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div>
+                <label for="{{ form.institution.id_for_label }}"
+                       class="block mb-2 text-sm font-medium text-muted-foreground">{{ form.institution.label }}</label>
+                {{ form.institution }}
+                {% if form.institution.errors %}
+                    <p class="mt-2 text-sm text-destructive">{{ form.institution.errors.0 }}</p>
+                {% endif %}
+            </div>
+            <div>
+                <label for="{{ form.field_of_study.id_for_label }}"
+                       class="block mb-2 text-sm font-medium text-muted-foreground">{{ form.field_of_study.label }}</label>
+                {{ form.field_of_study }}
+                {% if form.field_of_study.errors %}
+                    <p class="mt-2 text-sm text-destructive">{{ form.field_of_study.errors.0 }}</p>
+                {% endif %}
+            </div>
+            <div class="-mx-8 -mb-8 mt-6 px-8 py-4 bg-muted border-t border-border">
+                <div class="flex items-center justify-between">
+                    <div class="text-sm text-muted-foreground">Add education to keep the profile current</div>
+                    <button type="submit" class="app-btn app-btn-primary" :disabled="isSubmitting">
+                        <span x-show="!isSubmitting">Add Education</span>
+                        <span x-show="isSubmitting" class="flex items-center gap-2">
+                            <i data-lucide="loader" class="w-4 h-4 animate-spin-smooth"></i>
+                            Saving...
+                        </span>
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="app-card space-y-6">
+        {% include "components/card_header.html" with title="Education Records" description="Review and manage existing education history" %}
+        {% if education_records %}
+            <div class="space-y-3">
+                {% for education in education_records %}
+                    <div class="flex items-start justify-between p-4 border border-border rounded-lg hover:bg-muted/30 transition-colors">
+                        <div class="flex-1">
+                            <div class="flex items-center gap-3 mb-2">
+                                <i data-lucide="graduation-cap" class="w-5 h-5 text-primary"></i>
+                                <h4 class="font-medium">{{ education.get_education_type_display }}</h4>
+                                <span class="text-xs text-muted-foreground">{{ education.year_completed }}</span>
+                            </div>
+                            <p class="text-sm text-muted-foreground ml-8">{{ education.institution }}</p>
+                            {% if education.field_of_study %}
+                                <p class="text-sm text-muted-foreground ml-8">{{ education.field_of_study }}</p>
+                            {% endif %}
+                        </div>
+                        <form method="post"
+                              action="{% url 'candidates:candidate-edit-education' candidate.id %}"
+                              hx-post="{% url 'candidates:candidate-edit-education' candidate.id %}"
+                              hx-target="#tab-content"
+                              hx-swap="innerHTML swap:0.5s"
+                              onsubmit="return confirm('Are you sure you want to delete this education record?');">
+                            {% csrf_token %}
+                            <input type="hidden" name="delete_id" value="{{ education.id }}">
+                            <button type="submit" class="text-destructive hover:text-destructive/80">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </form>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-12 text-muted-foreground">
+                <i data-lucide="graduation-cap" class="w-12 h-12 mx-auto mb-4 opacity-50"></i>
+                <p>No education records yet</p>
+            </div>
+        {% endif %}
+        <div class="-mx-8 -mb-8 mt-6 px-8 py-4 bg-muted border-t border-border">
+            <div class="text-sm text-muted-foreground">Remove records to keep the profile accurate</div>
+        </div>
+    </div>
+</div>

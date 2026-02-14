@@ -1,0 +1,10 @@
+{% extends "layouts/dashboard_page_view.html" %}
+{% block title %}Candidates{% endblock %}
+{% block page_title %}Candidates{% endblock %}
+{% block page_description %}Manage candidate profiles and onboarding flags.{% endblock %}
+{% block page_content %}
+    <div class="text-sm text-muted-foreground">
+        Candidate management has moved under Users.
+        <a href="{% url 'user_list' %}?view=candidates" class="text-primary hover:underline">Go to Users</a>.
+    </div>
+{% endblock %}

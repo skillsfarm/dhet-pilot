@@ -1,0 +1,73 @@
+{% extends "layouts/dashboard_page_view.html" %}
+{% block title %}{{ media_item.title }}{% endblock %}
+{% block page_title %}
+    <div class="flex flex-col gap-4">
+        <a href="{{ back_url }}"
+           class="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors">
+            <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i>
+            Back to My Library
+        </a>
+        <div>{{ media_item.title }}</div>
+    </div>
+{% endblock %}
+{% block page_description %}{{ media_item.occupation.ofo_title }}{% endblock %}
+{% block page_content %}
+    <div class="space-y-6">
+        <div class="flex items-center justify-end">
+            <span class="text-xs px-2 py-1 rounded bg-muted text-muted-foreground">{{ media_item.media_type|capfirst }}</span>
+        </div>
+        <div class="app-card space-y-4">
+            <div>
+                <div class="text-sm text-muted-foreground">{{ media_item.occupation.ofo_title }}</div>
+                <h3 class="text-lg font-semibold text-foreground">{{ media_item.title }}</h3>
+            </div>
+            {% if media_item.description %}
+                <p class="text-sm text-muted-foreground">{{ media_item.description }}</p>
+            {% endif %}
+            <div class="space-y-3">
+                {% if media_item.embed_code %}
+                    <div class="w-full">{{ media_item.embed_code|safe }}</div>
+                {% else %}
+                    {% if media_item.media_type == "video" %}
+                        {% if media_item.source_type == "remote" and media_item.remote_url %}
+                            <iframe class="w-full aspect-video rounded-lg border border-border"
+                                    src="{{ media_item.remote_url }}"
+                                    frameborder="0"
+                                    allowfullscreen></iframe>
+                        {% elif media_item.source_type == "local" and media_item.local_file %}
+                            <video class="w-full rounded-lg" controls>
+                                <source src="{{ media_item.local_file.file.url }}" type="{{ media_item.local_file.mimetype }}">
+                            </video>
+                        {% endif %}
+                    {% elif media_item.media_type == "pdf" %}
+                        {% if media_item.source_type == "remote" and media_item.remote_url %}
+                            <iframe class="w-full h-[38rem] rounded-lg border border-border" src="{{ media_item.remote_url }}"></iframe>
+                        {% elif media_item.source_type == "local" and media_item.local_file %}
+                            <embed class="w-full h-[38rem] rounded-lg border border-border" src="{{ media_item.local_file.file.url }}" type="application/pdf">
+                        {% endif %}
+                    {% elif media_item.media_type == "audio" %}
+                        {% if media_item.source_type == "remote" and media_item.remote_url %}
+                            <audio class="w-full" controls src="{{ media_item.remote_url }}"></audio>
+                        {% elif media_item.source_type == "local" and media_item.local_file %}
+                            <audio class="w-full" controls>
+                                <source src="{{ media_item.local_file.file.url }}" type="{{ media_item.local_file.mimetype }}">
+                            </audio>
+                        {% endif %}
+                    {% elif media_item.media_type == "image" %}
+                        {% if media_item.source_type == "remote" and media_item.remote_url %}
+                            <img src="{{ media_item.remote_url }}" alt="{{ media_item.title }}" class="w-full rounded-lg border border-border">
+                        {% elif media_item.source_type == "local" and media_item.local_file %}
+                            <img src="{{ media_item.local_file.file.url }}" alt="{{ media_item.title }}" class="w-full rounded-lg border border-border">
+                        {% endif %}
+                    {% else %}
+                        {% if media_item.source_type == "remote" and media_item.remote_url %}
+                            <a href="{{ media_item.remote_url }}" target="_blank" class="app-btn app-btn-ghost">Open Link</a>
+                        {% elif media_item.source_type == "local" and media_item.local_file %}
+                            <a href="{{ media_item.local_file.file.url }}" target="_blank" class="app-btn app-btn-ghost">Open File</a>
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

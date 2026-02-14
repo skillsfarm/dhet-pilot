@@ -2,8 +2,9 @@
 {% block title %}Available Assessments{% endblock %}
 {% block page_title %}Available Assessments{% endblock %}
 {% block page_description %}Complete assessments for your target occupations to measure your proficiency.{% endblock %}
+{% load feature_flags %}
 {% block page_content %}
-    <div class="space-y-6">
+    <div class="space-y-8">
         {% if assessment_progress %}
             <div class="space-y-4">
                 {% for ofo_code, data in assessment_progress.items %}
@@ -57,6 +58,48 @@
                 </p>
                 <a href="{% url 'candidates:onboarding-targets' %}"
                    class="app-btn app-btn-primary">Set Target Occupations</a>
+            </div>
+        {% endif %}
+        {% if recommended_assessments %}
+            <div>
+                <div class="mb-4">
+                    <div>
+                        <h3 class="text-lg font-semibold text-foreground">Recommended Assessments</h3>
+                        <p class="text-xs text-muted-foreground mt-1">Suggested occupations based on your profile</p>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    {% for item in recommended_assessments %}
+                        <div class="flex items-center justify-between gap-4 p-4 rounded-lg border border-border bg-muted/20">
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <h4 class="font-medium text-foreground">
+                                        {% if item.id %}
+                                            <a href="{% url 'candidates:occupation-assessment' item.id %}"
+                                               class="hover:text-primary hover:underline transition-colors">
+                                                {{ item.title }}
+                                            </a>
+                                        {% else %}
+                                            {{ item.title }}
+                                        {% endif %}
+                                    </h4>
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-zinc-100 text-zinc-700 dark:bg-zinc-700 dark:text-zinc-200">
+                                        {{ item.ofo_code }}
+                                    </span>
+                                </div>
+                                {% if item.industry %}
+                                    <p class="text-xs text-muted-foreground mt-1">{{ item.industry }}</p>
+                                {% endif %}
+                            </div>
+                            {% if item.id %}
+                                <a href="{% url 'candidates:occupation-assessment' item.id %}"
+                                   class="app-btn app-btn-primary text-xs px-3 py-1.5">Start</a>
+                            {% else %}
+                                <span class="app-btn app-btn-primary text-xs px-3 py-1.5 opacity-70">Start</span>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
             </div>
         {% endif %}
     </div>

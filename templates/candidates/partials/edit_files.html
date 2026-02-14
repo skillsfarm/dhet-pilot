@@ -1,0 +1,48 @@
+<div class="space-y-6">
+    <div class="app-card space-y-6">
+        {% include "components/card_header.html" with title="Attached Files" description="Files linked to this candidate profile" %}
+        {% if candidate.files.all %}
+            <div class="space-y-2">
+                {% for file in candidate.files.all %}
+                    <div class="flex items-center gap-3 p-3 border border-border rounded-lg hover:bg-muted/50">
+                        <i data-lucide="file-text" class="w-5 h-5 text-muted-foreground"></i>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium truncate">{{ file.name }}</p>
+                            <p class="text-xs text-muted-foreground">
+                                {{ file.size|filesizeformat }} - Uploaded {{ file.created_at|date:"M d, Y" }}
+                            </p>
+                        </div>
+                        {% if file.file %}
+                            <a href="{{ file.file.url }}"
+                               target="_blank"
+                               class="text-primary hover:text-primary/80">
+                                <i data-lucide="external-link" class="w-4 h-4"></i>
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-8 border-2 border-dashed border-border rounded-lg">
+                <i data-lucide="paperclip" class="w-12 h-12 mx-auto mb-3 text-muted-foreground opacity-50"></i>
+                <p class="text-sm text-muted-foreground">No files attached yet</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="app-card space-y-6">
+        {% include "components/card_header.html" with title="File Management" description="How files are added or removed" %}
+        <div class="bg-muted/30 border border-border rounded-lg p-4">
+            <p class="text-xs text-muted-foreground mb-4">
+                To add or remove files, use the file upload system or contact the system administrator.
+            </p>
+            <div class="flex items-center gap-2 text-xs text-muted-foreground">
+                <i data-lucide="info" class="w-4 h-4"></i>
+                <p>Files are managed separately through the storage system</p>
+            </div>
+        </div>
+        <div class="-mx-8 -mb-8 mt-6 px-8 py-4 bg-muted border-t border-border">
+            <div class="text-sm text-muted-foreground">File changes require the storage workflow</div>
+        </div>
+    </div>
+</div>
