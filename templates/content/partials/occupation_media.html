@@ -1,0 +1,106 @@
+<!-- Occupation Media Partial -->
+<div class="space-y-6">
+    <div class="app-card">
+        {% include "components/card_header.html" with title="Occupation Media" %}
+        <form method="post"
+              action="{% url 'occupation-media-partial' occupation.id %}"
+              hx-post="{% url 'occupation-media-partial' occupation.id %}"
+              hx-target="#tab-content"
+              hx-swap="innerHTML swap:0.5s">
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+                <div class="app-alert app-alert-error">
+                    <i data-lucide="alert-circle" class="w-4 h-4"></i>
+                    <div>{{ form.non_field_errors }}</div>
+                </div>
+            {% endif %}
+            <div class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="{{ form.title.id_for_label }}"
+                               class="block mb-2 text-sm font-medium text-muted-foreground">Title</label>
+                        {{ form.title }}
+                        {% if form.title.errors %}<p class="mt-2 text-sm text-destructive">{{ form.title.errors.0 }}</p>{% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.media_type.id_for_label }}"
+                               class="block mb-2 text-sm font-medium text-muted-foreground">Media Type</label>
+                        {{ form.media_type }}
+                        {% if form.media_type.errors %}<p class="mt-2 text-sm text-destructive">{{ form.media_type.errors.0 }}</p>{% endif %}
+                    </div>
+                </div>
+                <div>
+                    <label for="{{ form.description.id_for_label }}"
+                           class="block mb-2 text-sm font-medium text-muted-foreground">Description</label>
+                    {{ form.description }}
+                    {% if form.description.errors %}<p class="mt-2 text-sm text-destructive">{{ form.description.errors.0 }}</p>{% endif %}
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="{{ form.source_type.id_for_label }}"
+                               class="block mb-2 text-sm font-medium text-muted-foreground">Source Type</label>
+                        {{ form.source_type }}
+                        {% if form.source_type.errors %}<p class="mt-2 text-sm text-destructive">{{ form.source_type.errors.0 }}</p>{% endif %}
+                    </div>
+                    <div>
+                        <label for="{{ form.order.id_for_label }}"
+                               class="block mb-2 text-sm font-medium text-muted-foreground">Display Order</label>
+                        {{ form.order }}
+                        {% if form.order.errors %}<p class="mt-2 text-sm text-destructive">{{ form.order.errors.0 }}</p>{% endif %}
+                    </div>
+                </div>
+                <!-- <div class="grid grid-cols-1 md:grid-cols-2 gap-4"> -->
+                    <div>
+                        <label for="{{ form.remote_url.id_for_label }}"
+                               class="block mb-2 text-sm font-medium text-muted-foreground">Remote URL</label>
+                        {{ form.remote_url }}
+                        <p class="text-xs text-muted-foreground mt-1">Use for YouTube/Vimeo or direct media URLs. Paste embed HTML for custom players.</p>
+                        {% if form.remote_url.errors %}<p class="mt-2 text-sm text-destructive">{{ form.remote_url.errors.0 }}</p>{% endif %}
+                    </div>
+                    <!-- <div>
+                        <label for="{{ form.local_file.id_for_label }}"
+                               class="block mb-2 text-sm font-medium text-muted-foreground">Local File</label>
+                        {{ form.local_file }}
+                        <p class="text-xs text-muted-foreground mt-1">Select a file from storage (optional).</p>
+                        {% if form.local_file.errors %}<p class="mt-2 text-sm text-destructive">{{ form.local_file.errors.0 }}</p>{% endif %}
+                    </div> -->
+                <!-- </div> -->
+                <div>
+                    <label for="{{ form.embed_code.id_for_label }}"
+                           class="block mb-2 text-sm font-medium text-muted-foreground">Embed Code</label>
+                    {{ form.embed_code }}
+                    <p class="text-xs text-muted-foreground mt-1">Optional HTML embed code for custom players.</p>
+                    {% if form.embed_code.errors %}<p class="mt-2 text-sm text-destructive">{{ form.embed_code.errors.0 }}</p>{% endif %}
+                </div>
+                <div class="flex items-center gap-4">
+                    <label class="inline-flex items-center gap-2">
+                        {{ form.is_featured }}
+                        <span class="text-sm text-muted-foreground">Featured</span>
+                    </label>
+                    <label class="inline-flex items-center gap-2">
+                        {{ form.is_active }}
+                        <span class="text-sm text-muted-foreground">Active</span>
+                    </label>
+                </div>
+            </div>
+            <div class="-mx-8 -mb-8 mt-6 px-8 py-4 bg-muted border-t border-border">
+                <div class="flex items-center justify-between">
+                    <div class="text-sm text-muted-foreground">Add media items for this occupation</div>
+                    <button type="submit" class="app-btn app-btn-primary">Add Media</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="app-card space-y-4">
+        {% include "components/card_header.html" with title="Available Occupation Media" %}
+        <div class="text-sm font-medium text-muted-foreground">Existing Media</div>
+        <div class="space-y-3">
+            {% for media_item in media_items %}
+                {% include "content/partials/item_media.html" with media_item=media_item %}
+            {% empty %}
+                <div class="text-sm text-muted-foreground">No media items added yet.</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>

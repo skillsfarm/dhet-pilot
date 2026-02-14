@@ -1,0 +1,75 @@
+{% extends "layouts/dashboard_page_view.html" %}
+{% load role_tags %}
+{% block title %}Skills{% endblock %}
+{% block page_title %}
+    <div class="flex items-center justify-between w-full">
+        <span>Skills</span>
+        {% if user|has_any_role:"content_manager,admin,super_admin" or user.is_staff or user.is_superuser %}
+            <a href="{% url 'skill-add' %}" class="app-btn app-btn-primary">
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                Add Skill
+            </a>
+        {% endif %}
+    </div>
+{% endblock %}
+{% block page_description %}Create and manage skills used for occupation tasks and candidate experience.{% endblock %}
+{% block page_content %}
+    <div class="bg-card rounded-xl shadow-sm border border-border">
+        <div class="p-6 border-b border-border">
+            <form method="get" class="flex flex-col md:flex-row gap-4">
+                <div class="flex-1">
+                    <label for="search" class="sr-only">Search</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted-foreground">
+                            <i data-lucide="search" class="h-5 w-5"></i>
+                        </div>
+                        <input type="text"
+                               name="q"
+                               id="search"
+                               class="block w-full pl-10 pr-3 py-2 bg-input border border-border rounded-lg text-foreground placeholder-muted-foreground focus:ring-primary focus:border-primary"
+                               placeholder="Search skills by name..."
+                               value="{{ search_query|default:'' }}">
+                    </div>
+                </div>
+                <div>
+                    <a href="{% url 'skill-list' %}"
+                       class="inline-flex items-center px-4 py-2 border border-border text-sm font-medium rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                        Clear
+                    </a>
+                </div>
+            </form>
+        </div>
+        <div class="divide-y divide-border">
+            {% if skills %}
+                {% for skill in skills %}
+                    <div class="group p-6 hover:bg-muted/50 transition-colors flex items-center justify-between gap-6">
+                        <div>
+                            <h3 class="text-base font-semibold text-foreground">{{ skill.name }}</h3>
+                            {% if skill.description %}
+                                <p class="text-sm text-muted-foreground mt-1">{{ skill.description }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2">
+                            <a href="{% url 'skill-edit' skill.id %}"
+                               class="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                               title="Edit Skill">
+                                <i data-lucide="pencil" class="w-4 h-4"></i>
+                            </a>
+                            <a href="{% url 'skill-delete' skill.id %}"
+                               class="p-2 rounded-lg hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors"
+                               title="Delete Skill">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center py-12 text-muted-foreground">
+                    <i data-lucide="sparkles" class="mx-auto h-12 w-12 opacity-50 mb-3"></i>
+                    <h3 class="text-sm font-medium text-foreground">No skills found</h3>
+                    <p class="mt-1 text-sm">Try adjusting your search.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

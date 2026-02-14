@@ -1,0 +1,18 @@
+{% extends "layouts/dashboard_page_view.html" %}
+{% load role_tags %}
+{% block title %}Industries{% endblock %}
+{% block page_title %}
+    <div class="flex items-center justify-between w-full">
+        <span>Industries</span>
+        {% if user|has_any_role:"content_manager,admin,super_admin" or user.is_staff or user.is_superuser %}
+            <a href="{% url 'industry-add' %}" class="app-btn app-btn-primary">
+                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                Add Industry
+            </a>
+        {% endif %}
+    </div>
+{% endblock %}
+{% block page_description %}Create and manage industry classifications for occupations.{% endblock %}
+{% block page_content %}
+    {% include "content/partials/industry_list_content.html" %}
+{% endblock %}

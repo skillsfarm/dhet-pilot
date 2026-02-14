@@ -1,0 +1,51 @@
+{% extends "layouts/dashboard_page_view.html" %}
+{% block title %}{% if industry %}Edit Industry{% else %}Add Industry{% endif %}{% endblock %}
+{% block page_title %}
+    <div class="flex flex-col gap-4">
+        <a href="{% url 'industry-list' %}"
+           class="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors">
+            <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i>
+            Back to Industries
+        </a>
+        <div>{% if industry %}Edit Industry{% else %}Add Industry{% endif %}</div>
+    </div>
+{% endblock %}
+{% block page_description %}Manage industry metadata used for occupation classification.{% endblock %}
+{% block page_content %}
+    <div class="app-card space-y-6">
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            {% if form.non_field_errors %}
+                <div class="app-alert app-alert-error">
+                    {% for error in form.non_field_errors %}<p>{{ error }}</p>{% endfor %}
+                </div>
+            {% endif %}
+            <div class="space-y-4">
+                <div>
+                    <label for="{{ form.code.id_for_label }}"
+                           class="block mb-2 text-sm font-medium text-muted-foreground">Code</label>
+                    {{ form.code }}
+                    {% if form.code.errors %}<p class="mt-2 text-sm text-destructive">{{ form.code.errors.0 }}</p>{% endif %}
+                </div>
+                <div>
+                    <label for="{{ form.name.id_for_label }}"
+                           class="block mb-2 text-sm font-medium text-muted-foreground">Name</label>
+                    {{ form.name }}
+                    {% if form.name.errors %}<p class="mt-2 text-sm text-destructive">{{ form.name.errors.0 }}</p>{% endif %}
+                </div>
+                <div>
+                    <label for="{{ form.description.id_for_label }}"
+                           class="block mb-2 text-sm font-medium text-muted-foreground">Description</label>
+                    {{ form.description }}
+                    {% if form.description.errors %}<p class="mt-2 text-sm text-destructive">{{ form.description.errors.0 }}</p>{% endif %}
+                </div>
+            </div>
+            <div class="-mx-8 -mb-8 mt-6 px-8 py-4 bg-muted border-t border-border">
+                <div class="flex items-center justify-between">
+                    <a href="{% url 'industry-list' %}" class="app-btn app-btn-ghost">Cancel</a>
+                    <button type="submit" class="app-btn app-btn-primary">Save</button>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}

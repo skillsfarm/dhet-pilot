@@ -7,13 +7,22 @@
             <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i>
             Back to Occupations
         </a>
-        <span>Bulk Upload Occupations</span>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <span>Bulk Upload Occupations</span>
+            <a href="{% url 'occupation-upload' %}?template=excel" class="app-btn app-btn-primary">
+                Download Excel Template
+            </a>
+        </div>
     </div>
 {% endblock %}
-{% block page_description %}Upload a CSV file to add multiple occupations at once.{% endblock %}
+{% block page_description %}Upload an Excel file to add multiple occupations at once. Download the Excel template for industry codes and NQF levels.{% endblock %}
 {% block page_content %}
     <div class="app-card space-y-8">
-        {% include "components/card_header.html" with title="CSV Upload" description="Upload a CSV file with the following columns:" %}
+        <div>
+            <h3 class="text-lg font-semibold text-foreground">Bulk Upload Template</h3>
+            <p class="text-sm text-muted-foreground">Download an Excel template with industry codes and NQF levels prepopulated.</p>
+        </div>
+        {% include "components/card_header.html" with title="Excel Upload" description="Upload an Excel file with the following columns:" %}
         <div class="p-4 rounded-xl bg-muted/50 border border-border">
             <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-muted-foreground">
                 <li class="flex items-center gap-2">
@@ -46,10 +55,10 @@
             {% csrf_token %}
             <div class="space-y-6">
                 <div>
-                    <label for="csv_file"
-                           class="block mb-2 text-sm font-medium text-muted-foreground">Select CSV File</label>
+                    <label for="excel_file"
+                           class="block mb-2 text-sm font-medium text-muted-foreground">Select Excel File</label>
                     <div class="flex items-center justify-center w-full">
-                        <label for="csv_file"
+                        <label for="excel_file"
                                class="flex flex-col items-center justify-center w-full h-64 border-2 border-dashed border-border rounded-xl cursor-pointer bg-muted/30 hover:bg-muted/50 hover:border-primary/50 transition-all">
                             <div class="flex flex-col items-center justify-center p-6">
                                 <i data-lucide="upload-cloud"
@@ -57,13 +66,13 @@
                                 <p class="mb-2 text-sm text-muted-foreground">
                                     <span class="font-semibold text-foreground">Click to upload</span> or drag and drop
                                 </p>
-                                <p class="text-xs text-muted-foreground">CSV file only</p>
+                                <p class="text-xs text-muted-foreground">.xlsx file only</p>
                             </div>
-                            <input id="csv_file"
+                            <input id="excel_file"
                                    name="file"
                                    type="file"
                                    class="hidden"
-                                   accept=".csv"
+                                   accept=".xlsx"
                                    required />
                         </label>
                     </div>
@@ -83,7 +92,7 @@
         </form>
     </div>
     <script>
-    document.getElementById('csv_file').addEventListener('change', function(e) {
+    document.getElementById('excel_file').addEventListener('change', function(e) {
         const file = e.target.files[0];
         if (file) {
             document.getElementById('file-info').classList.remove('hidden');

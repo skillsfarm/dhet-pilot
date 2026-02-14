@@ -1,0 +1,19 @@
+{% extends "layouts/dashboard_page_view.html" %}
+{% block title %}Delete Industry{% endblock %}
+{% block page_title %}Delete Industry{% endblock %}
+{% block page_description %}Confirm deletion of this industry and all related associations.{% endblock %}
+{% block page_content %}
+    <div class="app-card border-destructive/20 bg-destructive/5 space-y-6">
+        <div>
+            <h3 class="text-lg font-semibold text-foreground">Delete {{ industry.name }}</h3>
+            <p class="text-sm text-muted-foreground mt-1">
+                This action is permanent. Occupations linked to this industry will lose the association.
+            </p>
+        </div>
+        <form method="post" class="flex items-center justify-between">
+            {% csrf_token %}
+            <a href="{% url 'industry-list' %}" class="app-btn app-btn-ghost">Cancel</a>
+            <button type="submit" class="app-btn app-btn-destructive">Delete Industry</button>
+        </form>
+    </div>
+{% endblock %}

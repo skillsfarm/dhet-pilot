@@ -22,7 +22,7 @@
     </div>
 {% endblock %}
 {% block page_description %}
-    Modify occupation details, associated tasks, and skills.
+    Modify occupation details, associated tasks, and media.
     <strong>{{ occupation.ofo_title }}</strong> ({{ occupation.ofo_code }})
 {% endblock %}
 {% block page_sidebar %}
@@ -64,6 +64,18 @@
                             :class="{ 'px-4 py-2 w-full text-left font-medium text-primary': activeTab === 'tasks', 'px-4 py-2 w-full text-left font-medium text-muted-foreground opacity-50 hover:opacity-75': activeTab !== 'tasks' }"
                             role="tab"
                             aria-controls="tab-content">Tasks and Skills</button>
+                </li>
+                <!-- Media Tab -->
+                <li class="flex-1 md:flex-initial md:w-full" role="presentation">
+                    <button type="button"
+                            @click="activeTab = 'media'"
+                            hx-get="{% url 'occupation-media-partial' occupation.id %}"
+                            hx-target="#tab-content"
+                            hx-swap="innerHTML swap:0.5s"
+                            :aria-selected="activeTab === 'media'"
+                            :class="{ 'px-4 py-2 w-full text-left font-medium text-primary': activeTab === 'media', 'px-4 py-2 w-full text-left font-medium text-muted-foreground opacity-50 hover:opacity-75': activeTab !== 'media' }"
+                            role="tab"
+                            aria-controls="tab-content">Media</button>
                 </li>
             </ul>
         </div>
@@ -111,6 +123,17 @@
                             :style="{ color: activeTab === 'tasks' ? 'var(--primary)' : 'var(--muted-foreground)', opacity: activeTab === 'tasks' ? '1' : '0.5' }"
                             class="px-4 py-2 w-full text-left font-medium hover:opacity-75 transition"
                             role="tab">Tasks and Skills</button>
+                </li>
+                <li role="presentation">
+                    <button type="button"
+                            @click="activeTab = 'media'; drawerOpen = false"
+                            hx-get="{% url 'occupation-media-partial' occupation.id %}"
+                            hx-target="#tab-content"
+                            hx-swap="innerHTML swap:0.5s"
+                            :aria-selected="activeTab === 'media'"
+                            :style="{ color: activeTab === 'media' ? 'var(--primary)' : 'var(--muted-foreground)', opacity: activeTab === 'media' ? '1' : '0.5' }"
+                            class="px-4 py-2 w-full text-left font-medium hover:opacity-75 transition"
+                            role="tab">Media</button>
                 </li>
             </ul>
         </div>
