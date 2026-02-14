@@ -1,0 +1,46 @@
+{% extends "layouts/dashboard_page_view.html" %}
+{% block title %}Create Notification{% endblock %}
+{% block page_title %}
+    <div class="flex flex-col gap-4">
+        <a href="{% url 'notification-list' %}"
+           class="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors">
+            <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i>
+            Back to Notifications
+        </a>
+        <div>Create Notification</div>
+    </div>
+{% endblock %}
+{% block page_description %}Send notifications to user groups via email.{% endblock %}
+{% block page_content %}
+    <div class="app-card space-y-6">
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            <div>
+                <label for="subject" class="block mb-2 text-sm font-medium text-muted-foreground">Subject</label>
+                <input id="subject" name="subject" type="text" class="app-input" value="{{ request.POST.subject|default:'' }}" required>
+            </div>
+            <div>
+                <label for="message" class="block mb-2 text-sm font-medium text-muted-foreground">Message</label>
+                <textarea id="message" name="message" rows="6" class="app-input" required>{{ request.POST.message|default:'' }}</textarea>
+            </div>
+            <div>
+                <label class="block mb-2 text-sm font-medium text-muted-foreground">Target Roles</label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {% for role in roles %}
+                        <label class="flex items-center gap-3 p-3 border border-border rounded-lg hover:bg-muted/50">
+                            <input type="checkbox" name="roles" value="{{ role }}"
+                                   class="rounded border-border text-primary focus:ring-primary">
+                            <span class="text-sm text-foreground">{{ role|title }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="-mx-8 -mb-8 mt-6 px-8 py-4 bg-muted border-t border-border">
+                <div class="flex items-center justify-between">
+                    <a href="{% url 'notification-list' %}" class="app-btn app-btn-ghost">Cancel</a>
+                    <button type="submit" class="app-btn app-btn-primary">Send Notification</button>
+                </div>
+            </div>
+        </form>
+    </div>
+{% endblock %}

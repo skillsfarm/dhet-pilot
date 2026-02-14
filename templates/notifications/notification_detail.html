@@ -1,0 +1,54 @@
+{% extends "layouts/dashboard_page_view.html" %}
+{% block title %}Notification Details{% endblock %}
+{% block page_title %}
+    <div class="flex flex-col gap-4">
+        <a href="{% if is_admin %}{% url 'notification-list' %}{% else %}{% url 'notification-my-list' %}{% endif %}"
+           class="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors">
+            <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i>
+            Back to Notifications
+        </a>
+        <div>Notification Details</div>
+    </div>
+{% endblock %}
+{% block page_description %}Review notification content and delivery logs.{% endblock %}
+{% block page_content %}
+    <div class="space-y-6">
+        <div class="app-card space-y-4">
+            <div class="flex items-center gap-2">
+                <h3 class="text-lg font-semibold text-foreground">{{ notification.subject }}</h3>
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-muted text-muted-foreground border border-border">
+                    {{ notification.status|capfirst }}
+                </span>
+            </div>
+            <div class="text-sm text-muted-foreground">Recipient: {{ notification.user.email }}</div>
+            <div class="text-sm text-muted-foreground">Created: {{ notification.created_at }}</div>
+            {% if notification.sent_at %}
+                <div class="text-sm text-muted-foreground">Sent: {{ notification.sent_at }}</div>
+            {% endif %}
+            {% if notification.error_message %}
+                <div class="app-alert app-alert-error">{{ notification.error_message }}</div>
+            {% endif %}
+            <div class="bg-muted/30 border border-border rounded-lg p-4 text-sm text-foreground whitespace-pre-line">{{ notification.message }}</div>
+        </div>
+        <div class="app-card space-y-4">
+            <h4 class="text-base font-semibold text-foreground">Delivery Logs</h4>
+            {% if logs %}
+                <div class="divide-y divide-border">
+                    {% for log in logs %}
+                        <div class="py-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-medium text-foreground">{{ log.status }}</span>
+                                <span class="text-xs text-muted-foreground">{{ log.created_at }}</span>
+                            </div>
+                            {% if log.details %}
+                                <p class="text-sm text-muted-foreground mt-1">{{ log.details }}</p>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-sm text-muted-foreground">No logs available for this notification.</p>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

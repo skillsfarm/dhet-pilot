@@ -1,0 +1,38 @@
+{% extends "layouts/dashboard_page_view.html" %}
+{% block title %}File Details{% endblock %}
+{% block page_title %}
+    <div class="flex flex-col gap-4">
+        <a href="{% url 'file-list' %}"
+           class="inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors">
+            <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i>
+            Back to Files
+        </a>
+        <div>File Details</div>
+    </div>
+{% endblock %}
+{% block page_description %}Review file metadata stored in object storage.{% endblock %}
+{% block page_content %}
+    <div class="app-card space-y-4">
+        <div class="flex items-center justify-between">
+            <h3 class="text-lg font-semibold text-foreground">{{ file.display_name|default:file.original_name }}</h3>
+            <a href="{% url 'file-delete' file.id %}" class="app-btn app-btn-destructive">Delete</a>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-muted-foreground">
+            <div>
+                <span class="font-medium text-foreground">Original Name:</span> {{ file.original_name }}
+            </div>
+            <div>
+                <span class="font-medium text-foreground">Mime Type:</span> {{ file.mimetype|default:"-" }}
+            </div>
+            <div>
+                <span class="font-medium text-foreground">Size:</span> {{ file.size }} bytes
+            </div>
+            <div>
+                <span class="font-medium text-foreground">Created:</span> {{ file.created_at }}
+            </div>
+        </div>
+        <div class="text-sm text-muted-foreground break-all">
+            <span class="font-medium text-foreground">Storage Path:</span> {{ file.file.name }}
+        </div>
+    </div>
+{% endblock %}

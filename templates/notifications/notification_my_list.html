@@ -1,0 +1,62 @@
+{% extends "layouts/dashboard_page_view.html" %}
+{% block title %}My Notifications{% endblock %}
+{% block page_title %}My Notifications{% endblock %}
+{% block page_description %}Your latest notifications and updates.{% endblock %}
+{% block page_content %}
+    <div class="bg-card rounded-xl shadow-sm border border-border">
+        <div class="p-6 border-b border-border">
+            <form method="get" class="flex flex-col md:flex-row gap-4">
+                <div class="flex-1">
+                    <label for="search" class="sr-only">Search</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-muted-foreground">
+                            <i data-lucide="search" class="h-5 w-5"></i>
+                        </div>
+                        <input type="text"
+                               name="q"
+                               id="search"
+                               class="block w-full pl-10 pr-3 py-2 bg-input border border-border rounded-lg text-foreground placeholder-muted-foreground focus:ring-primary focus:border-primary"
+                               placeholder="Search by subject..."
+                               value="{{ search_query|default:'' }}">
+                    </div>
+                </div>
+                <div>
+                    <a href="{% url 'notification-my-list' %}"
+                       class="inline-flex items-center px-4 py-2 border border-border text-sm font-medium rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
+                        Clear
+                    </a>
+                </div>
+            </form>
+        </div>
+        <div class="divide-y divide-border">
+            {% if notifications %}
+                {% for notification in notifications %}
+                    <div class="group p-6 hover:bg-muted/50 transition-colors flex items-center justify-between gap-6">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <h3 class="text-base font-semibold text-foreground">{{ notification.subject }}</h3>
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-muted text-muted-foreground border border-border">
+                                    {{ notification.status|capfirst }}
+                                </span>
+                            </div>
+                            <p class="text-sm text-muted-foreground mt-1">{{ notification.message|truncatewords:24 }}</p>
+                        </div>
+                        <div class="opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-2">
+                            <a href="{% url 'notification-detail' notification.id %}"
+                               class="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+                               title="View Notification">
+                                <i data-lucide="eye" class="w-4 h-4"></i>
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="text-center py-12 text-muted-foreground">
+                    <i data-lucide="bell" class="mx-auto h-12 w-12 opacity-50 mb-3"></i>
+                    <h3 class="text-sm font-medium text-foreground">No notifications found</h3>
+                    <p class="mt-1 text-sm">You have no notifications yet.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

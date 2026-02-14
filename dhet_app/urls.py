@@ -6,6 +6,7 @@ from scalar import urlpatterns_scalar
 from apps.core import views as core_views
 from apps.accounts import viewsets, views as account_views
 from apps.candidates import views as candidate_views
+from apps.notifications import views as notification_views
 
 from allauth.account.views import LoginView, LogoutView
 
@@ -26,6 +27,7 @@ urlpatterns = [
     path("admin/profile/", account_views.profile, name="admin-profile"),
     path("admin/", admin.site.urls),
     path("api/storage/", include("apps.storage.urls")),
+    path("storage/", include("apps.storage.urls_ui")),
     path("api/", include(router.urls)),  # DRF routers (no namespace)
     path("accounts/", include("allauth.urls")),  # login / signup / reset
     # UI views
@@ -38,6 +40,31 @@ urlpatterns = [
     ),
     path("users/", account_views.user_list, name="user_list"),
     path("users/<str:pk>/edit/", account_views.user_edit, name="user_edit"),
+    path(
+        "notifications/",
+        notification_views.notification_list,
+        name="notification-list",
+    ),
+    path(
+        "notifications/my/",
+        notification_views.notification_my_list,
+        name="notification-my-list",
+    ),
+    path(
+        "notifications/new/",
+        notification_views.notification_create,
+        name="notification-create",
+    ),
+    path(
+        "notifications/<str:notification_id>/delete/",
+        notification_views.notification_delete,
+        name="notification-delete",
+    ),
+    path(
+        "notifications/<str:notification_id>/",
+        notification_views.notification_detail,
+        name="notification-detail",
+    ),
     path("occupations/", core_views.occupation_list, name="occupations"),
     path("", include("apps.content.urls")),  # content management views
     path(
@@ -56,6 +83,11 @@ urlpatterns = [
     # Profile partials (HTMX endpoints)
     path("profile/account/", account_views.profile_account, name="profile-account"),
     path("profile/security/", account_views.profile_security, name="profile-security"),
+    path(
+        "profile/deactivate/",
+        account_views.profile_deactivate,
+        name="profile-deactivate",
+    ),
     path(
         "profile/onboarding/",
         account_views.profile_onboarding,
@@ -98,6 +130,7 @@ urlpatterns = [
         core_views.save_cookie_preferences,
         name="save_cookie_preferences",
     ),
+    path("settings/platform/", core_views.platform_settings, name="platform-settings"),
     path("cookies/", include("cookie_consent.urls")),
 ] + urlpatterns_scalar
 
