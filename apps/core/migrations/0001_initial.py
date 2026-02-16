@@ -7,7 +7,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -16,19 +15,35 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='UserCookieConsent',
+            name="UserCookieConsent",
             fields=[
-                ('id', models.CharField(default=apps.core.models.cuid_generator, editable=False, max_length=30, primary_key=True, serialize=False)),
-                ('group_varname', models.CharField(max_length=100)),
-                ('action', models.CharField(max_length=20)),
-                ('version', models.CharField(blank=True, max_length=20, null=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='cookie_consents', to=settings.AUTH_USER_MODEL)),
+                (
+                    "id",
+                    models.CharField(
+                        default=apps.core.models.cuid_generator,
+                        editable=False,
+                        max_length=30,
+                        primary_key=True,
+                        serialize=False,
+                    ),
+                ),
+                ("group_varname", models.CharField(max_length=100)),
+                ("action", models.CharField(max_length=20)),
+                ("version", models.CharField(blank=True, max_length=20, null=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="cookie_consents",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'User Cookie Consent',
-                'verbose_name_plural': 'User Cookie Consents',
-                'ordering': ['-created_at'],
+                "verbose_name": "User Cookie Consent",
+                "verbose_name_plural": "User Cookie Consents",
+                "ordering": ["-created_at"],
             },
         ),
     ]
