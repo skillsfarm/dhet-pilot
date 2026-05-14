@@ -20,6 +20,7 @@ admin.site.site_title = "DHET Admin"
 admin.site.index_title = "Welcome to DHET Portal"
 
 urlpatterns = [
+    path("healthz/", core_views.healthz, name="healthz"),
     path("", core_views.home, name="home"),
     path("admin/login/", LoginView.as_view(), name="admin_login"),
     path("admin/logout/", LogoutView.as_view(), name="admin_logout"),

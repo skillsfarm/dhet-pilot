@@ -1,0 +1,45 @@
+# Django
+SECRET_KEY=replace-with-strong-secret
+MODE=production
+DEBUG=False
+ALLOWED_HOSTS=app.example.com
+SITE_NAME=DHET
+SITE_DOMAIN=app.example.com
+SEED_DEMO_DATA=false
+
+# Database
+POSTGRES_DB=dhet_app
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=replace-with-strong-password
+DATABASE_URL=postgresql://postgres:replace-with-strong-password@db:5432/dhet_app
+
+# Security
+SECURE_SSL_REDIRECT=true
+SESSION_COOKIE_SECURE=true
+CSRF_COOKIE_SECURE=true
+USE_X_FORWARDED_HOST=true
+
+# Email
+EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+EMAIL_HOST=smtp.zoho.com
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_USE_SSL=False
+EMAIL_HOST_USER=
+EMAIL_HOST_PASSWORD=
+DEFAULT_FROM_EMAIL=
+ACCOUNT_EMAIL_VERIFICATION=mandatory
+
+# Storage
+ACCESS_KEY_ID=
+SECRET_ACCESS_KEY=
+STORAGE_BUCKET_NAME=
+S3_ENDPOINT_URL=
+S3_REGION_NAME=fra1
+S3_CUSTOM_DOMAIN=
+
+# Feature flags
+FEATURE_FLAGS=content_feed:on
+
+# Cookie Consent
+COOKIE_CONSENT_ENABLED=True

@@ -20,6 +20,10 @@ from .context_processors import navbar_context
 from apps.content.models import Occupation, Industry
 
 
+def healthz(request):
+    return JsonResponse({"status": "ok"})
+
+
 @login_required
 def dashboard_redirect(request):
     """

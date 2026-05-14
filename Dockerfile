@@ -1,63 +1,48 @@
-# Use Python 3.11 slim image
-FROM python:3.11-slim
+FROM node:20-alpine AS frontend-builder
 
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV DEBIAN_FRONTEND=noninteractive
-
-# Install system dependencies
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        build-essential \
-        curl \
-        && rm -rf /var/lib/apt/lists/*
-
-# Install uv for faster Python package management
-RUN pip install --no-cache-dir uv
-
-# Install Node.js and pnpm for frontend build
-RUN curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
-    && apt-get install -y nodejs \
-    && npm install -g pnpm
-
-# Set work directory
 WORKDIR /app
 
-# Copy dependency files
-COPY pyproject.toml ./
-COPY package.json ./
-COPY pnpm-lock.yaml* ./
+COPY package.json pnpm-lock.yaml* ./
+RUN corepack enable && pnpm install --frozen-lockfile
 
-# Install Python dependencies
-RUN uv venv /opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
-RUN uv pip install -e .
-
-# Install Node.js dependencies
-RUN pnpm install --frozen-lockfile
-
-# Copy project files
-COPY . .
-
-# Build frontend assets
+COPY theme ./theme
 RUN pnpm run build
 
-# Create staticfiles directory and collect static files
-RUN mkdir -p staticfiles
-RUN uv run python manage.py collectstatic --noinput
 
-# Create non-root user
-RUN adduser --disabled-password --gecos '' appuser
-RUN chown -R appuser:appuser /app
+FROM python:3.11-slim AS runtime
+
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
+ENV PATH="/opt/venv/bin:$PATH"
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates \
+        curl \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir uv
+
+WORKDIR /app
+
+COPY . .
+COPY --from=frontend-builder /app/theme/dist ./theme/dist
+
+RUN uv venv /opt/venv && uv pip install .
+
+RUN adduser --disabled-password --gecos "" appuser \
+    && mkdir -p /app/media /app/staticfiles \
+    && chown -R appuser:appuser /app
+
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 USER appuser
 
-# Expose port
 EXPOSE 8000
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/health/ || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+    CMD curl -f http://127.0.0.1:8000/healthz/ || exit 1
 
-# Run the application
-CMD ["uv", "run", "python", "manage.py", "runserver", "0.0.0.0:8000"]
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "--workers", "3", "--timeout", "120", "dhet_app.wsgi:application"]

@@ -1,0 +1,12 @@
+services:
+  web:
+    env_file:
+      - ${ENV_FILE:-docker-env.staging.example}
+    environment:
+      SEED_DEMO_DATA: "true"
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS:-localhost,127.0.0.1,staging.local}
+      SITE_DOMAIN: ${SITE_DOMAIN:-staging.local}
+
+  db:
+    ports:
+      - "5432:5432"

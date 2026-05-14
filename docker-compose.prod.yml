@@ -1,0 +1,16 @@
+services:
+  web:
+    env_file:
+      - ${ENV_FILE:-docker-env.prod.example}
+    environment:
+      SEED_DEMO_DATA: "false"
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS}
+      SITE_DOMAIN: ${SITE_DOMAIN}
+      SECURE_SSL_REDIRECT: ${SECURE_SSL_REDIRECT:-true}
+      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-true}
+      CSRF_COOKIE_SECURE: ${CSRF_COOKIE_SECURE:-true}
+  db:
+    env_file:
+      - ${ENV_FILE:-docker-env.prod.example}
+    # Intentionally no host port publishing in production.
+    ports: []
